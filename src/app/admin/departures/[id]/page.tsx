@@ -49,7 +49,7 @@ export default async function DepartureDetailsPage({ params }: Props) {
                 </h1>
 
                 <p className="text-muted-foreground">
-                    Departure details
+                    Departure details - Vercel Test
                 </p>
             </div>
 
