@@ -1,5 +1,6 @@
 import { db } from "@/prisma/db";
 import { Temporal } from "temporal-polyfill";
+
 export async function GET() {
     const departures = await db.orm.public.Departure.all();
 

@@ -28,6 +28,14 @@
       "model": "Departure",
       "namespace": "public"
     },
+    "DeparturePricing": {
+      "model": "DeparturePricing",
+      "namespace": "public"
+    },
+    "DepartureRoomOption": {
+      "model": "DepartureRoomOption",
+      "namespace": "public"
+    },
     "DepartureVehicle": {
       "model": "DepartureVehicle",
       "namespace": "public"
@@ -54,10 +62,6 @@
     },
     "Payment": {
       "model": "Payment",
-      "namespace": "public"
-    },
-    "PricingRule": {
-      "model": "PricingRule",
       "namespace": "public"
     },
     "Room": {
@@ -207,23 +211,6 @@
               {
                 "name": "REFUNDED",
                 "value": "REFUNDED"
-              }
-            ]
-          },
-          "PricingCategory": {
-            "codecId": "pg/text@1",
-            "members": [
-              {
-                "name": "ADULT",
-                "value": "ADULT"
-              },
-              {
-                "name": "CHILD",
-                "value": "CHILD"
-              },
-              {
-                "name": "INFANT",
-                "value": "INFANT"
               }
             ]
           },
@@ -733,10 +720,31 @@
           },
           "Booking": {
             "fields": {
+              "adultFareAtBooking": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
               "bookingNumber": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "childFareAtBooking": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "childFeeEnabledAtBooking": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
                   "kind": "scalar"
                 }
               },
@@ -790,6 +798,20 @@
                 }
               },
               "paidAmount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "roomOptionId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "roomSurchargeAtBooking": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/numeric@1",
@@ -902,12 +924,37 @@
                   "model": "Payment",
                   "namespace": "public"
                 }
+              },
+              "roomOption": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "roomOptionId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "DepartureRoomOption",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
               "fields": {
+                "adultFareAtBooking": {
+                  "column": "adultFareAtBooking"
+                },
                 "bookingNumber": {
                   "column": "bookingNumber"
+                },
+                "childFareAtBooking": {
+                  "column": "childFareAtBooking"
+                },
+                "childFeeEnabledAtBooking": {
+                  "column": "childFeeEnabledAtBooking"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -932,6 +979,12 @@
                 },
                 "paidAmount": {
                   "column": "paidAmount"
+                },
+                "roomOptionId": {
+                  "column": "roomOptionId"
+                },
+                "roomSurchargeAtBooking": {
+                  "column": "roomSurchargeAtBooking"
                 },
                 "status": {
                   "column": "status"
@@ -1051,7 +1104,23 @@
                   "namespace": "public"
                 }
               },
-              "pricingRules": {
+              "pricing": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "departureId"
+                  ]
+                },
+                "to": {
+                  "model": "DeparturePricing",
+                  "namespace": "public"
+                }
+              },
+              "roomOptions": {
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
@@ -1062,7 +1131,7 @@
                   ]
                 },
                 "to": {
-                  "model": "PricingRule",
+                  "model": "DepartureRoomOption",
                   "namespace": "public"
                 }
               },
@@ -1133,6 +1202,273 @@
               },
               "namespaceId": "public",
               "table": "Departure"
+            }
+          },
+          "DeparturePricing": {
+            "fields": {
+              "adultFare": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "childFare": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "childFeeEnabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "departureId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "departure": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "departureId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Departure",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "adultFare": {
+                  "column": "adultFare"
+                },
+                "childFare": {
+                  "column": "childFare"
+                },
+                "childFeeEnabled": {
+                  "column": "childFeeEnabled"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "departureId": {
+                  "column": "departureId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "DeparturePricing"
+            }
+          },
+          "DepartureRoomOption": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "departureId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "displayOrder": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isAvailable": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "maxAdults": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "maxChildren": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "maxOccupants": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "roomType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "RoomType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "surcharge": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "bookings": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "roomOptionId"
+                  ]
+                },
+                "to": {
+                  "model": "Booking",
+                  "namespace": "public"
+                }
+              },
+              "departure": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "departureId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Departure",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "departureId": {
+                  "column": "departureId"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "displayOrder": {
+                  "column": "displayOrder"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isAvailable": {
+                  "column": "isAvailable"
+                },
+                "maxAdults": {
+                  "column": "maxAdults"
+                },
+                "maxChildren": {
+                  "column": "maxChildren"
+                },
+                "maxOccupants": {
+                  "column": "maxOccupants"
+                },
+                "roomType": {
+                  "column": "roomType"
+                },
+                "surcharge": {
+                  "column": "surcharge"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "DepartureRoomOption"
             }
           },
           "DepartureVehicle": {
@@ -2106,116 +2442,6 @@
               },
               "namespaceId": "public",
               "table": "Payment"
-            }
-          },
-          "PricingRule": {
-            "fields": {
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "departureId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "passengerType": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                },
-                "valueSet": {
-                  "entityKind": "enum",
-                  "entityName": "PricingCategory",
-                  "namespaceId": "public",
-                  "plane": "domain"
-                }
-              },
-              "price": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/numeric@1",
-                  "kind": "scalar"
-                }
-              },
-              "roomType": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                },
-                "valueSet": {
-                  "entityKind": "enum",
-                  "entityName": "RoomType",
-                  "namespaceId": "public",
-                  "plane": "domain"
-                }
-              },
-              "updatedAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {
-              "departure": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "departureId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "Departure",
-                  "namespace": "public"
-                }
-              }
-            },
-            "storage": {
-              "fields": {
-                "createdAt": {
-                  "column": "createdAt"
-                },
-                "departureId": {
-                  "column": "departureId"
-                },
-                "id": {
-                  "column": "id"
-                },
-                "passengerType": {
-                  "column": "passengerType"
-                },
-                "price": {
-                  "column": "price"
-                },
-                "roomType": {
-                  "column": "roomType"
-                },
-                "updatedAt": {
-                  "column": "updatedAt"
-                }
-              },
-              "namespaceId": "public",
-              "table": "PricingRule"
             }
           },
           "Room": {
@@ -3601,9 +3827,36 @@
                 }
               ],
               "columns": {
+                "adultFareAtBooking": {
+                  "codecId": "pg/numeric@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
                 "bookingNumber": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": false
+                },
+                "childFareAtBooking": {
+                  "codecId": "pg/numeric@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "childFeeEnabledAtBooking": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
                   "nullable": false
                 },
                 "createdAt": {
@@ -3662,6 +3915,20 @@
                   "nativeType": "numeric",
                   "nullable": false
                 },
+                "roomOptionId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "roomSurchargeAtBooking": {
+                  "codecId": "pg/numeric@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
                 "status": {
                   "codecId": "pg/text@1",
                   "default": {
@@ -3688,6 +3955,10 @@
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
                   "nativeType": "timestamptz",
                   "nullable": false
                 }
@@ -3740,6 +4011,22 @@
                     "namespaceId": "public",
                     "tableName": "User"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "roomOptionId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Booking"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "DepartureRoomOption"
+                  }
                 }
               ],
               "indexes": [
@@ -3765,6 +4052,14 @@
                   ],
                   "name": "Booking_guideId_idx_d17d3b18",
                   "prefix": "Booking_guideId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "roomOptionId"
+                  ],
+                  "name": "Booking_roomOptionId_idx_114aad0b",
+                  "prefix": "Booking_roomOptionId_idx",
                   "unique": false
                 }
               ],
@@ -3885,6 +4180,240 @@
                 ]
               },
               "uniques": []
+            },
+            "DeparturePricing": {
+              "columns": {
+                "adultFare": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "childFare": {
+                  "codecId": "pg/numeric@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "childFeeEnabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "departureId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "departureId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "DeparturePricing"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Departure"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "departureId"
+                  ]
+                }
+              ]
+            },
+            "DepartureRoomOption": {
+              "checks": [
+                {
+                  "expression": "\"roomType\" IN ('SHARED', 'COUPLE', 'PRIVATE')",
+                  "name": "DepartureRoomOption_roomType_check_bbfda123",
+                  "prefix": "DepartureRoomOption_roomType_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "departureId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "displayOrder": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "isAvailable": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "maxAdults": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "maxChildren": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "maxOccupants": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "roomType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "RoomType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "surcharge": {
+                  "codecId": "pg/numeric@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "departureId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "DepartureRoomOption"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Departure"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "departureId"
+                  ],
+                  "name": "DepartureRoomOption_departureId_idx_24d39b35",
+                  "prefix": "DepartureRoomOption_departureId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "departureId",
+                    "roomType"
+                  ]
+                }
+              ]
             },
             "DepartureVehicle": {
               "columns": {
@@ -4627,112 +5156,6 @@
                   ],
                   "name": "Payment_bookingId_idx_17848f4a",
                   "prefix": "Payment_bookingId_idx",
-                  "unique": false
-                }
-              ],
-              "primaryKey": {
-                "columns": [
-                  "id"
-                ]
-              },
-              "uniques": []
-            },
-            "PricingRule": {
-              "checks": [
-                {
-                  "expression": "\"passengerType\" IN ('ADULT', 'CHILD', 'INFANT')",
-                  "name": "PricingRule_passengerType_check_89795c13",
-                  "prefix": "PricingRule_passengerType_check"
-                },
-                {
-                  "expression": "\"roomType\" IN ('SHARED', 'COUPLE', 'PRIVATE')",
-                  "name": "PricingRule_roomType_check_bbfda123",
-                  "prefix": "PricingRule_roomType_check"
-                }
-              ],
-              "columns": {
-                "createdAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "departureId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "passengerType": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false,
-                  "valueSet": {
-                    "entityKind": "valueSet",
-                    "entityName": "PricingCategory",
-                    "namespaceId": "public",
-                    "plane": "storage"
-                  }
-                },
-                "price": {
-                  "codecId": "pg/numeric@1",
-                  "nativeType": "numeric",
-                  "nullable": false
-                },
-                "roomType": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true,
-                  "valueSet": {
-                    "entityKind": "valueSet",
-                    "entityName": "RoomType",
-                    "namespaceId": "public",
-                    "plane": "storage"
-                  }
-                },
-                "updatedAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                }
-              },
-              "foreignKeys": [
-                {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "departureId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "PricingRule"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "Departure"
-                  }
-                }
-              ],
-              "indexes": [
-                {
-                  "columns": [
-                    "departureId"
-                  ],
-                  "name": "PricingRule_departureId_idx_24d39b35",
-                  "prefix": "PricingRule_departureId_idx",
                   "unique": false
                 }
               ],
@@ -5574,14 +5997,6 @@
                 "REFUNDED"
               ]
             },
-            "PricingCategory": {
-              "kind": "valueSet",
-              "values": [
-                "ADULT",
-                "CHILD",
-                "INFANT"
-              ]
-            },
             "RoomType": {
               "kind": "valueSet",
               "values": [
@@ -5614,10 +6029,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d4e19caa6ddd68060e2c298c481857362f18ac2b2b235d559718ad06106d864d"
+    "storageHash": "b994449b43086bb3399839222df75a80518abb8e182d5f4b10c683b03c96e1f2"
   },
   "execution": {
-    "executionHash": "dbb347d779f883f77d3f7b626c521f3743044f4f8ef56d2516ee2324e9446a09",
+    "executionHash": "88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36",
     "mutations": {
       "defaults": [
         {
@@ -5661,21 +6076,6 @@
           },
           "ref": {
             "entry": "BlogTag",
-            "field": "updatedAt",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "ref": {
-            "entry": "Booking",
             "field": "updatedAt",
             "namespace": "public"
           }
@@ -5796,21 +6196,6 @@
           },
           "ref": {
             "entry": "Payment",
-            "field": "updatedAt",
-            "namespace": "public"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "ref": {
-            "entry": "PricingRule",
             "field": "updatedAt",
             "namespace": "public"
           }

@@ -1,0 +1,3697 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.BlogCategory",
+    "label": "Create table \"BlogCategory\"",
+    "summary": "Creates table \"BlogCategory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BlogCategory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BlogCategory\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogCategory\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BlogCategory\"",
+        "sql": "CREATE TABLE \"public\".\"BlogCategory\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"name\" text NOT NULL,\n  \"slug\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BlogCategory\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogCategory\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BlogPost",
+    "label": "Create table \"BlogPost\"",
+    "summary": "Creates table \"BlogPost\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BlogPost"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BlogPost\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BlogPost\"",
+        "sql": "CREATE TABLE \"public\".\"BlogPost\" (\n  \"authorId\" int4 NOT NULL,\n  \"categoryId\" int4,\n  \"content\" text NOT NULL,\n  \"coverImage\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"excerpt\" text,\n  \"id\" SERIAL NOT NULL,\n  \"publishedAt\" timestamptz,\n  \"seoDescription\" text,\n  \"seoTitle\" text,\n  \"slug\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"BlogPost_status_check_bc64f66b\" CHECK (\"status\" IN ('DRAFT', 'PUBLISHED', 'ARCHIVED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BlogPost\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BlogPostTag",
+    "label": "Create table \"BlogPostTag\"",
+    "summary": "Creates table \"BlogPostTag\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BlogPostTag"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BlogPostTag\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPostTag\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BlogPostTag\"",
+        "sql": "CREATE TABLE \"public\".\"BlogPostTag\" (\n  \"postId\" int4 NOT NULL,\n  \"tagId\" int4 NOT NULL,\n  PRIMARY KEY (\"postId\", \"tagId\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BlogPostTag\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPostTag\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BlogTag",
+    "label": "Create table \"BlogTag\"",
+    "summary": "Creates table \"BlogTag\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BlogTag"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BlogTag\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogTag\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BlogTag\"",
+        "sql": "CREATE TABLE \"public\".\"BlogTag\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"slug\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BlogTag\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogTag\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Booking",
+    "label": "Create table \"Booking\"",
+    "summary": "Creates table \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Booking\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Booking\"",
+        "sql": "CREATE TABLE \"public\".\"Booking\" (\n  \"bookingNumber\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"departureId\" int4 NOT NULL,\n  \"dueAmount\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"guideId\" int4,\n  \"id\" SERIAL NOT NULL,\n  \"notes\" text,\n  \"paidAmount\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"totalAmount\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Booking_status_check_1c42d865\" CHECK (\"status\" IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'REFUNDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Booking\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Departure",
+    "label": "Create table \"Departure\"",
+    "summary": "Creates table \"Departure\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Departure"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Departure\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Departure\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Departure\"",
+        "sql": "CREATE TABLE \"public\".\"Departure\" (\n  \"bookingOpen\" bool DEFAULT true NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"customerVisible\" bool DEFAULT true NOT NULL,\n  \"departureDate\" timestamptz NOT NULL,\n  \"departureTime\" text,\n  \"id\" SERIAL NOT NULL,\n  \"returnDate\" timestamptz,\n  \"returnTime\" text,\n  \"tourId\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Departure\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Departure\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.DepartureVehicle",
+    "label": "Create table \"DepartureVehicle\"",
+    "summary": "Creates table \"DepartureVehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "DepartureVehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"DepartureVehicle\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"DepartureVehicle\"",
+        "sql": "CREATE TABLE \"public\".\"DepartureVehicle\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departureId\" int4 NOT NULL,\n  \"displayName\" text,\n  \"displayOrder\" int4 DEFAULT 0 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"vehicleId\" int4 NOT NULL,\n  \"visibleToCustomer\" bool DEFAULT false NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"DepartureVehicle\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Destination",
+    "label": "Create table \"Destination\"",
+    "summary": "Creates table \"Destination\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Destination"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Destination\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Destination\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Destination\"",
+        "sql": "CREATE TABLE \"public\".\"Destination\" (\n  \"arrivalTime\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departureTime\" text,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"itineraryId\" int4 NOT NULL,\n  \"name\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Destination\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Destination\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Hotel",
+    "label": "Create table \"Hotel\"",
+    "summary": "Creates table \"Hotel\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Hotel"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Hotel\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Hotel\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Hotel\"",
+        "sql": "CREATE TABLE \"public\".\"Hotel\" (\n  \"address\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"location\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"phone\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Hotel\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Hotel\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.HotelStay",
+    "label": "Create table \"HotelStay\"",
+    "summary": "Creates table \"HotelStay\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "HotelStay"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"HotelStay\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"HotelStay\"",
+        "sql": "CREATE TABLE \"public\".\"HotelStay\" (\n  \"checkInDate\" timestamptz NOT NULL,\n  \"checkOutDate\" timestamptz NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departureId\" int4 NOT NULL,\n  \"destinationId\" int4,\n  \"hotelId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"HotelStay\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Itinerary",
+    "label": "Create table \"Itinerary\"",
+    "summary": "Creates table \"Itinerary\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Itinerary"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Itinerary\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Itinerary\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Itinerary\"",
+        "sql": "CREATE TABLE \"public\".\"Itinerary\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dayNumber\" int4 NOT NULL,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"title\" text NOT NULL,\n  \"tourId\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Itinerary\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Itinerary\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Passenger",
+    "label": "Create table \"Passenger\"",
+    "summary": "Creates table \"Passenger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Passenger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Passenger\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Passenger\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Passenger\"",
+        "sql": "CREATE TABLE \"public\".\"Passenger\" (\n  \"bookingId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dateOfBirth\" timestamptz,\n  \"email\" text,\n  \"gender\" text,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text,\n  \"passengerType\" text NOT NULL,\n  \"phone\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Passenger_passengerType_check_89795c13\" CHECK (\"passengerType\" IN ('ADULT', 'CHILD', 'INFANT'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Passenger\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Passenger\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Payment",
+    "label": "Create table \"Payment\"",
+    "summary": "Creates table \"Payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Payment\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Payment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Payment\"",
+        "sql": "CREATE TABLE \"public\".\"Payment\" (\n  \"amount\" numeric NOT NULL,\n  \"bookingId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"method\" text NOT NULL,\n  \"notes\" text,\n  \"paymentDate\" timestamptz,\n  \"referenceNumber\" text,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"transactionId\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Payment_method_check_7130ca56\" CHECK (\"method\" IN ('BKASH', 'NAGAD', 'ROCKET', 'DBBL', 'CASH', 'BANK_TRANSFER', 'OTHER')),\n  CONSTRAINT \"Payment_status_check_8dbd8609\" CHECK (\"status\" IN ('PENDING', 'APPROVED', 'REJECTED', 'REFUNDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Payment\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Payment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.PricingRule",
+    "label": "Create table \"PricingRule\"",
+    "summary": "Creates table \"PricingRule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PricingRule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PricingRule\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PricingRule\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PricingRule\"",
+        "sql": "CREATE TABLE \"public\".\"PricingRule\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departureId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"passengerType\" text NOT NULL,\n  \"price\" numeric NOT NULL,\n  \"roomType\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"PricingRule_passengerType_check_89795c13\" CHECK (\"passengerType\" IN ('ADULT', 'CHILD', 'INFANT')),\n  CONSTRAINT \"PricingRule_roomType_check_bbfda123\" CHECK (\"roomType\" IN ('SHARED', 'COUPLE', 'PRIVATE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PricingRule\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PricingRule\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Room",
+    "label": "Create table \"Room\"",
+    "summary": "Creates table \"Room\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Room"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Room\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Room\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Room\"",
+        "sql": "CREATE TABLE \"public\".\"Room\" (\n  \"capacity\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"hotelId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"roomNumber\" text NOT NULL,\n  \"roomType\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Room_roomType_check_bbfda123\" CHECK (\"roomType\" IN ('SHARED', 'COUPLE', 'PRIVATE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Room\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Room\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.RoomAssignment",
+    "label": "Create table \"RoomAssignment\"",
+    "summary": "Creates table \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"RoomAssignment\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"RoomAssignment\"",
+        "sql": "CREATE TABLE \"public\".\"RoomAssignment\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"hotelStayId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"passengerId\" int4 NOT NULL,\n  \"roomId\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"RoomAssignment\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Seat",
+    "label": "Create table \"Seat\"",
+    "summary": "Creates table \"Seat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Seat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Seat\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Seat\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Seat\"",
+        "sql": "CREATE TABLE \"public\".\"Seat\" (\n  \"columnNumber\" int4,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isAvailable\" bool DEFAULT true NOT NULL,\n  \"rowNumber\" int4,\n  \"seatLayoutId\" int4 NOT NULL,\n  \"seatNumber\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Seat\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Seat\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.SeatAssignment",
+    "label": "Create table \"SeatAssignment\"",
+    "summary": "Creates table \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"SeatAssignment\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"SeatAssignment\"",
+        "sql": "CREATE TABLE \"public\".\"SeatAssignment\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"passengerId\" int4 NOT NULL,\n  \"seatId\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"vehicleId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"SeatAssignment\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.SeatLayout",
+    "label": "Create table \"SeatLayout\"",
+    "summary": "Creates table \"SeatLayout\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "SeatLayout"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"SeatLayout\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatLayout\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"SeatLayout\"",
+        "sql": "CREATE TABLE \"public\".\"SeatLayout\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"SeatLayout\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatLayout\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Tour",
+    "label": "Create table \"Tour\"",
+    "summary": "Creates table \"Tour\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Tour"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Tour\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Tour\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Tour\"",
+        "sql": "CREATE TABLE \"public\".\"Tour\" (\n  \"coverImage\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"slug\" text NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Tour\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Tour\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.User",
+    "label": "Create table \"User\"",
+    "summary": "Creates table \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"User\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"User\"",
+        "sql": "CREATE TABLE \"public\".\"User\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"password\" text NOT NULL,\n  \"phone\" text NOT NULL,\n  \"role\" text DEFAULT 'CUSTOMER' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"User_role_check_8ecb417c\" CHECK (\"role\" IN ('ADMIN', 'MODERATOR', 'CUSTOMER'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"User\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Vehicle",
+    "label": "Create table \"Vehicle\"",
+    "summary": "Creates table \"Vehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Vehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Vehicle\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Vehicle\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Vehicle\"",
+        "sql": "CREATE TABLE \"public\".\"Vehicle\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"name\" text NOT NULL,\n  \"registrationNumber\" text,\n  \"seatLayoutId\" int4,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Vehicle_type_check_4699ff10\" CHECK (\"type\" IN ('BUS', 'COACH', 'MICROBUS', 'MINIBUS', 'OTHER'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Vehicle\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Vehicle\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.BlogCategory.BlogCategory_slug_key",
+    "label": "Add unique constraint on \"BlogCategory\" (slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "BlogCategory_slug_key",
+        "table": "BlogCategory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"BlogCategory_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogCategory_slug_key",
+          "public",
+          "\"public\".\"BlogCategory\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"BlogCategory_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"BlogCategory\" ADD CONSTRAINT \"BlogCategory_slug_key\" UNIQUE (\"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"BlogCategory_slug_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogCategory_slug_key",
+          "public",
+          "\"public\".\"BlogCategory\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.BlogPost.BlogPost_slug_key",
+    "label": "Add unique constraint on \"BlogPost\" (slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "BlogPost_slug_key",
+        "table": "BlogPost"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"BlogPost_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPost_slug_key",
+          "public",
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"BlogPost_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"BlogPost\" ADD CONSTRAINT \"BlogPost_slug_key\" UNIQUE (\"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"BlogPost_slug_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPost_slug_key",
+          "public",
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.BlogTag.BlogTag_slug_key",
+    "label": "Add unique constraint on \"BlogTag\" (slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "BlogTag_slug_key",
+        "table": "BlogTag"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"BlogTag_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogTag_slug_key",
+          "public",
+          "\"public\".\"BlogTag\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"BlogTag_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"BlogTag\" ADD CONSTRAINT \"BlogTag_slug_key\" UNIQUE (\"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"BlogTag_slug_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogTag_slug_key",
+          "public",
+          "\"public\".\"BlogTag\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Booking.Booking_bookingNumber_key",
+    "label": "Add unique constraint on \"Booking\" (bookingNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Booking_bookingNumber_key",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Booking_bookingNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_bookingNumber_key",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Booking_bookingNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD CONSTRAINT \"Booking_bookingNumber_key\" UNIQUE (\"bookingNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Booking_bookingNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_bookingNumber_key",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.DepartureVehicle.DepartureVehicle_departureId_vehicleId_key",
+    "label": "Add unique constraint on \"DepartureVehicle\" (departureId, vehicleId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "DepartureVehicle_departureId_vehicleId_key",
+        "table": "DepartureVehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"DepartureVehicle_departureId_vehicleId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureVehicle_departureId_vehicleId_key",
+          "public",
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"DepartureVehicle_departureId_vehicleId_key\"",
+        "sql": "ALTER TABLE \"public\".\"DepartureVehicle\" ADD CONSTRAINT \"DepartureVehicle_departureId_vehicleId_key\" UNIQUE (\"departureId\", \"vehicleId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"DepartureVehicle_departureId_vehicleId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureVehicle_departureId_vehicleId_key",
+          "public",
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Itinerary.Itinerary_tourId_dayNumber_key",
+    "label": "Add unique constraint on \"Itinerary\" (tourId, dayNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Itinerary_tourId_dayNumber_key",
+        "table": "Itinerary"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Itinerary_tourId_dayNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Itinerary_tourId_dayNumber_key",
+          "public",
+          "\"public\".\"Itinerary\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Itinerary_tourId_dayNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"Itinerary\" ADD CONSTRAINT \"Itinerary_tourId_dayNumber_key\" UNIQUE (\"tourId\", \"dayNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Itinerary_tourId_dayNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Itinerary_tourId_dayNumber_key",
+          "public",
+          "\"public\".\"Itinerary\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Room.Room_hotelId_roomNumber_key",
+    "label": "Add unique constraint on \"Room\" (hotelId, roomNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Room_hotelId_roomNumber_key",
+        "table": "Room"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Room_hotelId_roomNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Room_hotelId_roomNumber_key",
+          "public",
+          "\"public\".\"Room\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Room_hotelId_roomNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"Room\" ADD CONSTRAINT \"Room_hotelId_roomNumber_key\" UNIQUE (\"hotelId\", \"roomNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Room_hotelId_roomNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Room_hotelId_roomNumber_key",
+          "public",
+          "\"public\".\"Room\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.RoomAssignment.RoomAssignment_passengerId_key",
+    "label": "Add unique constraint on \"RoomAssignment\" (passengerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "RoomAssignment_passengerId_key",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"RoomAssignment_passengerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"RoomAssignment_passengerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\" ADD CONSTRAINT \"RoomAssignment_passengerId_key\" UNIQUE (\"passengerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"RoomAssignment_passengerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.RoomAssignment.RoomAssignment_hotelStayId_roomId_passengerId_key",
+    "label": "Add unique constraint on \"RoomAssignment\" (hotelStayId, roomId, passengerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "RoomAssignment_hotelStayId_roomId_passengerId_key",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"RoomAssignment_hotelStayId_roomId_passengerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_hotelStayId_roomId_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"RoomAssignment_hotelStayId_roomId_passengerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\" ADD CONSTRAINT \"RoomAssignment_hotelStayId_roomId_passengerId_key\" UNIQUE (\"hotelStayId\", \"roomId\", \"passengerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"RoomAssignment_hotelStayId_roomId_passengerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_hotelStayId_roomId_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Seat.Seat_seatLayoutId_seatNumber_key",
+    "label": "Add unique constraint on \"Seat\" (seatLayoutId, seatNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Seat_seatLayoutId_seatNumber_key",
+        "table": "Seat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Seat_seatLayoutId_seatNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Seat_seatLayoutId_seatNumber_key",
+          "public",
+          "\"public\".\"Seat\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Seat_seatLayoutId_seatNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"Seat\" ADD CONSTRAINT \"Seat_seatLayoutId_seatNumber_key\" UNIQUE (\"seatLayoutId\", \"seatNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Seat_seatLayoutId_seatNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Seat_seatLayoutId_seatNumber_key",
+          "public",
+          "\"public\".\"Seat\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.SeatAssignment.SeatAssignment_passengerId_key",
+    "label": "Add unique constraint on \"SeatAssignment\" (passengerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "SeatAssignment_passengerId_key",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"SeatAssignment_passengerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_passengerId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"SeatAssignment_passengerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\" ADD CONSTRAINT \"SeatAssignment_passengerId_key\" UNIQUE (\"passengerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"SeatAssignment_passengerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_passengerId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.SeatAssignment.SeatAssignment_vehicleId_seatId_key",
+    "label": "Add unique constraint on \"SeatAssignment\" (vehicleId, seatId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "SeatAssignment_vehicleId_seatId_key",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"SeatAssignment_vehicleId_seatId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_vehicleId_seatId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"SeatAssignment_vehicleId_seatId_key\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\" ADD CONSTRAINT \"SeatAssignment_vehicleId_seatId_key\" UNIQUE (\"vehicleId\", \"seatId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"SeatAssignment_vehicleId_seatId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_vehicleId_seatId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Tour.Tour_slug_key",
+    "label": "Add unique constraint on \"Tour\" (slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Tour_slug_key",
+        "table": "Tour"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Tour_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Tour_slug_key",
+          "public",
+          "\"public\".\"Tour\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Tour_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"Tour\" ADD CONSTRAINT \"Tour_slug_key\" UNIQUE (\"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Tour_slug_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Tour_slug_key",
+          "public",
+          "\"public\".\"Tour\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.User.User_email_key",
+    "label": "Add unique constraint on \"User\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "User_email_key",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"User_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_email_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"User_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"User_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"User_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_email_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.User.User_phone_key",
+    "label": "Add unique constraint on \"User\" (phone)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "User_phone_key",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"User_phone_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_phone_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"User_phone_key\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"User_phone_key\" UNIQUE (\"phone\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"User_phone_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_phone_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Vehicle.Vehicle_registrationNumber_key",
+    "label": "Add unique constraint on \"Vehicle\" (registrationNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Vehicle_registrationNumber_key",
+        "table": "Vehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Vehicle_registrationNumber_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Vehicle_registrationNumber_key",
+          "public",
+          "\"public\".\"Vehicle\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Vehicle_registrationNumber_key\"",
+        "sql": "ALTER TABLE \"public\".\"Vehicle\" ADD CONSTRAINT \"Vehicle_registrationNumber_key\" UNIQUE (\"registrationNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Vehicle_registrationNumber_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Vehicle_registrationNumber_key",
+          "public",
+          "\"public\".\"Vehicle\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BlogPost.BlogPost_authorId_idx_e47547ed",
+    "label": "Create index \"BlogPost_authorId_idx_e47547ed\" on \"BlogPost\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BlogPost_authorId_idx_e47547ed",
+        "table": "BlogPost"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BlogPost_authorId_idx_e47547ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost_authorId_idx_e47547ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BlogPost_authorId_idx_e47547ed\"",
+        "sql": "CREATE INDEX \"BlogPost_authorId_idx_e47547ed\" ON \"public\".\"BlogPost\" (\"authorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BlogPost_authorId_idx_e47547ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost_authorId_idx_e47547ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BlogPost.BlogPost_categoryId_idx_15c304f2",
+    "label": "Create index \"BlogPost_categoryId_idx_15c304f2\" on \"BlogPost\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BlogPost_categoryId_idx_15c304f2",
+        "table": "BlogPost"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BlogPost_categoryId_idx_15c304f2\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost_categoryId_idx_15c304f2\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BlogPost_categoryId_idx_15c304f2\"",
+        "sql": "CREATE INDEX \"BlogPost_categoryId_idx_15c304f2\" ON \"public\".\"BlogPost\" (\"categoryId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BlogPost_categoryId_idx_15c304f2\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost_categoryId_idx_15c304f2\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BlogPost.BlogPost_status_idx_e98638ab",
+    "label": "Create index \"BlogPost_status_idx_e98638ab\" on \"BlogPost\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BlogPost_status_idx_e98638ab",
+        "table": "BlogPost"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BlogPost_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BlogPost_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"BlogPost_status_idx_e98638ab\" ON \"public\".\"BlogPost\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BlogPost_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPost_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BlogPostTag.BlogPostTag_postId_idx_a7a72715",
+    "label": "Create index \"BlogPostTag_postId_idx_a7a72715\" on \"BlogPostTag\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BlogPostTag_postId_idx_a7a72715",
+        "table": "BlogPostTag"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BlogPostTag_postId_idx_a7a72715\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPostTag_postId_idx_a7a72715\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BlogPostTag_postId_idx_a7a72715\"",
+        "sql": "CREATE INDEX \"BlogPostTag_postId_idx_a7a72715\" ON \"public\".\"BlogPostTag\" (\"postId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BlogPostTag_postId_idx_a7a72715\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPostTag_postId_idx_a7a72715\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BlogPostTag.BlogPostTag_tagId_idx_86854244",
+    "label": "Create index \"BlogPostTag_tagId_idx_86854244\" on \"BlogPostTag\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BlogPostTag_tagId_idx_86854244",
+        "table": "BlogPostTag"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BlogPostTag_tagId_idx_86854244\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPostTag_tagId_idx_86854244\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BlogPostTag_tagId_idx_86854244\"",
+        "sql": "CREATE INDEX \"BlogPostTag_tagId_idx_86854244\" ON \"public\".\"BlogPostTag\" (\"tagId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BlogPostTag_tagId_idx_86854244\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BlogPostTag_tagId_idx_86854244\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Booking.Booking_customerId_idx_b2a8a46c",
+    "label": "Create index \"Booking_customerId_idx_b2a8a46c\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Booking_customerId_idx_b2a8a46c",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Booking_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Booking_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"Booking_customerId_idx_b2a8a46c\" ON \"public\".\"Booking\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Booking_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Booking.Booking_departureId_idx_24d39b35",
+    "label": "Create index \"Booking_departureId_idx_24d39b35\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Booking_departureId_idx_24d39b35",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Booking_departureId_idx_24d39b35\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_departureId_idx_24d39b35\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Booking_departureId_idx_24d39b35\"",
+        "sql": "CREATE INDEX \"Booking_departureId_idx_24d39b35\" ON \"public\".\"Booking\" (\"departureId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Booking_departureId_idx_24d39b35\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_departureId_idx_24d39b35\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Booking.Booking_guideId_idx_d17d3b18",
+    "label": "Create index \"Booking_guideId_idx_d17d3b18\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Booking_guideId_idx_d17d3b18",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Booking_guideId_idx_d17d3b18\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_guideId_idx_d17d3b18\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Booking_guideId_idx_d17d3b18\"",
+        "sql": "CREATE INDEX \"Booking_guideId_idx_d17d3b18\" ON \"public\".\"Booking\" (\"guideId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Booking_guideId_idx_d17d3b18\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_guideId_idx_d17d3b18\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Departure.Departure_tourId_idx_5405fc10",
+    "label": "Create index \"Departure_tourId_idx_5405fc10\" on \"Departure\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Departure_tourId_idx_5405fc10",
+        "table": "Departure"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Departure_tourId_idx_5405fc10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Departure_tourId_idx_5405fc10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Departure_tourId_idx_5405fc10\"",
+        "sql": "CREATE INDEX \"Departure_tourId_idx_5405fc10\" ON \"public\".\"Departure\" (\"tourId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Departure_tourId_idx_5405fc10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Departure_tourId_idx_5405fc10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.DepartureVehicle.DepartureVehicle_departureId_idx_24d39b35",
+    "label": "Create index \"DepartureVehicle_departureId_idx_24d39b35\" on \"DepartureVehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "DepartureVehicle_departureId_idx_24d39b35",
+        "table": "DepartureVehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"DepartureVehicle_departureId_idx_24d39b35\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureVehicle_departureId_idx_24d39b35\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"DepartureVehicle_departureId_idx_24d39b35\"",
+        "sql": "CREATE INDEX \"DepartureVehicle_departureId_idx_24d39b35\" ON \"public\".\"DepartureVehicle\" (\"departureId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"DepartureVehicle_departureId_idx_24d39b35\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureVehicle_departureId_idx_24d39b35\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.DepartureVehicle.DepartureVehicle_vehicleId_idx_e2df58fc",
+    "label": "Create index \"DepartureVehicle_vehicleId_idx_e2df58fc\" on \"DepartureVehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "DepartureVehicle_vehicleId_idx_e2df58fc",
+        "table": "DepartureVehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"DepartureVehicle_vehicleId_idx_e2df58fc\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureVehicle_vehicleId_idx_e2df58fc\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"DepartureVehicle_vehicleId_idx_e2df58fc\"",
+        "sql": "CREATE INDEX \"DepartureVehicle_vehicleId_idx_e2df58fc\" ON \"public\".\"DepartureVehicle\" (\"vehicleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"DepartureVehicle_vehicleId_idx_e2df58fc\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureVehicle_vehicleId_idx_e2df58fc\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Destination.Destination_itineraryId_idx_eaa1b547",
+    "label": "Create index \"Destination_itineraryId_idx_eaa1b547\" on \"Destination\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Destination_itineraryId_idx_eaa1b547",
+        "table": "Destination"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Destination_itineraryId_idx_eaa1b547\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Destination_itineraryId_idx_eaa1b547\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Destination_itineraryId_idx_eaa1b547\"",
+        "sql": "CREATE INDEX \"Destination_itineraryId_idx_eaa1b547\" ON \"public\".\"Destination\" (\"itineraryId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Destination_itineraryId_idx_eaa1b547\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Destination_itineraryId_idx_eaa1b547\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.HotelStay.HotelStay_departureId_idx_24d39b35",
+    "label": "Create index \"HotelStay_departureId_idx_24d39b35\" on \"HotelStay\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "HotelStay_departureId_idx_24d39b35",
+        "table": "HotelStay"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"HotelStay_departureId_idx_24d39b35\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay_departureId_idx_24d39b35\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"HotelStay_departureId_idx_24d39b35\"",
+        "sql": "CREATE INDEX \"HotelStay_departureId_idx_24d39b35\" ON \"public\".\"HotelStay\" (\"departureId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"HotelStay_departureId_idx_24d39b35\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay_departureId_idx_24d39b35\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.HotelStay.HotelStay_destinationId_idx_1646ee5c",
+    "label": "Create index \"HotelStay_destinationId_idx_1646ee5c\" on \"HotelStay\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "HotelStay_destinationId_idx_1646ee5c",
+        "table": "HotelStay"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"HotelStay_destinationId_idx_1646ee5c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay_destinationId_idx_1646ee5c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"HotelStay_destinationId_idx_1646ee5c\"",
+        "sql": "CREATE INDEX \"HotelStay_destinationId_idx_1646ee5c\" ON \"public\".\"HotelStay\" (\"destinationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"HotelStay_destinationId_idx_1646ee5c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay_destinationId_idx_1646ee5c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.HotelStay.HotelStay_hotelId_idx_462a16a4",
+    "label": "Create index \"HotelStay_hotelId_idx_462a16a4\" on \"HotelStay\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "HotelStay_hotelId_idx_462a16a4",
+        "table": "HotelStay"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"HotelStay_hotelId_idx_462a16a4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay_hotelId_idx_462a16a4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"HotelStay_hotelId_idx_462a16a4\"",
+        "sql": "CREATE INDEX \"HotelStay_hotelId_idx_462a16a4\" ON \"public\".\"HotelStay\" (\"hotelId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"HotelStay_hotelId_idx_462a16a4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"HotelStay_hotelId_idx_462a16a4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Itinerary.Itinerary_tourId_idx_5405fc10",
+    "label": "Create index \"Itinerary_tourId_idx_5405fc10\" on \"Itinerary\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Itinerary_tourId_idx_5405fc10",
+        "table": "Itinerary"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Itinerary_tourId_idx_5405fc10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Itinerary_tourId_idx_5405fc10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Itinerary_tourId_idx_5405fc10\"",
+        "sql": "CREATE INDEX \"Itinerary_tourId_idx_5405fc10\" ON \"public\".\"Itinerary\" (\"tourId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Itinerary_tourId_idx_5405fc10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Itinerary_tourId_idx_5405fc10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Passenger.Passenger_bookingId_idx_17848f4a",
+    "label": "Create index \"Passenger_bookingId_idx_17848f4a\" on \"Passenger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Passenger_bookingId_idx_17848f4a",
+        "table": "Passenger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Passenger_bookingId_idx_17848f4a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Passenger_bookingId_idx_17848f4a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Passenger_bookingId_idx_17848f4a\"",
+        "sql": "CREATE INDEX \"Passenger_bookingId_idx_17848f4a\" ON \"public\".\"Passenger\" (\"bookingId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Passenger_bookingId_idx_17848f4a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Passenger_bookingId_idx_17848f4a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Payment.Payment_bookingId_idx_17848f4a",
+    "label": "Create index \"Payment_bookingId_idx_17848f4a\" on \"Payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Payment_bookingId_idx_17848f4a",
+        "table": "Payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Payment_bookingId_idx_17848f4a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Payment_bookingId_idx_17848f4a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Payment_bookingId_idx_17848f4a\"",
+        "sql": "CREATE INDEX \"Payment_bookingId_idx_17848f4a\" ON \"public\".\"Payment\" (\"bookingId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Payment_bookingId_idx_17848f4a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Payment_bookingId_idx_17848f4a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PricingRule.PricingRule_departureId_idx_24d39b35",
+    "label": "Create index \"PricingRule_departureId_idx_24d39b35\" on \"PricingRule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PricingRule_departureId_idx_24d39b35",
+        "table": "PricingRule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PricingRule_departureId_idx_24d39b35\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PricingRule_departureId_idx_24d39b35\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PricingRule_departureId_idx_24d39b35\"",
+        "sql": "CREATE INDEX \"PricingRule_departureId_idx_24d39b35\" ON \"public\".\"PricingRule\" (\"departureId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PricingRule_departureId_idx_24d39b35\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PricingRule_departureId_idx_24d39b35\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Room.Room_hotelId_idx_462a16a4",
+    "label": "Create index \"Room_hotelId_idx_462a16a4\" on \"Room\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Room_hotelId_idx_462a16a4",
+        "table": "Room"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Room_hotelId_idx_462a16a4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Room_hotelId_idx_462a16a4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Room_hotelId_idx_462a16a4\"",
+        "sql": "CREATE INDEX \"Room_hotelId_idx_462a16a4\" ON \"public\".\"Room\" (\"hotelId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Room_hotelId_idx_462a16a4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Room_hotelId_idx_462a16a4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.RoomAssignment.RoomAssignment_hotelStayId_idx_05988de1",
+    "label": "Create index \"RoomAssignment_hotelStayId_idx_05988de1\" on \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "RoomAssignment_hotelStayId_idx_05988de1",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"RoomAssignment_hotelStayId_idx_05988de1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_hotelStayId_idx_05988de1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"RoomAssignment_hotelStayId_idx_05988de1\"",
+        "sql": "CREATE INDEX \"RoomAssignment_hotelStayId_idx_05988de1\" ON \"public\".\"RoomAssignment\" (\"hotelStayId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"RoomAssignment_hotelStayId_idx_05988de1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_hotelStayId_idx_05988de1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.RoomAssignment.RoomAssignment_roomId_idx_fe51d647",
+    "label": "Create index \"RoomAssignment_roomId_idx_fe51d647\" on \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "RoomAssignment_roomId_idx_fe51d647",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"RoomAssignment_roomId_idx_fe51d647\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_roomId_idx_fe51d647\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"RoomAssignment_roomId_idx_fe51d647\"",
+        "sql": "CREATE INDEX \"RoomAssignment_roomId_idx_fe51d647\" ON \"public\".\"RoomAssignment\" (\"roomId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"RoomAssignment_roomId_idx_fe51d647\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_roomId_idx_fe51d647\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Seat.Seat_seatLayoutId_idx_cc499d6c",
+    "label": "Create index \"Seat_seatLayoutId_idx_cc499d6c\" on \"Seat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Seat_seatLayoutId_idx_cc499d6c",
+        "table": "Seat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Seat_seatLayoutId_idx_cc499d6c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Seat_seatLayoutId_idx_cc499d6c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Seat_seatLayoutId_idx_cc499d6c\"",
+        "sql": "CREATE INDEX \"Seat_seatLayoutId_idx_cc499d6c\" ON \"public\".\"Seat\" (\"seatLayoutId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Seat_seatLayoutId_idx_cc499d6c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Seat_seatLayoutId_idx_cc499d6c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.SeatAssignment.SeatAssignment_seatId_idx_3076c3cd",
+    "label": "Create index \"SeatAssignment_seatId_idx_3076c3cd\" on \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "SeatAssignment_seatId_idx_3076c3cd",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"SeatAssignment_seatId_idx_3076c3cd\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment_seatId_idx_3076c3cd\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"SeatAssignment_seatId_idx_3076c3cd\"",
+        "sql": "CREATE INDEX \"SeatAssignment_seatId_idx_3076c3cd\" ON \"public\".\"SeatAssignment\" (\"seatId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"SeatAssignment_seatId_idx_3076c3cd\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment_seatId_idx_3076c3cd\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.SeatAssignment.SeatAssignment_vehicleId_idx_e2df58fc",
+    "label": "Create index \"SeatAssignment_vehicleId_idx_e2df58fc\" on \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "SeatAssignment_vehicleId_idx_e2df58fc",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"SeatAssignment_vehicleId_idx_e2df58fc\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment_vehicleId_idx_e2df58fc\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"SeatAssignment_vehicleId_idx_e2df58fc\"",
+        "sql": "CREATE INDEX \"SeatAssignment_vehicleId_idx_e2df58fc\" ON \"public\".\"SeatAssignment\" (\"vehicleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"SeatAssignment_vehicleId_idx_e2df58fc\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment_vehicleId_idx_e2df58fc\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Vehicle.Vehicle_seatLayoutId_idx_cc499d6c",
+    "label": "Create index \"Vehicle_seatLayoutId_idx_cc499d6c\" on \"Vehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Vehicle_seatLayoutId_idx_cc499d6c",
+        "table": "Vehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Vehicle_seatLayoutId_idx_cc499d6c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Vehicle_seatLayoutId_idx_cc499d6c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Vehicle_seatLayoutId_idx_cc499d6c\"",
+        "sql": "CREATE INDEX \"Vehicle_seatLayoutId_idx_cc499d6c\" ON \"public\".\"Vehicle\" (\"seatLayoutId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Vehicle_seatLayoutId_idx_cc499d6c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Vehicle_seatLayoutId_idx_cc499d6c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.BlogPost.BlogPost_authorId_fkey",
+    "label": "Add foreign key \"BlogPost_authorId_fkey\" on \"BlogPost\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "BlogPost_authorId_fkey",
+        "table": "BlogPost"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"BlogPost_authorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPost_authorId_fkey",
+          "public",
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"BlogPost_authorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"BlogPost\"\nADD CONSTRAINT \"BlogPost_authorId_fkey\"\nFOREIGN KEY (\"authorId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"BlogPost_authorId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPost_authorId_fkey",
+          "public",
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.BlogPost.BlogPost_categoryId_fkey",
+    "label": "Add foreign key \"BlogPost_categoryId_fkey\" on \"BlogPost\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "BlogPost_categoryId_fkey",
+        "table": "BlogPost"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"BlogPost_categoryId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPost_categoryId_fkey",
+          "public",
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"BlogPost_categoryId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"BlogPost\"\nADD CONSTRAINT \"BlogPost_categoryId_fkey\"\nFOREIGN KEY (\"categoryId\")\nREFERENCES \"public\".\"BlogCategory\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"BlogPost_categoryId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPost_categoryId_fkey",
+          "public",
+          "\"public\".\"BlogPost\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.BlogPostTag.BlogPostTag_postId_fkey",
+    "label": "Add foreign key \"BlogPostTag_postId_fkey\" on \"BlogPostTag\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "BlogPostTag_postId_fkey",
+        "table": "BlogPostTag"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"BlogPostTag_postId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPostTag_postId_fkey",
+          "public",
+          "\"public\".\"BlogPostTag\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"BlogPostTag_postId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"BlogPostTag\"\nADD CONSTRAINT \"BlogPostTag_postId_fkey\"\nFOREIGN KEY (\"postId\")\nREFERENCES \"public\".\"BlogPost\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"BlogPostTag_postId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPostTag_postId_fkey",
+          "public",
+          "\"public\".\"BlogPostTag\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.BlogPostTag.BlogPostTag_tagId_fkey",
+    "label": "Add foreign key \"BlogPostTag_tagId_fkey\" on \"BlogPostTag\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "BlogPostTag_tagId_fkey",
+        "table": "BlogPostTag"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"BlogPostTag_tagId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPostTag_tagId_fkey",
+          "public",
+          "\"public\".\"BlogPostTag\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"BlogPostTag_tagId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"BlogPostTag\"\nADD CONSTRAINT \"BlogPostTag_tagId_fkey\"\nFOREIGN KEY (\"tagId\")\nREFERENCES \"public\".\"BlogTag\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"BlogPostTag_tagId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BlogPostTag_tagId_fkey",
+          "public",
+          "\"public\".\"BlogPostTag\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Booking.Booking_departureId_fkey",
+    "label": "Add foreign key \"Booking_departureId_fkey\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Booking_departureId_fkey",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Booking_departureId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_departureId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Booking_departureId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\"\nADD CONSTRAINT \"Booking_departureId_fkey\"\nFOREIGN KEY (\"departureId\")\nREFERENCES \"public\".\"Departure\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Booking_departureId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_departureId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Booking.Booking_customerId_fkey",
+    "label": "Add foreign key \"Booking_customerId_fkey\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Booking_customerId_fkey",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Booking_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_customerId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Booking_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\"\nADD CONSTRAINT \"Booking_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Booking_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_customerId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Booking.Booking_guideId_fkey",
+    "label": "Add foreign key \"Booking_guideId_fkey\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Booking_guideId_fkey",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Booking_guideId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_guideId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Booking_guideId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\"\nADD CONSTRAINT \"Booking_guideId_fkey\"\nFOREIGN KEY (\"guideId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Booking_guideId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_guideId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Departure.Departure_tourId_fkey",
+    "label": "Add foreign key \"Departure_tourId_fkey\" on \"Departure\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Departure_tourId_fkey",
+        "table": "Departure"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Departure_tourId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Departure_tourId_fkey",
+          "public",
+          "\"public\".\"Departure\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Departure_tourId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Departure\"\nADD CONSTRAINT \"Departure_tourId_fkey\"\nFOREIGN KEY (\"tourId\")\nREFERENCES \"public\".\"Tour\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Departure_tourId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Departure_tourId_fkey",
+          "public",
+          "\"public\".\"Departure\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.DepartureVehicle.DepartureVehicle_departureId_fkey",
+    "label": "Add foreign key \"DepartureVehicle_departureId_fkey\" on \"DepartureVehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "DepartureVehicle_departureId_fkey",
+        "table": "DepartureVehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"DepartureVehicle_departureId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureVehicle_departureId_fkey",
+          "public",
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"DepartureVehicle_departureId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"DepartureVehicle\"\nADD CONSTRAINT \"DepartureVehicle_departureId_fkey\"\nFOREIGN KEY (\"departureId\")\nREFERENCES \"public\".\"Departure\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"DepartureVehicle_departureId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureVehicle_departureId_fkey",
+          "public",
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.DepartureVehicle.DepartureVehicle_vehicleId_fkey",
+    "label": "Add foreign key \"DepartureVehicle_vehicleId_fkey\" on \"DepartureVehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "DepartureVehicle_vehicleId_fkey",
+        "table": "DepartureVehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"DepartureVehicle_vehicleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureVehicle_vehicleId_fkey",
+          "public",
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"DepartureVehicle_vehicleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"DepartureVehicle\"\nADD CONSTRAINT \"DepartureVehicle_vehicleId_fkey\"\nFOREIGN KEY (\"vehicleId\")\nREFERENCES \"public\".\"Vehicle\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"DepartureVehicle_vehicleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureVehicle_vehicleId_fkey",
+          "public",
+          "\"public\".\"DepartureVehicle\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Destination.Destination_itineraryId_fkey",
+    "label": "Add foreign key \"Destination_itineraryId_fkey\" on \"Destination\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Destination_itineraryId_fkey",
+        "table": "Destination"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Destination_itineraryId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Destination_itineraryId_fkey",
+          "public",
+          "\"public\".\"Destination\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Destination_itineraryId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Destination\"\nADD CONSTRAINT \"Destination_itineraryId_fkey\"\nFOREIGN KEY (\"itineraryId\")\nREFERENCES \"public\".\"Itinerary\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Destination_itineraryId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Destination_itineraryId_fkey",
+          "public",
+          "\"public\".\"Destination\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.HotelStay.HotelStay_departureId_fkey",
+    "label": "Add foreign key \"HotelStay_departureId_fkey\" on \"HotelStay\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "HotelStay_departureId_fkey",
+        "table": "HotelStay"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"HotelStay_departureId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "HotelStay_departureId_fkey",
+          "public",
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"HotelStay_departureId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"HotelStay\"\nADD CONSTRAINT \"HotelStay_departureId_fkey\"\nFOREIGN KEY (\"departureId\")\nREFERENCES \"public\".\"Departure\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"HotelStay_departureId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "HotelStay_departureId_fkey",
+          "public",
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.HotelStay.HotelStay_hotelId_fkey",
+    "label": "Add foreign key \"HotelStay_hotelId_fkey\" on \"HotelStay\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "HotelStay_hotelId_fkey",
+        "table": "HotelStay"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"HotelStay_hotelId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "HotelStay_hotelId_fkey",
+          "public",
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"HotelStay_hotelId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"HotelStay\"\nADD CONSTRAINT \"HotelStay_hotelId_fkey\"\nFOREIGN KEY (\"hotelId\")\nREFERENCES \"public\".\"Hotel\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"HotelStay_hotelId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "HotelStay_hotelId_fkey",
+          "public",
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.HotelStay.HotelStay_destinationId_fkey",
+    "label": "Add foreign key \"HotelStay_destinationId_fkey\" on \"HotelStay\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "HotelStay_destinationId_fkey",
+        "table": "HotelStay"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"HotelStay_destinationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "HotelStay_destinationId_fkey",
+          "public",
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"HotelStay_destinationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"HotelStay\"\nADD CONSTRAINT \"HotelStay_destinationId_fkey\"\nFOREIGN KEY (\"destinationId\")\nREFERENCES \"public\".\"Destination\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"HotelStay_destinationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "HotelStay_destinationId_fkey",
+          "public",
+          "\"public\".\"HotelStay\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Itinerary.Itinerary_tourId_fkey",
+    "label": "Add foreign key \"Itinerary_tourId_fkey\" on \"Itinerary\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Itinerary_tourId_fkey",
+        "table": "Itinerary"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Itinerary_tourId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Itinerary_tourId_fkey",
+          "public",
+          "\"public\".\"Itinerary\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Itinerary_tourId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Itinerary\"\nADD CONSTRAINT \"Itinerary_tourId_fkey\"\nFOREIGN KEY (\"tourId\")\nREFERENCES \"public\".\"Tour\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Itinerary_tourId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Itinerary_tourId_fkey",
+          "public",
+          "\"public\".\"Itinerary\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Passenger.Passenger_bookingId_fkey",
+    "label": "Add foreign key \"Passenger_bookingId_fkey\" on \"Passenger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Passenger_bookingId_fkey",
+        "table": "Passenger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Passenger_bookingId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Passenger_bookingId_fkey",
+          "public",
+          "\"public\".\"Passenger\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Passenger_bookingId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Passenger\"\nADD CONSTRAINT \"Passenger_bookingId_fkey\"\nFOREIGN KEY (\"bookingId\")\nREFERENCES \"public\".\"Booking\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Passenger_bookingId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Passenger_bookingId_fkey",
+          "public",
+          "\"public\".\"Passenger\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Payment.Payment_bookingId_fkey",
+    "label": "Add foreign key \"Payment_bookingId_fkey\" on \"Payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Payment_bookingId_fkey",
+        "table": "Payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Payment_bookingId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Payment_bookingId_fkey",
+          "public",
+          "\"public\".\"Payment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Payment_bookingId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Payment\"\nADD CONSTRAINT \"Payment_bookingId_fkey\"\nFOREIGN KEY (\"bookingId\")\nREFERENCES \"public\".\"Booking\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Payment_bookingId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Payment_bookingId_fkey",
+          "public",
+          "\"public\".\"Payment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.PricingRule.PricingRule_departureId_fkey",
+    "label": "Add foreign key \"PricingRule_departureId_fkey\" on \"PricingRule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "PricingRule_departureId_fkey",
+        "table": "PricingRule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"PricingRule_departureId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PricingRule_departureId_fkey",
+          "public",
+          "\"public\".\"PricingRule\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"PricingRule_departureId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"PricingRule\"\nADD CONSTRAINT \"PricingRule_departureId_fkey\"\nFOREIGN KEY (\"departureId\")\nREFERENCES \"public\".\"Departure\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"PricingRule_departureId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PricingRule_departureId_fkey",
+          "public",
+          "\"public\".\"PricingRule\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Room.Room_hotelId_fkey",
+    "label": "Add foreign key \"Room_hotelId_fkey\" on \"Room\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Room_hotelId_fkey",
+        "table": "Room"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Room_hotelId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Room_hotelId_fkey",
+          "public",
+          "\"public\".\"Room\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Room_hotelId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Room\"\nADD CONSTRAINT \"Room_hotelId_fkey\"\nFOREIGN KEY (\"hotelId\")\nREFERENCES \"public\".\"Hotel\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Room_hotelId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Room_hotelId_fkey",
+          "public",
+          "\"public\".\"Room\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.RoomAssignment.RoomAssignment_passengerId_fkey",
+    "label": "Add foreign key \"RoomAssignment_passengerId_fkey\" on \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "RoomAssignment_passengerId_fkey",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"RoomAssignment_passengerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_fkey",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"RoomAssignment_passengerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\"\nADD CONSTRAINT \"RoomAssignment_passengerId_fkey\"\nFOREIGN KEY (\"passengerId\")\nREFERENCES \"public\".\"Passenger\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"RoomAssignment_passengerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_fkey",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.RoomAssignment.RoomAssignment_hotelStayId_fkey",
+    "label": "Add foreign key \"RoomAssignment_hotelStayId_fkey\" on \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "RoomAssignment_hotelStayId_fkey",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"RoomAssignment_hotelStayId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_hotelStayId_fkey",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"RoomAssignment_hotelStayId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\"\nADD CONSTRAINT \"RoomAssignment_hotelStayId_fkey\"\nFOREIGN KEY (\"hotelStayId\")\nREFERENCES \"public\".\"HotelStay\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"RoomAssignment_hotelStayId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_hotelStayId_fkey",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.RoomAssignment.RoomAssignment_roomId_fkey",
+    "label": "Add foreign key \"RoomAssignment_roomId_fkey\" on \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "RoomAssignment_roomId_fkey",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"RoomAssignment_roomId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_roomId_fkey",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"RoomAssignment_roomId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\"\nADD CONSTRAINT \"RoomAssignment_roomId_fkey\"\nFOREIGN KEY (\"roomId\")\nREFERENCES \"public\".\"Room\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"RoomAssignment_roomId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_roomId_fkey",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Seat.Seat_seatLayoutId_fkey",
+    "label": "Add foreign key \"Seat_seatLayoutId_fkey\" on \"Seat\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Seat_seatLayoutId_fkey",
+        "table": "Seat"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Seat_seatLayoutId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Seat_seatLayoutId_fkey",
+          "public",
+          "\"public\".\"Seat\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Seat_seatLayoutId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Seat\"\nADD CONSTRAINT \"Seat_seatLayoutId_fkey\"\nFOREIGN KEY (\"seatLayoutId\")\nREFERENCES \"public\".\"SeatLayout\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Seat_seatLayoutId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Seat_seatLayoutId_fkey",
+          "public",
+          "\"public\".\"Seat\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.SeatAssignment.SeatAssignment_passengerId_fkey",
+    "label": "Add foreign key \"SeatAssignment_passengerId_fkey\" on \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "SeatAssignment_passengerId_fkey",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"SeatAssignment_passengerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_passengerId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"SeatAssignment_passengerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\"\nADD CONSTRAINT \"SeatAssignment_passengerId_fkey\"\nFOREIGN KEY (\"passengerId\")\nREFERENCES \"public\".\"Passenger\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"SeatAssignment_passengerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_passengerId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.SeatAssignment.SeatAssignment_vehicleId_fkey",
+    "label": "Add foreign key \"SeatAssignment_vehicleId_fkey\" on \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "SeatAssignment_vehicleId_fkey",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"SeatAssignment_vehicleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_vehicleId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"SeatAssignment_vehicleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\"\nADD CONSTRAINT \"SeatAssignment_vehicleId_fkey\"\nFOREIGN KEY (\"vehicleId\")\nREFERENCES \"public\".\"Vehicle\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"SeatAssignment_vehicleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_vehicleId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.SeatAssignment.SeatAssignment_seatId_fkey",
+    "label": "Add foreign key \"SeatAssignment_seatId_fkey\" on \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "SeatAssignment_seatId_fkey",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"SeatAssignment_seatId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_seatId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"SeatAssignment_seatId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\"\nADD CONSTRAINT \"SeatAssignment_seatId_fkey\"\nFOREIGN KEY (\"seatId\")\nREFERENCES \"public\".\"Seat\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"SeatAssignment_seatId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_seatId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Vehicle.Vehicle_seatLayoutId_fkey",
+    "label": "Add foreign key \"Vehicle_seatLayoutId_fkey\" on \"Vehicle\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Vehicle_seatLayoutId_fkey",
+        "table": "Vehicle"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Vehicle_seatLayoutId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Vehicle_seatLayoutId_fkey",
+          "public",
+          "\"public\".\"Vehicle\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Vehicle_seatLayoutId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Vehicle\"\nADD CONSTRAINT \"Vehicle_seatLayoutId_fkey\"\nFOREIGN KEY (\"seatLayoutId\")\nREFERENCES \"public\".\"SeatLayout\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Vehicle_seatLayoutId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Vehicle_seatLayoutId_fkey",
+          "public",
+          "\"public\".\"Vehicle\""
+        ]
+      }
+    ]
+  }
+]

@@ -50,11 +50,6 @@ enum RoomType {
   PRIVATE
 }
 
-enum PricingCategory {
-  ADULT
-  CHILD
-  INFANT
-}
 
 model User {
   id               Int                        @id @default(autoincrement())
@@ -137,7 +132,8 @@ model Departure {
   tour            Tour                       @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
   vehicles        DepartureVehicle[]
-  pricingRules    PricingRule[]
+  pricing         DeparturePricing?
+  roomOptions     DepartureRoomOption[]
   hotelStays      HotelStay[]
   bookings        Booking[]
 
@@ -213,17 +209,54 @@ model DepartureVehicle {
   @@unique([departureId, vehicleId])
 }
 
-model PricingRule {
-  id            Int                        @id @default(autoincrement())
-  departureId   Int
-  passengerType PricingCategory
-  roomType      RoomType?
-  price         Decimal
+model DeparturePricing {
+  id               Int       @id @default(autoincrement())
+  departureId      Int       @unique
 
-  departure     Departure                  @relation(fields: [departureId], references: [id], onDelete: Cascade)
+  adultFare        Decimal
+  childFeeEnabled  Boolean   @default(false)
+  childFare        Decimal   @default(0)
 
-  createdAt     TimestamptzString          @default(now())
-  updatedAt     temporal.updatedAtString()
+  departure        Departure @relation(fields: [departureId], references: [id], onDelete: Cascade)
+
+  createdAt        TimestamptzString @default(now())
+  updatedAt        TimestamptzString @default(now())
+}
+
+model DepartureRoomOption {
+  id              Int      @id @default(autoincrement())
+  departureId     Int
+
+  roomType        RoomType
+  surcharge       Decimal  @default(0)
+
+  // Maximum number of adults allowed.
+  // For Couple Room this will normally be 2.
+  maxAdults       Int?
+
+  // Maximum number of children allowed.
+  // Null means no separate child limit.
+  maxChildren     Int?
+
+  // Maximum total occupants.
+  // Used for Shared and Private rooms.
+  // Couple rooms can leave this null because their adult limit
+  // is handled by maxAdults and accompanying children are allowed.
+  maxOccupants    Int?
+
+  description     String?
+  isAvailable     Boolean  @default(true)
+  displayOrder    Int      @default(0)
+
+  departure       Departure @relation(fields: [departureId], references: [id], onDelete: Cascade)
+
+  bookings        Booking[]
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       TimestamptzString @default(now())
+
+  @@unique([departureId, roomType])
+  @@index([departureId])
 }
 
 model Hotel {
@@ -279,33 +312,47 @@ model HotelStay {
 }
 
 model Booking {
-  id            Int                        @id @default(autoincrement())
-  bookingNumber String                     @unique
+  id            Int      @id @default(autoincrement())
+  bookingNumber String   @unique
 
   departureId   Int
   customerId    Int
   guideId       Int?
 
-  status        BookingStatus              @default(PENDING)
+  // Selected room option for this booking.
+  roomOptionId  Int?
 
-  totalAmount   Decimal                    @default(0)
-  paidAmount    Decimal                    @default(0)
-  dueAmount     Decimal                    @default(0)
+  status        BookingStatus @default(PENDING)
+
+  // Final calculated amounts.
+  totalAmount   Decimal @default(0)
+  paidAmount    Decimal @default(0)
+  dueAmount     Decimal @default(0)
+
+  // Pricing snapshot.
+  // These preserve the price used when the booking was created,
+  // even if the departure pricing is changed later.
+  adultFareAtBooking      Decimal @default(0)
+  childFareAtBooking      Decimal @default(0)
+  roomSurchargeAtBooking  Decimal @default(0)
+  childFeeEnabledAtBooking Boolean @default(false)
 
   notes         String?
 
-  departure     Departure                  @relation(fields: [departureId], references: [id])
-  customer      User                       @relation("CustomerBookings", fields: [customerId], references: [id])
-  guide         User?                      @relation("AssignedGuide", fields: [guideId], references: [id])
+  departure    Departure @relation(fields: [departureId], references: [id])
+  customer     User      @relation("CustomerBookings", fields: [customerId], references: [id])
+  guide        User?     @relation("AssignedGuide", fields: [guideId], references: [id])
+  roomOption   DepartureRoomOption? @relation(fields: [roomOptionId], references: [id])
 
-  passengers    Passenger[]
-  payments      Payment[]
+  passengers   Passenger[]
+  payments     Payment[]
 
-  createdAt     TimestamptzString          @default(now())
-  updatedAt     temporal.updatedAtString()
+  createdAt    TimestamptzString @default(now())
+  updatedAt    TimestamptzString @default(now())
 
   @@index([departureId])
   @@index([customerId])
+  @@index([roomOptionId])
 }
 
 model Passenger {

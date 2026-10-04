@@ -1,0 +1,657 @@
+[
+  {
+    "id": "dropTable.PricingRule",
+    "label": "Drop table \"PricingRule\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PricingRule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PricingRule\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PricingRule\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop table \"PricingRule\"",
+        "sql": "DROP TABLE \"public\".\"PricingRule\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PricingRule\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PricingRule\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.DeparturePricing",
+    "label": "Create table \"DeparturePricing\"",
+    "summary": "Creates table \"DeparturePricing\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "DeparturePricing"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"DeparturePricing\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DeparturePricing\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"DeparturePricing\"",
+        "sql": "CREATE TABLE \"public\".\"DeparturePricing\" (\n  \"adultFare\" numeric NOT NULL,\n  \"childFare\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"childFeeEnabled\" bool DEFAULT false NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departureId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"DeparturePricing\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DeparturePricing\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.DepartureRoomOption",
+    "label": "Create table \"DepartureRoomOption\"",
+    "summary": "Creates table \"DepartureRoomOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "DepartureRoomOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"DepartureRoomOption\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureRoomOption\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"DepartureRoomOption\"",
+        "sql": "CREATE TABLE \"public\".\"DepartureRoomOption\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departureId\" int4 NOT NULL,\n  \"description\" text,\n  \"displayOrder\" int4 DEFAULT 0 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isAvailable\" bool DEFAULT true NOT NULL,\n  \"maxAdults\" int4,\n  \"maxChildren\" int4,\n  \"maxOccupants\" int4,\n  \"roomType\" text NOT NULL,\n  \"surcharge\" numeric DEFAULT '0'::numeric NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"DepartureRoomOption_roomType_check_bbfda123\" CHECK (\"roomType\" IN ('SHARED', 'COUPLE', 'PRIVATE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"DepartureRoomOption\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureRoomOption\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.adultFareAtBooking",
+    "label": "Add column \"adultFareAtBooking\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "adultFareAtBooking",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"adultFareAtBooking\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "adultFareAtBooking"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"adultFareAtBooking\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"adultFareAtBooking\" numeric DEFAULT '0'::numeric NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"adultFareAtBooking\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "adultFareAtBooking"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.childFareAtBooking",
+    "label": "Add column \"childFareAtBooking\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "childFareAtBooking",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"childFareAtBooking\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "childFareAtBooking"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"childFareAtBooking\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"childFareAtBooking\" numeric DEFAULT '0'::numeric NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"childFareAtBooking\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "childFareAtBooking"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.childFeeEnabledAtBooking",
+    "label": "Add column \"childFeeEnabledAtBooking\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "childFeeEnabledAtBooking",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"childFeeEnabledAtBooking\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "childFeeEnabledAtBooking"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"childFeeEnabledAtBooking\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"childFeeEnabledAtBooking\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"childFeeEnabledAtBooking\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "childFeeEnabledAtBooking"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.roomOptionId",
+    "label": "Add column \"roomOptionId\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "roomOptionId",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"roomOptionId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "roomOptionId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"roomOptionId\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"roomOptionId\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"roomOptionId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "roomOptionId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.roomSurchargeAtBooking",
+    "label": "Add column \"roomSurchargeAtBooking\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "roomSurchargeAtBooking",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"roomSurchargeAtBooking\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "roomSurchargeAtBooking"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"roomSurchargeAtBooking\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"roomSurchargeAtBooking\" numeric DEFAULT '0'::numeric NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"roomSurchargeAtBooking\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "roomSurchargeAtBooking"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "setDefault.Booking.updatedAt",
+    "label": "Set default on \"Booking\".\"updatedAt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "updatedAt",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"updatedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "updatedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "set default on \"updatedAt\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ALTER COLUMN \"updatedAt\" SET DEFAULT (now())"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updatedAt\" has a default",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "updatedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.DeparturePricing.DeparturePricing_departureId_key",
+    "label": "Add unique constraint on \"DeparturePricing\" (departureId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "DeparturePricing_departureId_key",
+        "table": "DeparturePricing"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"DeparturePricing_departureId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DeparturePricing_departureId_key",
+          "public",
+          "\"public\".\"DeparturePricing\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"DeparturePricing_departureId_key\"",
+        "sql": "ALTER TABLE \"public\".\"DeparturePricing\" ADD CONSTRAINT \"DeparturePricing_departureId_key\" UNIQUE (\"departureId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"DeparturePricing_departureId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DeparturePricing_departureId_key",
+          "public",
+          "\"public\".\"DeparturePricing\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.DepartureRoomOption.DepartureRoomOption_departureId_roomType_key",
+    "label": "Add unique constraint on \"DepartureRoomOption\" (departureId, roomType)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "DepartureRoomOption_departureId_roomType_key",
+        "table": "DepartureRoomOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"DepartureRoomOption_departureId_roomType_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureRoomOption_departureId_roomType_key",
+          "public",
+          "\"public\".\"DepartureRoomOption\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"DepartureRoomOption_departureId_roomType_key\"",
+        "sql": "ALTER TABLE \"public\".\"DepartureRoomOption\" ADD CONSTRAINT \"DepartureRoomOption_departureId_roomType_key\" UNIQUE (\"departureId\", \"roomType\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"DepartureRoomOption_departureId_roomType_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureRoomOption_departureId_roomType_key",
+          "public",
+          "\"public\".\"DepartureRoomOption\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Booking.Booking_roomOptionId_idx_114aad0b",
+    "label": "Create index \"Booking_roomOptionId_idx_114aad0b\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Booking_roomOptionId_idx_114aad0b",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Booking_roomOptionId_idx_114aad0b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_roomOptionId_idx_114aad0b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Booking_roomOptionId_idx_114aad0b\"",
+        "sql": "CREATE INDEX \"Booking_roomOptionId_idx_114aad0b\" ON \"public\".\"Booking\" (\"roomOptionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Booking_roomOptionId_idx_114aad0b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Booking_roomOptionId_idx_114aad0b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.DepartureRoomOption.DepartureRoomOption_departureId_idx_24d39b35",
+    "label": "Create index \"DepartureRoomOption_departureId_idx_24d39b35\" on \"DepartureRoomOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "DepartureRoomOption_departureId_idx_24d39b35",
+        "table": "DepartureRoomOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"DepartureRoomOption_departureId_idx_24d39b35\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureRoomOption_departureId_idx_24d39b35\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"DepartureRoomOption_departureId_idx_24d39b35\"",
+        "sql": "CREATE INDEX \"DepartureRoomOption_departureId_idx_24d39b35\" ON \"public\".\"DepartureRoomOption\" (\"departureId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"DepartureRoomOption_departureId_idx_24d39b35\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"DepartureRoomOption_departureId_idx_24d39b35\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.DeparturePricing.DeparturePricing_departureId_fkey",
+    "label": "Add foreign key \"DeparturePricing_departureId_fkey\" on \"DeparturePricing\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "DeparturePricing_departureId_fkey",
+        "table": "DeparturePricing"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"DeparturePricing_departureId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DeparturePricing_departureId_fkey",
+          "public",
+          "\"public\".\"DeparturePricing\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"DeparturePricing_departureId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"DeparturePricing\"\nADD CONSTRAINT \"DeparturePricing_departureId_fkey\"\nFOREIGN KEY (\"departureId\")\nREFERENCES \"public\".\"Departure\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"DeparturePricing_departureId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DeparturePricing_departureId_fkey",
+          "public",
+          "\"public\".\"DeparturePricing\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.DepartureRoomOption.DepartureRoomOption_departureId_fkey",
+    "label": "Add foreign key \"DepartureRoomOption_departureId_fkey\" on \"DepartureRoomOption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "DepartureRoomOption_departureId_fkey",
+        "table": "DepartureRoomOption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"DepartureRoomOption_departureId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureRoomOption_departureId_fkey",
+          "public",
+          "\"public\".\"DepartureRoomOption\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"DepartureRoomOption_departureId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"DepartureRoomOption\"\nADD CONSTRAINT \"DepartureRoomOption_departureId_fkey\"\nFOREIGN KEY (\"departureId\")\nREFERENCES \"public\".\"Departure\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"DepartureRoomOption_departureId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "DepartureRoomOption_departureId_fkey",
+          "public",
+          "\"public\".\"DepartureRoomOption\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Booking.Booking_roomOptionId_fkey",
+    "label": "Add foreign key \"Booking_roomOptionId_fkey\" on \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Booking_roomOptionId_fkey",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Booking_roomOptionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_roomOptionId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Booking_roomOptionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\"\nADD CONSTRAINT \"Booking_roomOptionId_fkey\"\nFOREIGN KEY (\"roomOptionId\")\nREFERENCES \"public\".\"DepartureRoomOption\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Booking_roomOptionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_roomOptionId_fkey",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  }
+]
