@@ -1,0 +1,450 @@
+// use prisma-8
+enum UserRole {
+  ADMIN
+  MODERATOR
+  CUSTOMER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  BKASH
+  NAGAD
+  ROCKET
+  DBBL
+  CASH
+  BANK_TRANSFER
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+}
+
+enum PassengerType {
+  ADULT
+  CHILD
+  INFANT
+}
+
+enum VehicleType {
+  BUS
+  COACH
+  MICROBUS
+  MINIBUS
+  OTHER
+}
+
+enum RoomType {
+  SHARED
+  COUPLE
+  PRIVATE
+}
+
+enum PricingCategory {
+  ADULT
+  CHILD
+  INFANT
+}
+
+model User {
+  id               Int                        @id @default(autoincrement())
+  name             String
+  email            String?                    @unique
+  phone            String                     @unique
+  password         String
+  role             UserRole                   @default(CUSTOMER)
+
+  bookings         Booking[]                  @relation("CustomerBookings")
+  assignedBookings Booking[]                  @relation("AssignedGuide")
+
+  blogPosts        BlogPost[]
+
+  createdAt        TimestamptzString          @default(now())
+  updatedAt        temporal.updatedAtString()
+}
+
+model Tour {
+  id          Int                        @id @default(autoincrement())
+  title       String
+  slug        String                     @unique
+  description String?
+  coverImage  String?
+  isActive    Boolean                    @default(true)
+
+  itineraries Itinerary[]
+  departures  Departure[]
+
+  createdAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model Itinerary {
+  id           Int                        @id @default(autoincrement())
+  tourId       Int
+  dayNumber    Int
+  title        String
+  description  String?
+
+  tour         Tour                       @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  destinations Destination[]
+
+  createdAt    TimestamptzString          @default(now())
+  updatedAt    temporal.updatedAtString()
+
+  @@unique([tourId, dayNumber])
+}
+
+model Destination {
+  id            Int                        @id @default(autoincrement())
+  itineraryId   Int
+  name          String
+  description   String?
+  arrivalTime   String?
+  departureTime String?
+
+  itinerary     Itinerary                  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  hotelStays    HotelStay[]
+
+  createdAt     TimestamptzString          @default(now())
+  updatedAt     temporal.updatedAtString()
+}
+
+model Departure {
+  id              Int                        @id @default(autoincrement())
+  tourId          Int
+
+  departureDate   DateTime
+  returnDate      DateTime?
+
+  departureTime   String?
+  returnTime      String?
+
+  bookingOpen     Boolean                    @default(true)
+  customerVisible Boolean                    @default(true)
+
+  tour            Tour                       @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  vehicles        DepartureVehicle[]
+  pricingRules    PricingRule[]
+  hotelStays      HotelStay[]
+  bookings        Booking[]
+
+  createdAt       TimestamptzString          @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model Vehicle {
+  id                 Int                        @id @default(autoincrement())
+  name               String
+  type               VehicleType
+  registrationNumber String?
+  description        String?
+  seatLayoutId       Int?
+  isActive           Boolean                    @default(true)
+
+  seatLayout         SeatLayout?                @relation(fields: [seatLayoutId], references: [id])
+
+  departures         DepartureVehicle[]
+  seatAssignments    SeatAssignment[]
+
+  createdAt          TimestamptzString          @default(now())
+  updatedAt          temporal.updatedAtString()
+
+  @@unique([registrationNumber])
+}
+
+model SeatLayout {
+  id          Int                        @id @default(autoincrement())
+  name        String
+  description String?
+
+  seats       Seat[]
+  vehicles    Vehicle[]
+
+  createdAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model Seat {
+  id           Int                        @id @default(autoincrement())
+  seatLayoutId Int
+  seatNumber   String
+  rowNumber    Int?
+  columnNumber Int?
+  isAvailable  Boolean                    @default(true)
+
+  seatLayout   SeatLayout                 @relation(fields: [seatLayoutId], references: [id], onDelete: Cascade)
+
+  assignments  SeatAssignment[]
+
+  createdAt    TimestamptzString          @default(now())
+  updatedAt    temporal.updatedAtString()
+
+  @@unique([seatLayoutId, seatNumber])
+}
+
+model DepartureVehicle {
+  id                Int                        @id @default(autoincrement())
+  departureId       Int
+  vehicleId         Int
+
+  visibleToCustomer Boolean                    @default(false)
+  displayName       String?
+  displayOrder      Int                        @default(0)
+
+  departure         Departure                  @relation(fields: [departureId], references: [id], onDelete: Cascade)
+  vehicle           Vehicle                    @relation(fields: [vehicleId], references: [id])
+
+  createdAt         TimestamptzString          @default(now())
+  updatedAt         temporal.updatedAtString()
+
+  @@unique([departureId, vehicleId])
+}
+
+model PricingRule {
+  id            Int                        @id @default(autoincrement())
+  departureId   Int
+  passengerType PricingCategory
+  roomType      RoomType?
+  price         Decimal
+
+  departure     Departure                  @relation(fields: [departureId], references: [id], onDelete: Cascade)
+
+  createdAt     TimestamptzString          @default(now())
+  updatedAt     temporal.updatedAtString()
+}
+
+model Hotel {
+  id          Int                        @id @default(autoincrement())
+  name        String
+  location    String
+  address     String?
+  phone       String?
+  description String?
+  isActive    Boolean                    @default(true)
+
+  rooms       Room[]
+  hotelStays  HotelStay[]
+
+  createdAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model Room {
+  id          Int                        @id @default(autoincrement())
+  hotelId     Int
+  roomNumber  String
+  roomType    RoomType
+  capacity    Int
+  description String?
+
+  hotel       Hotel                      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  assignments RoomAssignment[]
+
+  createdAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@unique([hotelId, roomNumber])
+}
+
+model HotelStay {
+  id              Int                        @id @default(autoincrement())
+  departureId     Int
+  hotelId         Int
+  destinationId   Int?
+  checkInDate     DateTime
+  checkOutDate    DateTime
+
+  departure       Departure                  @relation(fields: [departureId], references: [id], onDelete: Cascade)
+  hotel           Hotel                      @relation(fields: [hotelId], references: [id])
+  destination     Destination?               @relation(fields: [destinationId], references: [id])
+
+  roomAssignments RoomAssignment[]
+
+  createdAt       TimestamptzString          @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+model Booking {
+  id            Int                        @id @default(autoincrement())
+  bookingNumber String                     @unique
+
+  departureId   Int
+  customerId    Int
+  guideId       Int?
+
+  status        BookingStatus              @default(PENDING)
+
+  totalAmount   Decimal                    @default(0)
+  paidAmount    Decimal                    @default(0)
+  dueAmount     Decimal                    @default(0)
+
+  notes         String?
+
+  departure     Departure                  @relation(fields: [departureId], references: [id])
+  customer      User                       @relation("CustomerBookings", fields: [customerId], references: [id])
+  guide         User?                      @relation("AssignedGuide", fields: [guideId], references: [id])
+
+  passengers    Passenger[]
+  payments      Payment[]
+
+  createdAt     TimestamptzString          @default(now())
+  updatedAt     temporal.updatedAtString()
+
+  @@index([departureId])
+  @@index([customerId])
+}
+
+model Passenger {
+  id             Int                        @id @default(autoincrement())
+  bookingId      Int
+
+  name           String
+  phone          String?
+  email          String?
+  dateOfBirth    DateTime?
+  passengerType  PassengerType
+  gender         String?
+  notes          String?
+
+  booking        Booking                    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  seatAssignment SeatAssignment?
+  roomAssignment RoomAssignment?
+
+  createdAt      TimestamptzString          @default(now())
+  updatedAt      temporal.updatedAtString()
+}
+
+model SeatAssignment {
+  id          Int                        @id @default(autoincrement())
+  passengerId Int                        @unique
+  vehicleId   Int
+  seatId      Int
+
+  passenger   Passenger                  @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle                    @relation(fields: [vehicleId], references: [id])
+  seat        Seat                       @relation(fields: [seatId], references: [id])
+
+  createdAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@unique([vehicleId, seatId])
+}
+
+model RoomAssignment {
+  id          Int                        @id @default(autoincrement())
+  passengerId Int                        @unique
+  hotelStayId Int
+  roomId      Int
+
+  passenger   Passenger                  @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+  hotelStay   HotelStay                  @relation(fields: [hotelStayId], references: [id], onDelete: Cascade)
+  room        Room                       @relation(fields: [roomId], references: [id])
+
+  createdAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@unique([hotelStayId, roomId, passengerId])
+}
+
+model Payment {
+  id              Int                        @id @default(autoincrement())
+  bookingId       Int
+
+  amount          Decimal
+  method          PaymentMethod
+  status          PaymentStatus              @default(PENDING)
+
+  transactionId   String?
+  referenceNumber String?
+  paymentDate     DateTime?
+  notes           String?
+
+  booking         Booking                    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  createdAt       TimestamptzString          @default(now())
+  updatedAt       temporal.updatedAtString()
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model BlogCategory {
+  id          Int                        @id @default(autoincrement())
+  name        String
+  slug        String                     @unique
+  description String?
+  isActive    Boolean                    @default(true)
+
+  posts       BlogPost[]
+
+  createdAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model BlogTag {
+  id        Int                        @id @default(autoincrement())
+  name      String
+  slug      String                     @unique
+
+  posts     BlogPostTag[]
+
+  createdAt TimestamptzString          @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model BlogPost {
+  id             Int                        @id @default(autoincrement())
+  title          String
+  slug           String                     @unique
+  excerpt        String?
+  content        String
+  coverImage     String?
+
+  status         BlogPostStatus             @default(DRAFT)
+  publishedAt    DateTime?
+
+  authorId       Int
+  categoryId     Int?
+
+  seoTitle       String?
+  seoDescription String?
+
+  author         User                       @relation(fields: [authorId], references: [id])
+  category       BlogCategory?              @relation(fields: [categoryId], references: [id])
+  tags           BlogPostTag[]
+
+  createdAt      TimestamptzString          @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+model BlogPostTag {
+  postId Int
+  tagId  Int
+
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
