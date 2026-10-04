@@ -1,17 +1,4 @@
 
-I included the current versions because your repository's `package.json` confirms Next.js `16.3.6`, React `19.2.8`, and Prisma `8.0.0-rc.18`. :contentReference[oaicite:1]{index=1}
-
----
-
-# 2. `PROJECT_DECISIONS.md`
-
-This one is important because it prevents a future ChatGPT conversation from saying:
-
-> "Let's redesign the database this way."
-
-when we've already decided something differently.
-
-```md
 # Unmukto Project Decisions
 
 This file records important decisions made during development.

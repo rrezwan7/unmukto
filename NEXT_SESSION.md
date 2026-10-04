@@ -39,19 +39,34 @@ https://unmukto.vercel.app/
 
 ## Current Task
 
-[PUT THE CURRENT TASK HERE]
+Validate the existing Prisma booking/pricing model against the actual business rules before building the booking UI.
+
+The current contract already contains Tour, Departure, PricingRule, Booking, Passenger, RoomType, PassengerType, Vehicle, Seat, Hotel and related models.
 
 ---
 
 ## What We Just Finished
 
-[PUT THE LAST COMPLETED WORK HERE]
+- Created the Next.js project.
+- Configured TypeScript, Tailwind CSS and shadcn/ui.
+- Connected GitHub and Vercel.
+- Set up PostgreSQL.
+- Set up Prisma 8 RC using the contract-based architecture.
+- Created the initial comprehensive travel-booking data contract.
+- Added project continuity documentation:
+  - PROJECT_STATUS.md
+  - PROJECT_DECISIONS.md
+  - NEXT_SESSION.md
 
 ---
 
 ## What To Do Next
 
-[PUT THE NEXT 1–3 ACTIONS HERE]
+1. Review `src/prisma/contract.prisma`.
+2. Validate the pricing rules with the business requirements.
+3. Identify any schema changes required.
+4. Generate the Prisma contract and verify the database.
+5. Only then begin implementing the application UI/admin workflow.
 
 ---
 
@@ -68,11 +83,11 @@ https://unmukto.vercel.app/
 
 ## Last Known Good State
 
-- Local development works: [YES/NO]
-- Production deployment works: [YES/NO]
-- Database works: [YES/NO]
-- Last successful commit: [COMMIT HASH]
-
+- Local development works: YES
+- Production deployment works: YES
+- Database setup: YES
+- Prisma contract: implemented
+- Customer-facing UI: not yet implemented
 ---
 
 ## Session Handoff

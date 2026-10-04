@@ -43,13 +43,54 @@ https://github.com/rrezwan7/unmukto
 - [x] Vercel successfully deploying latest commits
 
 ### Database
-- [x] PostgreSQL installed/configured locally
-- [x] Prisma installed
-- [x] Prisma PostgreSQL setup completed
-- [x] Database connection configured
-- [x] Initial database/migrations work completed
-- [x] Tour model work started/completed
-- [x] Itinerary model work started/completed
+
+The Prisma 8 database contract has been designed and is currently implemented in:
+
+`src/prisma/contract.prisma`
+
+Current domain models include:
+
+- User / roles
+- Tour
+- Itinerary
+- Destination
+- Departure
+- Vehicle
+- SeatLayout
+- Seat
+- DepartureVehicle
+- PricingRule
+- Hotel
+- Room
+- HotelStay
+- Booking
+- Passenger
+- SeatAssignment
+- RoomAssignment
+- Payment
+- BlogPost
+- BlogCategory
+- BlogTag
+- BlogPostTag
+
+Prisma contract generation is configured through `prisma.config.ts`.
+
+Database client:
+`src/prisma/db.ts`
+
+### Current database design
+
+The booking system is designed around:
+
+- A Tour having multiple Departures
+- Departure-specific pricing
+- Adult / Child / Infant passenger categories
+- Shared / Couple / Private room types
+- Vehicle and seat-layout management
+- Hotel stays
+- Passenger-level seat assignment
+- Passenger-level room assignment
+- Booking/payment tracking
 
 ### Booking system
 The booking/pricing system is being designed around tour departures.
@@ -115,23 +156,35 @@ Do not build advanced features before the core booking flow works.
 
 ## Current Task
 
-Update this section whenever work moves to a new task.
+Finalize and validate the booking/pricing data model before building the application UI.
 
-Current task:
+The immediate focus is to verify the business rules for:
 
-[WRITE CURRENT TASK HERE]
+- Adult + Shared room
+- Adult + Couple room
+- Adult + Private room
+- Child pricing
+- Infant pricing
+- Whether child/infant pricing depends on room type
+- Whether duplicate pricing combinations are allowed
+- Currency and decimal handling
+- Whether a departure can have incomplete pricing
+
+Do not start building the full booking UI until these rules are settled.
 
 ---
 
 ## Next Steps
 
-1. Finalize the booking/pricing data model.
-2. Implement the required Prisma models.
-3. Run migrations and verify the database.
-4. Build the admin-side tour/departure/pricing management.
-5. Build the customer-facing booking flow.
-6. Add seat assignment.
-7. Add live seat selection later.
+1. Validate the existing Prisma booking/pricing model against the confirmed business rules.
+2. Make only the necessary schema changes.
+3. Generate/verify the Prisma contract.
+4. Verify the database/migrations locally.
+5. Build the first admin functionality.
+6. Build the customer-facing tour/departure experience.
+7. Build the booking flow.
+8. Add admin seat assignment.
+9. Add live customer seat selection later.
 
 ---
 
