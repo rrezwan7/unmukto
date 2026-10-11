@@ -203,6 +203,8 @@ model DepartureVehicle {
   departure         Departure                  @relation(fields: [departureId], references: [id], onDelete: Cascade)
   vehicle           Vehicle                    @relation(fields: [vehicleId], references: [id])
 
+  seatAssignments   SeatAssignment[]
+
   createdAt         TimestamptzString          @default(now())
   updatedAt         temporal.updatedAtString()
 
@@ -370,7 +372,7 @@ model Passenger {
   booking        Booking                    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   seatAssignment SeatAssignment?
-  roomAssignment RoomAssignment?
+  roomAssignments RoomAssignment[]
 
   createdAt      TimestamptzString          @default(now())
   updatedAt      temporal.updatedAtString()
@@ -379,22 +381,25 @@ model Passenger {
 model SeatAssignment {
   id          Int                        @id @default(autoincrement())
   passengerId Int                        @unique
+  departureId Int
   vehicleId   Int
   seatId      Int
 
   passenger   Passenger                  @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+  departureVehicle DepartureVehicle      @relation(fields: [departureId, vehicleId], references: [departureId, vehicleId])
   vehicle     Vehicle                    @relation(fields: [vehicleId], references: [id])
   seat        Seat                       @relation(fields: [seatId], references: [id])
 
   createdAt   TimestamptzString          @default(now())
   updatedAt   temporal.updatedAtString()
 
-  @@unique([vehicleId, seatId])
+  @@unique([departureId, vehicleId, seatId])
+  @@index([departureId, vehicleId])
 }
 
 model RoomAssignment {
   id          Int                        @id @default(autoincrement())
-  passengerId Int                        @unique
+  passengerId Int
   hotelStayId Int
   roomId      Int
 
@@ -405,7 +410,7 @@ model RoomAssignment {
   createdAt   TimestamptzString          @default(now())
   updatedAt   temporal.updatedAtString()
 
-  @@unique([hotelStayId, roomId, passengerId])
+  @@unique([passengerId, hotelStayId])
 }
 
 model Payment {

@@ -4,6 +4,23 @@ Last updated: 2026-10-12 (Bangladesh)
 
 ## Current checkpoint — foundation/admin-auth
 
+### New work on foundation/inventory-model
+
+Seat assignments now include departure scope and require a matching departure
+vehicle allocation. Room assignments are unique per passenger and hotel stay.
+One new migration preserves existing rows and backfills seat departures from
+bookings. Emitted SQL is tested with embedded PostgreSQL; native Prisma runner
+verification is pending on the user's isolated localhost test databases.
+
+Next action: apply the patch on this branch, install dependencies, and run
+`npm run test:inventory:local`. See `docs/INVENTORY_MODEL.md`. Do not apply the
+migration to the application database or merge to main before this check passes.
+
+The earlier foundation branch and temporary landing page have been merged to
+main by the user; the landing page is live. User verified local admin sign-in and
+sign-out. Next.js is now 16.3.8 and the production dependency audit was clean at
+the previous milestone. The older foundation notes below are historical context.
+
 The architecture review recommends refactoring the existing app. The local
 foundation milestone adds Auth.js GitHub sign-in with an explicit numeric admin
 allowlist, server-side page/API checks, same-origin mutation checks, and shared

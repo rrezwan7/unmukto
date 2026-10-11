@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b994449b43086bb3399839222df75a80518abb8e182d5f4b10c683b03c96e1f2'>;
+  StorageHashBase<'c4fd7104ddd4f09f5554ead159f3fcd48993b669c5234ddba1f1cc27db7a8198'>;
 export type ExecutionHash =
   ExecutionHashBase<'88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36'>;
 export type ProfileHash =
@@ -446,6 +446,7 @@ export type FieldOutputTypes = {
     };
     readonly SeatAssignment: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly departureId: CodecTypes['pg/int4@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly passengerId: CodecTypes['pg/int4@1']['output'];
       readonly seatId: CodecTypes['pg/int4@1']['output'];
@@ -690,6 +691,7 @@ export type FieldInputTypes = {
     };
     readonly SeatAssignment: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly departureId: CodecTypes['pg/int4@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly passengerId: CodecTypes['pg/int4@1']['input'];
       readonly seatId: CodecTypes['pg/int4@1']['input'];
@@ -934,6 +936,7 @@ export type StorageColumnTypes = {
     };
     readonly SeatAssignment: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly departureId: CodecTypes['pg/int4@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly passengerId: CodecTypes['pg/int4@1']['output'];
       readonly seatId: CodecTypes['pg/int4@1']['output'];
@@ -1178,6 +1181,7 @@ export type StorageColumnInputTypes = {
     };
     readonly SeatAssignment: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly departureId: CodecTypes['pg/int4@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly passengerId: CodecTypes['pg/int4@1']['input'];
       readonly seatId: CodecTypes['pg/int4@1']['input'];
@@ -1358,8 +1362,9 @@ export namespace Models {
     vehicleId: CodecTypes['pg/int4@1']['output'];
     visibleToCustomer: CodecTypes['pg/bool@1']['output'];
     departure: public_Departure;
+    seatAssignments: public_SeatAssignment[];
     vehicle: public_Vehicle;
-    readonly [RelationKeys]?: 'departure' | 'vehicle';
+    readonly [RelationKeys]?: 'departure' | 'seatAssignments' | 'vehicle';
   };
   export type public_Destination = {
     arrivalTime: CodecTypes['pg/text@1']['output'] | null;
@@ -1428,9 +1433,9 @@ export namespace Models {
     phone: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     booking: public_Booking;
-    roomAssignment: public_RoomAssignment | null;
+    roomAssignments: public_RoomAssignment[];
     seatAssignment: public_SeatAssignment | null;
-    readonly [RelationKeys]?: 'booking' | 'roomAssignment' | 'seatAssignment';
+    readonly [RelationKeys]?: 'booking' | 'roomAssignments' | 'seatAssignment';
   };
   export type public_Payment = {
     amount: CodecTypes['pg/numeric@1']['output'];
@@ -1487,15 +1492,17 @@ export namespace Models {
   };
   export type public_SeatAssignment = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    departureId: CodecTypes['pg/int4@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
     passengerId: CodecTypes['pg/int4@1']['output'];
     seatId: CodecTypes['pg/int4@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     vehicleId: CodecTypes['pg/int4@1']['output'];
+    departureVehicle: public_DepartureVehicle;
     passenger: public_Passenger;
     seat: public_Seat;
     vehicle: public_Vehicle;
-    readonly [RelationKeys]?: 'passenger' | 'seat' | 'vehicle';
+    readonly [RelationKeys]?: 'departureVehicle' | 'passenger' | 'seat' | 'vehicle';
   };
   export type public_SeatLayout = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -3049,15 +3056,18 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [
-                { readonly columns: readonly ['passengerId'] },
-                { readonly columns: readonly ['hotelStayId', 'roomId', 'passengerId'] },
-              ];
+              uniques: readonly [{ readonly columns: readonly ['passengerId', 'hotelStayId'] }];
               indexes: readonly [
                 {
                   readonly name: 'RoomAssignment_hotelStayId_idx_05988de1';
                   readonly prefix: 'RoomAssignment_hotelStayId_idx';
                   readonly columns: readonly ['hotelStayId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'RoomAssignment_passengerId_idx_21958ace';
+                  readonly prefix: 'RoomAssignment_passengerId_idx';
+                  readonly columns: readonly ['passengerId'];
                   readonly unique: false;
                 },
                 {
@@ -3191,6 +3201,11 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
+                readonly departureId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
                 readonly id: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -3224,9 +3239,15 @@ type ContractBase = Omit<
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [
                 { readonly columns: readonly ['passengerId'] },
-                { readonly columns: readonly ['vehicleId', 'seatId'] },
+                { readonly columns: readonly ['departureId', 'vehicleId', 'seatId'] },
               ];
               indexes: readonly [
+                {
+                  readonly name: 'SeatAssignment_departureId_vehicleId_idx_3b46d2d1';
+                  readonly prefix: 'SeatAssignment_departureId_vehicleId_idx';
+                  readonly columns: readonly ['departureId', 'vehicleId'];
+                  readonly unique: false;
+                },
                 {
                   readonly name: 'SeatAssignment_seatId_idx_3076c3cd';
                   readonly prefix: 'SeatAssignment_seatId_idx';
@@ -3251,6 +3272,18 @@ type ContractBase = Omit<
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Passenger';
                     readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'SeatAssignment';
+                    readonly columns: readonly ['departureId', 'vehicleId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'DepartureVehicle';
+                    readonly columns: readonly ['departureId', 'vehicleId'];
                   };
                 },
                 {
@@ -4443,6 +4476,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly seatAssignments: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'SeatAssignment';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['departureId', 'vehicleId'];
+                  readonly targetFields: readonly ['departureId', 'vehicleId'];
+                };
+              };
               readonly vehicle: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -4887,13 +4931,12 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
-              readonly roomAssignment: {
+              readonly roomAssignments: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'RoomAssignment';
                 };
-                readonly cardinality: '1:1';
-                readonly nullable: true;
+                readonly cardinality: '1:N';
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['passengerId'];
@@ -5270,6 +5313,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                 };
               };
+              readonly departureId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -5295,6 +5342,18 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly departureVehicle: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'DepartureVehicle';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['departureId', 'vehicleId'];
+                  readonly targetFields: readonly ['departureId', 'vehicleId'];
+                };
+              };
               readonly passenger: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5334,6 +5393,7 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly departureId: { readonly column: 'departureId' };
                 readonly id: { readonly column: 'id' };
                 readonly passengerId: { readonly column: 'passengerId' };
                 readonly seatId: { readonly column: 'seatId' };

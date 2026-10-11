@@ -1547,6 +1547,23 @@
                   "namespace": "public"
                 }
               },
+              "seatAssignments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "departureId",
+                    "vehicleId"
+                  ],
+                  "targetFields": [
+                    "departureId",
+                    "vehicleId"
+                  ]
+                },
+                "to": {
+                  "model": "SeatAssignment",
+                  "namespace": "public"
+                }
+              },
               "vehicle": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -2221,9 +2238,8 @@
                   "namespace": "public"
                 }
               },
-              "roomAssignment": {
-                "cardinality": "1:1",
-                "nullable": true,
+              "roomAssignments": {
+                "cardinality": "1:N",
                 "on": {
                   "localFields": [
                     "id"
@@ -2825,6 +2841,13 @@
                   "kind": "scalar"
                 }
               },
+              "departureId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -2862,6 +2885,24 @@
               }
             },
             "relations": {
+              "departureVehicle": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "departureId",
+                    "vehicleId"
+                  ],
+                  "targetFields": [
+                    "departureId",
+                    "vehicleId"
+                  ]
+                },
+                "to": {
+                  "model": "DepartureVehicle",
+                  "namespace": "public"
+                }
+              },
               "passenger": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -2915,6 +2956,9 @@
               "fields": {
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "departureId": {
+                  "column": "departureId"
                 },
                 "id": {
                   "column": "id"
@@ -5377,6 +5421,14 @@
                 },
                 {
                   "columns": [
+                    "passengerId"
+                  ],
+                  "name": "RoomAssignment_passengerId_idx_21958ace",
+                  "prefix": "RoomAssignment_passengerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "roomId"
                   ],
                   "name": "RoomAssignment_roomId_idx_fe51d647",
@@ -5392,14 +5444,8 @@
               "uniques": [
                 {
                   "columns": [
-                    "passengerId"
-                  ]
-                },
-                {
-                  "columns": [
-                    "hotelStayId",
-                    "roomId",
-                    "passengerId"
+                    "passengerId",
+                    "hotelStayId"
                   ]
                 }
               ]
@@ -5513,6 +5559,11 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "departureId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -5564,6 +5615,24 @@
                 {
                   "source": {
                     "columns": [
+                      "departureId",
+                      "vehicleId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "SeatAssignment"
+                  },
+                  "target": {
+                    "columns": [
+                      "departureId",
+                      "vehicleId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "DepartureVehicle"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
                       "vehicleId"
                     ],
                     "namespaceId": "public",
@@ -5597,6 +5666,15 @@
               "indexes": [
                 {
                   "columns": [
+                    "departureId",
+                    "vehicleId"
+                  ],
+                  "name": "SeatAssignment_departureId_vehicleId_idx_3b46d2d1",
+                  "prefix": "SeatAssignment_departureId_vehicleId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "seatId"
                   ],
                   "name": "SeatAssignment_seatId_idx_3076c3cd",
@@ -5625,6 +5703,7 @@
                 },
                 {
                   "columns": [
+                    "departureId",
                     "vehicleId",
                     "seatId"
                   ]
@@ -6029,7 +6108,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b994449b43086bb3399839222df75a80518abb8e182d5f4b10c683b03c96e1f2"
+    "storageHash": "c4fd7104ddd4f09f5554ead159f3fcd48993b669c5234ddba1f1cc27db7a8198"
   },
   "execution": {
     "executionHash": "88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36",
