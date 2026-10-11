@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Unmukto
+
+Own-tour catalog and booking platform, built with Next.js, TypeScript, PostgreSQL
+and the existing Prisma 8 contract runtime.
+
+For current admin sign-in and environment setup, read
+[Admin setup](docs/ADMIN_SETUP.md). Current architecture and implementation phases
+are in [Architecture review](ARCHITECTURE_REVIEW.md); see
+[Project status](PROJECT_STATUS.md) for the latest checkpoint.
+
+Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
 
 ## Getting Started
 

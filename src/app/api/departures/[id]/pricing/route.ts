@@ -1,4 +1,4 @@
-import { db } from "@/prisma/db";
+import { checkAdminApi } from "@/lib/admin-auth";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -8,6 +8,9 @@ export async function GET(
     _request: Request,
     { params }: Props
 ) {
+    const denied = await checkAdminApi();
+    if (denied) return denied;
+    const { db } = await import("@/prisma/db");
     try {
         const { id } = await params;
         const departureId = Number(id);
@@ -58,6 +61,9 @@ export async function POST(
     request: Request,
     { params }: Props
 ) {
+    const denied = await checkAdminApi(request);
+    if (denied) return denied;
+    const { db } = await import("@/prisma/db");
     try {
         const { id } = await params;
         const departureId = Number(id);

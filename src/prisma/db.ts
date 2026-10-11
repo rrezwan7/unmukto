@@ -1,3 +1,4 @@
+import "server-only";
 import "dotenv/config";
 import "temporal-polyfill/full/global";
 

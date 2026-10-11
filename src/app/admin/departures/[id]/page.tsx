@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { db } from "@/prisma/db";
+import { requireAdminPage } from "@/lib/admin-auth";
 
 type Props = {
     params: Promise<{ id: string }>;
 };
 
 export default async function DepartureDetailsPage({ params }: Props) {
+    await requireAdminPage();
+    const { db } = await import("@/prisma/db");
     const { id } = await params;
 
     const departureId = Number(id);

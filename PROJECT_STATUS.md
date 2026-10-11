@@ -1,6 +1,33 @@
 # Unmukto — Project Status & Continuity
 
-Last updated: 2026-10-05
+Last updated: 2026-10-12 (Bangladesh)
+
+## Current checkpoint — foundation/admin-auth
+
+The architecture review recommends refactoring the existing app. The local
+foundation milestone adds Auth.js GitHub sign-in with an explicit numeric admin
+allowlist, server-side page/API checks, same-origin mutation checks, and shared
+admin navigation/sign-out. Database imports occur after access checks. No schema
+or database migrations have been changed.
+
+Generated Prisma artifacts are excluded from application lint. The old pricing
+type experiment is replaced by executable policy and HTTP access tests. Setup:
+`docs/ADMIN_SETUP.md`; decision: `docs/decisions/0001-admin-authentication.md`.
+Review/roadmap: `ARCHITECTURE_REVIEW.md`.
+
+Validation: lint, typecheck and production build pass; all six automated
+policy/HTTP tests pass against both development and production servers.
+The access tests use synthetic encrypted sessions, not live GitHub sign-in.
+
+Activation requires OAuth credentials, an auth secret, authorized numeric account
+IDs and a database configuration. Live GitHub sign-in and authorized database
+operations remain unverified. This branch has not been deployed.
+
+Next implementation: verify the Prisma transaction/query API against an isolated
+PostgreSQL database, then correct departure seat scope, per-stay room assignments,
+and reservation capacity before customer booking. Pricing upsert/UI follows the
+foundation work. The sections below are historical context from 2026-10-05 and
+must not override this checkpoint.
 
 ## 1. Project
 

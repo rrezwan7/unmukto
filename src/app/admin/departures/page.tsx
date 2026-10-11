@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { db } from "@/prisma/db";
+import { requireAdminPage } from "@/lib/admin-auth";
 
 export default async function DeparturesPage() {
+    await requireAdminPage();
+    const { db } = await import("@/prisma/db");
     const [departures, tours] = await Promise.all([
         db.orm.public.Departure.all(),
         db.orm.public.Tour.all(),

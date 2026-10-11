@@ -1,7 +1,10 @@
-import { db } from "@/prisma/db";
+import { checkAdminApi } from "@/lib/admin-auth";
 import { Temporal } from "temporal-polyfill";
 
 export async function GET() {
+    const denied = await checkAdminApi();
+    if (denied) return denied;
+    const { db } = await import("@/prisma/db");
     const departures = await db.orm.public.Departure.all();
 
     return Response.json({
@@ -11,6 +14,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+    const denied = await checkAdminApi(request);
+    if (denied) return denied;
+    const { db } = await import("@/prisma/db");
     try {
         const body = await request.json();
 
