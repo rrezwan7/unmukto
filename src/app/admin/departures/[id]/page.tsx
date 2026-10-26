@@ -1,132 +1,118 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin-auth";
+import PricingForm from "./pricing-form";
+import RoomOptionsForm from "./room-options-form";
 
 type Props = {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 };
 
 export default async function DepartureDetailsPage({ params }: Props) {
-    await requireAdminPage();
-    const { db } = await import("@/prisma/db");
-    const { id } = await params;
+  await requireAdminPage();
 
-    const departureId = Number(id);
+  const { id } = await params;
+  const departureId = Number(id);
 
-    const [departures, tours] = await Promise.all([
-        db.orm.public.Departure.all(),
-        db.orm.public.Tour.all(),
-    ]);
+  if (!Number.isSafeInteger(departureId) || departureId <= 0) {
+    return <main className="p-6">Invalid departure ID.</main>;
+  }
 
-    const departure = departures.find((item) => item.id === departureId);
+  const { db } = await import("@/prisma/db");
 
-    if (!departure) {
-        return (
-            <main className="p-6">
-                <h1 className="text-2xl font-bold">Departure not found</h1>
+  const departure = await db.orm.public.Departure
+    .where({ id: departureId })
+    .first();
 
-                <Link
-                    href="/admin/departures"
-                    className="mt-4 inline-block text-primary underline"
-                >
-                    ← Back to Departures
-                </Link>
-            </main>
-        );
-    }
-
-    const tour = tours.find((item) => item.id === departure.tourId);
-
+  if (!departure) {
     return (
-        <main className="p-6">
-            <div className="mb-6">
-                <Link
-                    href="/admin/departures"
-                    className="text-sm text-muted-foreground hover:underline"
-                >
-                    ← Back to Departures
-                </Link>
-
-                <h1 className="mt-3 text-2xl font-bold">
-                    {tour?.title ?? "Unknown Tour"}
-                </h1>
-
-                <p className="text-muted-foreground">
-                    Departure details - Vercel Test
-                </p>
-            </div>
-
-            <div className="rounded-lg border p-6">
-                <h2 className="mb-4 text-lg font-semibold">
-                    Departure Information
-                </h2>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                        <p className="text-sm text-muted-foreground">Tour</p>
-                        <p className="font-medium">
-                            {tour?.title ?? "Unknown Tour"}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p className="text-sm text-muted-foreground">Departure Date</p>
-                        <p className="font-medium">
-                            {departure.departureDate.toString()}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p className="text-sm text-muted-foreground">Departure Time</p>
-                        <p className="font-medium">
-                            {departure.departureTime ?? "-"}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p className="text-sm text-muted-foreground">Return Date</p>
-                        <p className="font-medium">
-                            {departure.returnDate?.toString() ?? "-"}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p className="text-sm text-muted-foreground">Return Time</p>
-                        <p className="font-medium">
-                            {departure.returnTime ?? "-"}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p className="text-sm text-muted-foreground">Booking Open</p>
-                        <p className="font-medium">
-                            {departure.bookingOpen ? "Yes" : "No"}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <div className="rounded-lg border p-5">
-                    <h2 className="font-semibold">Pricing</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Manage passenger and room prices.
-                    </p>
-                </div>
-
-                <div className="rounded-lg border p-5">
-                    <h2 className="font-semibold">Vehicles & Seats</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Manage vehicles and seat layouts.
-                    </p>
-                </div>
-
-                <div className="rounded-lg border p-5">
-                    <h2 className="font-semibold">Hotels</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Manage hotels and room assignments.
-                    </p>
-                </div>
-            </div>
-        </main>
+      <main className="p-6">
+        <h1 className="text-2xl font-bold">Departure not found</h1>
+        <Link
+          href="/admin/departures"
+          className="mt-4 inline-block underline"
+        >
+          ← Back to Departures
+        </Link>
+      </main>
     );
+  }
+
+  const [tour, pricing] = await Promise.all([
+    db.orm.public.Tour.where({ id: departure.tourId }).first(),
+    db.orm.public.DeparturePricing.where({ departureId }).first(),
+  ]);
+
+  const details = [
+    ["Tour", tour?.title ?? "Unknown Tour"],
+    ["Departure Date", departure.departureDate.toString()],
+    ["Departure Time", departure.departureTime ?? "-"],
+    ["Return Date", departure.returnDate?.toString() ?? "-"],
+    ["Return Time", departure.returnTime ?? "-"],
+    ["Booking Open", departure.bookingOpen ? "Yes" : "No"],
+  ];
+
+  return (
+    <main className="mx-auto max-w-5xl p-6">
+      <div className="mb-6">
+        <Link
+          href="/admin/departures"
+          className="text-sm text-muted-foreground hover:underline"
+        >
+          ← Back to Departures
+        </Link>
+
+        <h1 className="mt-3 text-2xl font-bold">
+          {tour?.title ?? "Unknown Tour"}
+        </h1>
+        <p className="text-muted-foreground">Departure details</p>
+      </div>
+
+      <section className="rounded-lg border p-6">
+        <h2 className="mb-4 text-lg font-semibold">
+          Departure Information
+        </h2>
+
+        <dl className="grid gap-4 md:grid-cols-2">
+          {details.map(([label, value]) => (
+            <div key={label}>
+              <dt className="text-sm text-muted-foreground">
+                {label}
+              </dt>
+              <dd className="font-medium">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <PricingForm
+        key={departureId}
+        departureId={departureId}
+        initialPricing={
+          pricing
+            ? {
+                adultFare: pricing.adultFare,
+                childFare: pricing.childFare,
+                childFeeEnabled: pricing.childFeeEnabled,
+              }
+            : null
+        }
+      />
+<RoomOptionsForm key={`rooms-${departureId}`} departureId={departureId} />
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <section className="rounded-lg border p-5">
+          <h2 className="font-semibold">Vehicles & Seats</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage vehicles and seat layouts.
+          </p>
+        </section>
+
+        <section className="rounded-lg border p-5">
+          <h2 className="font-semibold">Hotels</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage hotels and room assignments.
+          </p>
+        </section>
+      </div>
+    </main>
+  );
 }
