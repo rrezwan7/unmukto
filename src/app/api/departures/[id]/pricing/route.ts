@@ -106,20 +106,27 @@ export async function POST(
             );
         }
 
-        const pricing =
-            await db.orm.public.DeparturePricing.create({
-                departureId,
-                adultFare: String(adultFare),
-                childFeeEnabled,
-                childFare: String(childFare),
-            });
+        const values = {
+    adultFare: String(adultFare),
+    childFeeEnabled,
+    childFare: String(childFare),
+};
+
+const pricing = await db.orm.public.DeparturePricing.upsert({
+    create: {
+        departureId,
+        ...values,
+    },
+    update: values,
+    conflictOn: { departureId },
+});
 
         return Response.json(
             {
                 success: true,
                 pricing,
             },
-            { status: 201 }
+            { status: 200 }
         );
     } catch (error) {
         console.error("CREATE DEPARTURE PRICING ERROR:", error);
