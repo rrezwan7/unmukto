@@ -2,6 +2,30 @@ import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin-auth";
 import VehicleForm from "./vehicle-form";
 import SeatLayoutSelector from "./seat-layout-selector";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const vehicleTypeLabels = {
+  BUS: "Bus",
+  COACH: "Coach",
+  MICROBUS: "Microbus",
+  MINIBUS: "Minibus",
+  OTHER: "Other",
+};
 
 export default async function VehiclesPage() {
   await requireAdminPage();
@@ -30,6 +54,7 @@ export default async function VehiclesPage() {
         >
           ← Back to Departures
         </Link>
+
         <h1 className="mt-3 text-2xl font-bold">Vehicles</h1>
         <p className="mt-1 text-muted-foreground">
           Manage vehicles and assign their seat layouts.
@@ -38,51 +63,77 @@ export default async function VehiclesPage() {
 
       <VehicleForm />
 
-      <section className="rounded-lg border p-6">
-        <h2 className="text-lg font-semibold">All Vehicles</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>All Vehicles</CardTitle>
+          <CardDescription>
+            {vehicles.length} vehicles registered.
+          </CardDescription>
+        </CardHeader>
 
-        {vehicles.length === 0 ? (
-          <p className="mt-4 text-muted-foreground">
-            No vehicles yet. Add your first vehicle above.
-          </p>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th scope="col" className="p-3">Name</th>
-                  <th scope="col" className="p-3">Type</th>
-                  <th scope="col" className="p-3">Registration</th>
-                  <th scope="col" className="p-3">Status</th>
-                  <th scope="col" className="p-3">Seat Layout</th>
-                </tr>
-              </thead>
-              <tbody>
+        <CardContent>
+          {vehicles.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No vehicles yet. Add your first vehicle above.
+            </p>
+          ) : (
+            <Table>
+              <TableCaption>
+                Vehicles already allocated to departures cannot switch layouts.
+              </TableCaption>
+
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Name</TableHead>
+                  <TableHead scope="col">Type</TableHead>
+                  <TableHead scope="col">Registration</TableHead>
+                  <TableHead scope="col">Status</TableHead>
+                  <TableHead scope="col">Seat Layout</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
                 {vehicles.map((vehicle) => (
-                  <tr key={vehicle.id} className="border-b align-top">
-                    <td className="p-3 font-medium">{vehicle.name}</td>
-                    <td className="p-3">{vehicle.type}</td>
-                    <td className="p-3">
+                  <TableRow key={vehicle.id}>
+                    <TableCell className="font-medium">
+                      {vehicle.name}
+                    </TableCell>
+
+                    <TableCell>
+                      {vehicleTypeLabels[vehicle.type]}
+                    </TableCell>
+
+                    <TableCell>
                       {vehicle.registrationNumber ?? "Not provided"}
-                    </td>
-                    <td className="p-3">
-                      {vehicle.isActive ? "Active" : "Inactive"}
-                    </td>
-                    <td className="p-3">
+                    </TableCell>
+
+                    <TableCell>
+                      <span
+                        className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${
+                          vehicle.isActive
+                            ? "border-green-200 bg-green-50 text-green-800"
+                            : "border-border bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {vehicle.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="whitespace-normal">
                       <SeatLayoutSelector
                         key={`${vehicle.id}-${vehicle.seatLayoutId}`}
                         vehicleId={vehicle.id}
                         currentLayoutId={vehicle.seatLayoutId}
                         layouts={layoutChoices}
                       />
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }

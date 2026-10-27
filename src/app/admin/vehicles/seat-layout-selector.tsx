@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 
 type Props = {
   vehicleId: number;
@@ -53,7 +59,9 @@ export default function SeatLayoutSelector({
       router.refresh();
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Unable to assign layout."
+        error instanceof Error
+          ? error.message
+          : "Unable to assign layout."
       );
     } finally {
       setSaving(false);
@@ -61,54 +69,60 @@ export default function SeatLayoutSelector({
   }
 
   if (layouts.length === 0) {
-    return <span>No layouts created yet.</span>;
+    return (
+      <span className="text-muted-foreground">
+        No layouts created yet.
+      </span>
+    );
   }
 
   return (
-    <div className="min-w-56 space-y-2">
+    <div className="min-w-64 space-y-2">
       {currentLayoutId && (
         <Link
           href={`/admin/seat-layouts/${currentLayoutId}`}
-          className="inline-block underline"
+          className="inline-block text-sm underline underline-offset-4"
         >
           View assigned seat map
         </Link>
       )}
 
-      <form onSubmit={save}>
+      <form onSubmit={save} aria-busy={saving}>
         <fieldset disabled={saving} className="flex items-center gap-2">
-          <label htmlFor={`layout-${vehicleId}`} className="sr-only">
+          <Label htmlFor={`layout-${vehicleId}`} className="sr-only">
             Seat layout for vehicle {vehicleId}
-          </label>
+          </Label>
 
-          <select
+          <NativeSelect
             id={`layout-${vehicleId}`}
             required
+            disabled={saving}
             value={selected}
             onChange={(event) => {
               setSelected(event.target.value);
               setMessage("");
               setError("");
             }}
-            className="min-w-0 flex-1 rounded-md border px-2 py-2"
+            className="min-w-0 flex-1"
           >
-            <option value="" disabled>
+            <NativeSelectOption value="" disabled>
               Choose layout
-            </option>
-            {layouts.map((layout) => (
-              <option key={layout.id} value={layout.id}>
-                {layout.name}
-              </option>
-            ))}
-          </select>
+            </NativeSelectOption>
 
-          <button
+            {layouts.map((layout) => (
+              <NativeSelectOption key={layout.id} value={layout.id}>
+                {layout.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+
+          <Button
             type="submit"
+            variant="outline"
             disabled={!selected || saving}
-            className="rounded-md bg-primary px-3 py-2 text-primary-foreground disabled:opacity-50"
           >
             {saving ? "Saving…" : "Assign"}
-          </button>
+          </Button>
         </fieldset>
       </form>
 
@@ -117,8 +131,9 @@ export default function SeatLayoutSelector({
           {message}
         </p>
       )}
+
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
