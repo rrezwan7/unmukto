@@ -1,14 +1,25 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin-auth";
 import VehicleForm from "./vehicle-form";
+import SeatLayoutSelector from "./seat-layout-selector";
 
 export default async function VehiclesPage() {
   await requireAdminPage();
 
   const { db } = await import("@/prisma/db");
-  const vehicles = await db.orm.public.Vehicle.all();
+
+  const [vehicles, layouts] = await Promise.all([
+    db.orm.public.Vehicle.all(),
+    db.orm.public.SeatLayout.all(),
+  ]);
 
   vehicles.sort((a, b) => b.id - a.id);
+  layouts.sort((a, b) => a.name.localeCompare(b.name));
+
+  const layoutChoices = layouts.map((layout) => ({
+    id: layout.id,
+    name: layout.name,
+  }));
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 p-6">
@@ -21,7 +32,7 @@ export default async function VehiclesPage() {
         </Link>
         <h1 className="mt-3 text-2xl font-bold">Vehicles</h1>
         <p className="mt-1 text-muted-foreground">
-          Manage vehicles used for your tours.
+          Manage vehicles and assign their seat layouts.
         </p>
       </header>
 
@@ -48,7 +59,7 @@ export default async function VehiclesPage() {
               </thead>
               <tbody>
                 {vehicles.map((vehicle) => (
-                  <tr key={vehicle.id} className="border-b">
+                  <tr key={vehicle.id} className="border-b align-top">
                     <td className="p-3 font-medium">{vehicle.name}</td>
                     <td className="p-3">{vehicle.type}</td>
                     <td className="p-3">
@@ -58,9 +69,12 @@ export default async function VehiclesPage() {
                       {vehicle.isActive ? "Active" : "Inactive"}
                     </td>
                     <td className="p-3">
-                      {vehicle.seatLayoutId
-                        ? `Layout #${vehicle.seatLayoutId}`
-                        : "Not assigned"}
+                      <SeatLayoutSelector
+                        key={`${vehicle.id}-${vehicle.seatLayoutId}`}
+                        vehicleId={vehicle.id}
+                        currentLayoutId={vehicle.seatLayoutId}
+                        layouts={layoutChoices}
+                      />
                     </td>
                   </tr>
                 ))}
