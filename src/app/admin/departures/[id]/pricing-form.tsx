@@ -1,6 +1,17 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type Pricing = {
   adultFare: string;
@@ -30,13 +41,17 @@ export default function PricingForm({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  function clearFeedback() {
+    setMessage("");
+    setError("");
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (saving) return;
 
     setSaving(true);
-    setMessage("");
-    setError("");
+    clearFeedback();
 
     try {
       const response = await fetch(
@@ -71,98 +86,97 @@ export default function PricingForm({
     }
   }
 
-  const inputClass = "mt-1 w-full rounded-md border px-3 py-2";
-
   return (
-    <section className="mt-6 rounded-lg border p-6">
-      <h2 className="text-lg font-semibold">Passenger Pricing</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Fares are in Bangladeshi taka. Infants travel free.
-      </p>
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Passenger Pricing</CardTitle>
+        <CardDescription>
+          Fares are in Bangladeshi taka. Infants travel free.
+        </CardDescription>
+      </CardHeader>
 
-      <form onSubmit={handleSubmit} className="mt-5">
-        <fieldset disabled={saving} className="space-y-5">
-          <div>
-            <label htmlFor="adult-fare" className="text-sm font-medium">
-              Adult fare (৳)
-            </label>
-            <input
-              id="adult-fare"
-              type="number"
-              min="0"
-              step="0.01"
-              required
-              value={adultFare}
-              onChange={(event) => {
-                setAdultFare(event.target.value);
-                setMessage("");
-              }}
-              className={inputClass}
-            />
-          </div>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={childFeeEnabled}
-              onChange={(event) => {
-                setChildFeeEnabled(event.target.checked);
-                setMessage("");
-              }}
-            />
-            <span className="text-sm font-medium">
-              Charge a child fare, including a transport seat
-            </span>
-          </label>
-
-          {childFeeEnabled ? (
-            <div>
-              <label
-                htmlFor="child-fare"
-                className="text-sm font-medium"
-              >
-                Child fare (৳)
-              </label>
-              <input
-                id="child-fare"
+      <CardContent>
+        <form onSubmit={handleSubmit} aria-busy={saving}>
+          <fieldset disabled={saving} className="space-y-6">
+            <div className="max-w-sm space-y-2">
+              <Label htmlFor="adult-fare">Adult fare (৳)</Label>
+              <Input
+                id="adult-fare"
                 type="number"
                 min="0"
                 step="0.01"
                 required
-                value={childFare}
+                value={adultFare}
                 onChange={(event) => {
-                  setChildFare(event.target.value);
-                  setMessage("");
+                  setAdultFare(event.target.value);
+                  clearFeedback();
                 }}
-                className={inputClass}
               />
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Children travel free without a separate transport seat.
+
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="child-fee-enabled"
+                checked={childFeeEnabled}
+                disabled={saving}
+                onCheckedChange={(checked) => {
+                  setChildFeeEnabled(checked);
+                  clearFeedback();
+                }}
+                aria-describedby="child-pricing-help"
+              />
+
+              <div className="space-y-1">
+                <Label htmlFor="child-fee-enabled">
+                  Charge a child fare
+                </Label>
+                <p
+                  id="child-pricing-help"
+                  className="text-sm text-muted-foreground"
+                >
+                  {childFeeEnabled
+                    ? "The child fare includes a transport seat."
+                    : "Children travel free without a separate transport seat."}
+                </p>
+              </div>
+            </div>
+
+            {childFeeEnabled && (
+              <div className="max-w-sm space-y-2">
+                <Label htmlFor="child-fare">Child fare (৳)</Label>
+                <Input
+                  id="child-fare"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  value={childFare}
+                  onChange={(event) => {
+                    setChildFare(event.target.value);
+                    clearFeedback();
+                  }}
+                />
+              </div>
+            )}
+
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving…" : "Save passenger pricing"}
+            </Button>
+          </fieldset>
+
+          {message && (
+            <p role="status" className="mt-4 text-sm text-green-700">
+              {message}
             </p>
           )}
 
-          <button
-            type="submit"
-            className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
-          >
-            {saving ? "Saving…" : "Save passenger pricing"}
-          </button>
-        </fieldset>
-
-        {message && (
-          <p role="status" className="mt-3 text-sm text-green-700">
-            {message}
-          </p>
-        )}
-
-        {error && (
-          <p role="alert" className="mt-3 text-sm text-red-700">
-            {error}
-          </p>
-        )}
-      </form>
-    </section>
+          {error && (
+            <p role="alert" className="mt-4 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+        </form>
+      </CardContent>
+    </Card>
   );
 }
