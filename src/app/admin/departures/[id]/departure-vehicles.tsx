@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
+import DepartureSeatMap from "./departure-seat-map";
 
 type Vehicle = {
   id: number;
@@ -300,6 +301,10 @@ export default function DepartureVehicles({
                       View seat layout
                     </Link>
                   )}
+                  <DepartureSeatMap
+  departureId={departureId}
+  vehicleId={allocation.vehicleId}
+/>
                 </div>
               ))
             )}
