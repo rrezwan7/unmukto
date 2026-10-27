@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin-auth";
 import PricingForm from "./pricing-form";
 import RoomOptionsForm from "./room-options-form";
+import DepartureVehicles from "./departure-vehicles";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -98,6 +99,10 @@ export default async function DepartureDetailsPage({ params }: Props) {
         }
       />
 <RoomOptionsForm key={`rooms-${departureId}`} departureId={departureId} />
+<DepartureVehicles
+  key={`vehicles-${departureId}`}
+  departureId={departureId}
+/>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <section className="rounded-lg border p-5">
           <h2 className="font-semibold">Vehicles & Seats</h2>
