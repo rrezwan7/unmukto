@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SeatForm from "./seat-form";
 import { requireAdminPage } from "@/lib/admin-auth";
 
 type Props = {
@@ -25,8 +26,8 @@ export default async function SeatLayoutPage({ params }: Props) {
     return (
       <main className="p-6">
         <h1 className="text-2xl font-bold">Seat layout not found</h1>
-        <Link href="/admin/vehicles" className="mt-4 inline-block underline">
-          ← Back to Vehicles
+        <Link href="/admin/seat-layouts" className="mt-4 inline-block underline">
+          ← Back to Seat Layouts
         </Link>
       </main>
     );
@@ -69,10 +70,10 @@ export default async function SeatLayoutPage({ params }: Props) {
     <main className="mx-auto max-w-5xl space-y-6 p-6">
       <header>
         <Link
-          href="/admin/vehicles"
+          href="/admin/seat-layouts"
           className="text-sm text-muted-foreground hover:underline"
         >
-          ← Back to Vehicles
+          ← Back to Seat Layouts
         </Link>
 
         <h1 className="mt-3 text-2xl font-bold">{layout.name}</h1>
@@ -88,6 +89,8 @@ export default async function SeatLayoutPage({ params }: Props) {
           {seats.filter((seat) => seat.isAvailable).length} enabled
         </p>
       </header>
+
+      <SeatForm layoutId={layoutId} />
 
       <section className="rounded-lg border p-6">
         <h2 className="text-lg font-semibold">Seat Layout</h2>

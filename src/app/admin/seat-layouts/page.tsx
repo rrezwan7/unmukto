@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LayoutForm from "./layout-form";
 import { requireAdminPage } from "@/lib/admin-auth";
 import {
   Card,
@@ -29,9 +30,11 @@ export default async function SeatLayoutsPage() {
       <header>
         <h1 className="text-2xl font-bold">Seat Layouts</h1>
         <p className="mt-1 text-muted-foreground">
-          Browse reusable layouts and view their seat maps.
+          Create reusable layouts and add seats to their maps.
         </p>
       </header>
+
+      <LayoutForm />
 
       <Card>
         <CardHeader>
