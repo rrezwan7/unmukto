@@ -3,6 +3,7 @@ import { requireAdminPage } from "@/lib/admin-auth";
 import PricingForm from "./pricing-form";
 import RoomOptionsForm from "./room-options-form";
 import DepartureVehicles from "./departure-vehicles";
+import DepartureHotelStays from "./departure-hotel-stays";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -103,21 +104,10 @@ export default async function DepartureDetailsPage({ params }: Props) {
   key={`vehicles-${departureId}`}
   departureId={departureId}
 />
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <section className="rounded-lg border p-5">
-          <h2 className="font-semibold">Vehicles & Seats</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage vehicles and seat layouts.
-          </p>
-        </section>
-
-        <section className="rounded-lg border p-5">
-          <h2 className="font-semibold">Hotels</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage hotels and room assignments.
-          </p>
-        </section>
-      </div>
+      <DepartureHotelStays
+        key={`hotel-stays-${departureId}`}
+        departureId={departureId}
+      />
     </main>
   );
 }

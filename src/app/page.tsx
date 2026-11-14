@@ -30,7 +30,7 @@ export default function Home() {
         </Link>
         <nav aria-label="প্রধান নেভিগেশন" className={styles.nav}>
           <a href="#journeys">ভ্রমণের ভাবনা</a><a href="#about">আমাদের কথা</a>
-          <a href="#upcoming" className={styles.navButton}>আসন্ন আয়োজন <ArrowUpRight size={16} aria-hidden="true" /></a>
+          <Link href="/tours" className={styles.navButton}>আসন্ন আয়োজন <ArrowUpRight size={16} aria-hidden="true" /></Link>
         </nav>
       </header>
       <main id="main">
@@ -40,7 +40,7 @@ export default function Home() {
             <h1 id="hero-title">চেনা গণ্ডির বাইরে,<br />গল্প হোক <span className={styles.headingAccent}>নতুন পথে।</span></h1>
             <p className={styles.heroDescription}>পাহাড়ের মেঘ, নদীর হাওয়া আর সবুজের নীরবতা। একটু থামুন, চারপাশটা দেখুন—উন্মুক্তর সাথে শুরু হোক আপনার পরের ভ্রমণের গল্প।</p>
             <div className={styles.heroActions}>
-              <a href="#upcoming" className={styles.primaryButton}>আসন্ন আয়োজন দেখুন <ArrowUpRight size={20} aria-hidden="true" /></a>
+              <Link href="/tours" className={styles.primaryButton}>আসন্ন আয়োজন দেখুন <ArrowUpRight size={20} aria-hidden="true" /></Link>
               <a href="#about" className={styles.textLink}>উন্মুক্তকে জানুন <ArrowDown size={17} aria-hidden="true" /></a>
             </div>
             <div className={styles.heroNote}><span className={styles.noteIcon}><MapPin size={21} aria-hidden="true" /></span><p>শুরুটা বাংলাদেশ থেকে।<br /><strong>সামনে আরও কত পথ, কত গল্প।</strong></p></div>
@@ -69,8 +69,8 @@ export default function Home() {
         </section>
         <section id="upcoming" className={styles.upcoming} aria-labelledby="upcoming-title">
           <div className={styles.upcomingSymbol} aria-hidden="true"><Compass size={42} strokeWidth={1.2} /></div>
-          <p className={styles.eyebrow}>আসন্ন আয়োজন</p><h2 id="upcoming-title">নতুন যাত্রার প্রস্তুতি চলছে।</h2><p>আমাদের প্রথম ট্যুর আয়োজনের তারিখ, বিস্তারিত ও বুকিংয়ের খবর শিগগিরই এখানে পাবেন।<br className={styles.desktopBreak} /> তার আগে, ভ্রমণের স্বপ্নগুলো গুছিয়ে রাখুন।</p>
-          <span className={styles.comingSoon}><span /> ট্যুর ঘোষণা শিগগিরই</span>
+          <p className={styles.eyebrow}>আসন্ন আয়োজন</p><h2 id="upcoming-title">নতুন যাত্রার প্রস্তুতি চলছে।</h2><p>আমাদের ট্যুর আয়োজনের তারিখ, বিস্তারিত ও বুকিংয়ের সর্বশেষ খবর দেখুন।<br className={styles.desktopBreak} /> ভ্রমণের স্বপ্নগুলো নিয়ে তৈরি থাকুন নতুন গল্পের জন্য।</p>
+          <Link href="/tours" className={styles.primaryButton}>সকল ট্যুর ও তারিখ দেখুন <ArrowUpRight size={18} aria-hidden="true" /></Link>
         </section>
       </main>
       <footer className={styles.footer}><div><strong lang="en">UNMUKTO.</strong><span>খোলা পথে, নতুন গল্পে।</span></div><p lang="en">© {new Date().getFullYear()} Unmukto. All rights reserved.</p><a href="#main">উপরে ফিরুন ↑</a></footer>

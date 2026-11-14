@@ -10,6 +10,7 @@ const navigation = [
   { href: "/admin/departures", label: "Departures" },
   { href: "/admin/vehicles", label: "Vehicles" },
   { href: "/admin/seat-layouts", label: "Seat Layouts" },
+  { href: "/admin/hotels", label: "Hotels" },
 ];
 
 export default async function AdminLayout({

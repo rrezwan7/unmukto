@@ -45,6 +45,36 @@ departure allocation/availability and passenger seat assignment before this sess
   sharing that layout; gaps can represent aisles. Editing/removing existing seats
   and bulk seat-entry controls are not implemented.
 
+## Hotel & Room Stays Management milestone
+
+- `/admin/hotels` allows registering partner hotels (`name`, `location`, `phone`,
+  `address`, `description`, `isActive`) using `POST /api/hotels` and lists all hotels.
+- `/admin/hotels/[id]` manages physical rooms (`POST /api/hotels/[id]/rooms`),
+  supporting `SHARED`, `COUPLE`, and `PRIVATE` room types, 1–20 passenger capacities,
+  and room-number uniqueness within each hotel.
+- `/admin/departures/[id]` now features live accommodation management via
+  `DepartureHotelStays` and `StayRoomAssignmentPanel`, replacing the earlier placeholder:
+  - Stays are scheduled with check-in and check-out dates (`POST /api/departures/[id]/hotel-stays`).
+  - Stays can be removed when unassigned (`DELETE /api/departures/[id]/hotel-stays/[stayId]`).
+  - Per-stay room assignment engine (`POST/DELETE /api/departures/[id]/hotel-stays/[stayId]/room-assignments`)
+    enforces departure membership, active booking checks (`PENDING`/`CONFIRMED`), stay
+    membership, room capacity limits, and per-stay uniqueness `(passengerId, hotelStayId)`.
+- The in-memory table scans in `GET /api/departures/[id]/pricing` were replaced with
+  database-filtered queries (`.where({ departureId }).first()` and `.all()`).
+- Added "Hotels" to the primary admin navigation header.
+
+## Public Tour Catalog milestone (Phase 4)
+
+- Isolated public query service in `src/lib/catalog.ts` (`getPublicTours` and `getPublicTourBySlug`)
+  strictly filtering published data (`isActive: true`, `customerVisible: true`, `isAvailable: true`).
+- `/tours` catalog page rendering published tour cards with Bengali typography, starting fares,
+  duration labels, upcoming departure counts, and seat availability badges.
+- `/tours/[slug]` tour detail page with SEO metadata, day-by-day itinerary timeline with
+  destination arrival/departure schedules, scheduled departures list, transparent pricing &
+  room option surcharge breakdown, and traveler inclusions.
+- Shared public header (`src/components/public-header.tsx`) and footer (`src/components/public-footer.tsx`),
+  linking navigation on the homepage directly to `/tours`.
+
 ## Stack and database
 
 Next.js 16.3.8, React 19.2.8, TypeScript 5, Tailwind CSS 4, shadcn/Base UI,
@@ -90,7 +120,8 @@ assignment validation predate the implemented admin seat-assignment APIs.
 - `git diff --check`: passed; the existing lockfile checksum is unchanged.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
-checks. The HTTP suite now covers seat-layout endpoints and page protection.
+checks. The HTTP suite now covers seat-layout endpoints, hotel endpoints, room endpoints,
+departure stay endpoints, room assignment endpoints, and page protection.
 Stop any running `next dev` server before tests: the HTTP suite starts its own.
 Two native PostgreSQL migration tests may skip without `TEST_DATABASE_URL`;
 configure only an isolated localhost test server to run those checks.
@@ -103,8 +134,8 @@ labels/positions, reload the map, then assign the layout to a vehicle. This
 session does not use live OAuth or write application database records.
 
 Customer booking/reservations, holds/capacity enforcement, customer seat selection,
-hotel/room assignment UI and payment flows remain future work. A Hotels placeholder
-still exists on the departure page. Payment methods are separate from pricing.
+and payment flows remain future work (Phase 5 & 6).
+Payment methods are separate from pricing.
 
 Do not run production migrations or merge into `main`. Coordinate migration and
 deployment separately. Never print environment files or credentials.
