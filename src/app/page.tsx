@@ -19,6 +19,26 @@ const journeys = [
   { number: "০৩", label: "সবুজের মাঝে", detail: "প্রকৃতির কাছে ফিরে যাওয়া, ব্যস্ততার বাইরে কিছুটা অবকাশ।", english: "THE GREEN", icon: Trees, color: styles.green },
 ];
 
+const completedMilestones = [
+  "অ্যাডমিন লগইন ও ব্যবস্থাপনা প্যানেল",
+  "ট্যুর ও যাত্রার তারিখ তৈরি",
+  "ভাড়া ও রুমের ধরন নির্ধারণ",
+  "যানবাহন, আসনের নকশা ও যাত্রীদের আসন বরাদ্দ",
+  "হোটেল, থাকার সময়সূচি ও রুম বরাদ্দ",
+  "সবার জন্য ট্যুর তালিকা, ভ্রমণসূচি ও ভাড়ার তথ্য",
+];
+
+const remainingMilestones = [
+  "গ্রাহকের বুকিং ও সাময়িক আসন-রুম সংরক্ষণ। ভাড়া হিসাবের ধাপ তৈরি হয়েছে।",
+  "পেমেন্ট গ্রহণ, যাচাই ও বুকিং নিশ্চিতকরণ",
+  "যোগাযোগ, ভ্রমণবিষয়ক লেখা ও প্রয়োজনীয় নীতিমালা",
+  "মোবাইলে চূড়ান্ত পরীক্ষা ও ওয়েবসাইট চালু করা",
+];
+
+const milestoneCount = completedMilestones.length + remainingMilestones.length;
+const progress = Math.round((completedMilestones.length / milestoneCount) * 100);
+const banglaNumber = new Intl.NumberFormat("bn-BD");
+
 export default function Home() {
   return (
     <div lang="bn" className={`${styles.home} ${bengali.className}`}>
@@ -30,7 +50,7 @@ export default function Home() {
         </Link>
         <nav aria-label="প্রধান নেভিগেশন" className={styles.nav}>
           <a href="#journeys">ভ্রমণের ভাবনা</a><a href="#about">আমাদের কথা</a>
-          <a href="#upcoming" className={styles.navButton}>আসন্ন আয়োজন <ArrowUpRight size={16} aria-hidden="true" /></a>
+          <Link href="/tours" className={styles.navButton}>আসন্ন আয়োজন <ArrowUpRight size={16} aria-hidden="true" /></Link>
         </nav>
       </header>
       <main id="main">
@@ -40,7 +60,7 @@ export default function Home() {
             <h1 id="hero-title">চেনা গণ্ডির বাইরে,<br />গল্প হোক <span className={styles.headingAccent}>নতুন পথে।</span></h1>
             <p className={styles.heroDescription}>পাহাড়ের মেঘ, নদীর হাওয়া আর সবুজের নীরবতা। একটু থামুন, চারপাশটা দেখুন—উন্মুক্তর সাথে শুরু হোক আপনার পরের ভ্রমণের গল্প।</p>
             <div className={styles.heroActions}>
-              <a href="#upcoming" className={styles.primaryButton}>আসন্ন আয়োজন দেখুন <ArrowUpRight size={20} aria-hidden="true" /></a>
+              <Link href="/tours" className={styles.primaryButton}>আসন্ন আয়োজন দেখুন <ArrowUpRight size={20} aria-hidden="true" /></Link>
               <a href="#about" className={styles.textLink}>উন্মুক্তকে জানুন <ArrowDown size={17} aria-hidden="true" /></a>
             </div>
             <div className={styles.heroNote}><span className={styles.noteIcon}><MapPin size={21} aria-hidden="true" /></span><p>শুরুটা বাংলাদেশ থেকে।<br /><strong>সামনে আরও কত পথ, কত গল্প।</strong></p></div>
@@ -53,6 +73,30 @@ export default function Home() {
           </div>
         </section>
         <div className={styles.strip}><span>নতুন জায়গা</span><span aria-hidden="true">✳</span><span>নতুন অভিজ্ঞতা</span><span aria-hidden="true">✳</span><span>একসাথে পথচলা</span><span aria-hidden="true">✳</span><span>মনে রাখার মতো গল্প</span></div>
+        <section id="upcoming" className={styles.upcoming} aria-labelledby="upcoming-title">
+          <p className={styles.eyebrow}>আসন্ন আয়োজন</p><h2 id="upcoming-title">পরের ভ্রমণটি বেছে নিন</h2><p>ট্যুরের তারিখ, ভ্রমণসূচি, ভাড়া ও আসনের তথ্য এক জায়গায় দেখুন।</p>
+          <Link href="/tours" className={styles.primaryButton}>সকল ট্যুর ও তারিখ দেখুন <ArrowUpRight size={18} aria-hidden="true" /></Link>
+        </section>
+        <section id="progress" className={styles.progressSection} aria-labelledby="progress-title">
+          <div className={styles.progressHeading}>
+            <h2 id="progress-title">ওয়েবসাইট তৈরির অগ্রগতি</h2>
+            <strong aria-hidden="true">{banglaNumber.format(progress)}%</strong>
+          </div>
+          <progress className={styles.progressBar} value={completedMilestones.length} max={milestoneCount} aria-labelledby="progress-title" aria-describedby="progress-status" aria-valuetext={`${banglaNumber.format(progress)} শতাংশ সম্পন্ন`} />
+          <p id="progress-status" className={styles.progressStatus}>
+            {banglaNumber.format(milestoneCount)}টি নির্ধারিত ধাপের মধ্যে {banglaNumber.format(completedMilestones.length)}টি সম্পন্ন হয়েছে।
+          </p>
+          <div className={styles.progressLists}>
+            <div>
+              <h3>যা সম্পন্ন হয়েছে</h3>
+              <ul>{completedMilestones.map((milestone) => <li key={milestone}>{milestone}</li>)}</ul>
+            </div>
+            <div>
+              <h3>যা বাকি আছে</h3>
+              <ul>{remainingMilestones.map((milestone) => <li key={milestone}>{milestone}</li>)}</ul>
+            </div>
+          </div>
+        </section>
         <section id="journeys" className={styles.journeys} aria-labelledby="journeys-title">
           <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>ভ্রমণের ভাবনা</p><h2 id="journeys-title">মন কোন পথে যেতে চায়?</h2></div><p>বাংলাদেশকে নতুন করে দেখার<br />অনেক পথ এখনো বাকি।</p></div>
           <div className={styles.journeyGrid}>{journeys.map(({ number, label, detail, english, icon: Icon, color }) => (
@@ -67,13 +111,8 @@ export default function Home() {
           <div className={styles.aboutVisual}><span lang="en">LESS ROUTINE.<br />MORE <em>WONDER.</em></span><Compass size={106} strokeWidth={.65} aria-hidden="true" /></div>
           <div className={styles.aboutCopy}><p className={styles.eyebrow}>আমাদের কথা</p><h2 id="about-title">ভ্রমণ শুধু গন্তব্য নয়,<br />পথের গল্পও।</h2><p>উন্মুক্তর ভাবনা সহজ—দৈনন্দিন ব্যস্ততার বাইরে গিয়ে নতুন জায়গা দেখা, প্রকৃতির কাছে থাকা আর একসাথে সুন্দর কিছু স্মৃতি তৈরি করা।</p><p>আমরা নিজেদের ট্যুর আয়োজন নিয়ে কাজ করছি। প্রতিটি আয়োজনের তারিখ, যাত্রাপথ, খরচ ও প্রয়োজনীয় তথ্য এখানে প্রকাশ করা হবে, যাতে ভ্রমণের আগে আপনি পরিষ্কারভাবে সবকিছু জেনে নিতে পারেন।</p><span className={styles.aboutSignature}>চলুন, পথের দিকে তাকাই। <ArrowUpRight size={20} aria-hidden="true" /></span></div>
         </section>
-        <section id="upcoming" className={styles.upcoming} aria-labelledby="upcoming-title">
-          <div className={styles.upcomingSymbol} aria-hidden="true"><Compass size={42} strokeWidth={1.2} /></div>
-          <p className={styles.eyebrow}>আসন্ন আয়োজন</p><h2 id="upcoming-title">নতুন যাত্রার প্রস্তুতি চলছে।</h2><p>আমাদের প্রথম ট্যুর আয়োজনের তারিখ, বিস্তারিত ও বুকিংয়ের খবর শিগগিরই এখানে পাবেন।<br className={styles.desktopBreak} /> তার আগে, ভ্রমণের স্বপ্নগুলো গুছিয়ে রাখুন।</p>
-          <span className={styles.comingSoon}><span /> ট্যুর ঘোষণা শিগগিরই</span>
-        </section>
       </main>
-      <footer className={styles.footer}><div><strong lang="en">UNMUKTO.</strong><span>খোলা পথে, নতুন গল্পে।</span></div><p lang="en">© {new Date().getFullYear()} Unmukto. All rights reserved.</p><a href="#main">উপরে ফিরুন ↑</a></footer>
+      <footer className={styles.footer}><div><strong lang="en">UNMUKTO.</strong><span>খোলা পথে, নতুন গল্পে।</span></div><p lang="en">© {new Date().getFullYear()} Unmukto. All rights reserved.</p><a href="#progress">কাজের অগ্রগতি</a><a href="#main">উপরে ফিরুন ↑</a></footer>
     </div>
   );
 }

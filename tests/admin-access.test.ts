@@ -10,7 +10,12 @@ let base: string;
 let serverOutput = "";
 const secret = randomBytes(32).toString("hex");
 const cookieName = "authjs.session-token";
-const paths = ["/api/tours", "/api/departures", "/api/departures/1/pricing"];
+const paths = [
+  "/api/tours", "/api/departures", "/api/departures/1/pricing",
+  "/api/seat-layouts", "/api/seat-layouts/1/seats",
+  "/api/hotels", "/api/hotels/1/rooms",
+  "/api/departures/1/hotel-stays", "/api/departures/1/hotel-stays/1/room-assignments",
+];
 
 async function sessionCookie(id: string, maxAge = 3600) {
   const value = await encode({
@@ -61,7 +66,7 @@ after(() => {
   }
 });
 
-test("every existing API denies anonymous reads and writes before database access", async () => {
+test("admin APIs deny anonymous reads and writes before database access", async () => {
   for (const path of paths) {
     for (const method of ["GET", "POST"]) {
       const response = await fetch(`${base}${path}`, { method });
@@ -93,7 +98,12 @@ test("even an admin session cannot make cross-origin or originless writes", asyn
 });
 
 test("admin pages redirect anonymous users and allow an authorized session", async () => {
-  for (const path of ["/admin/tours", "/admin/departures", "/admin/departures/1", "/admin/tours/new", "/admin/departures/new"]) {
+  for (const path of [
+    "/admin/tours", "/admin/departures", "/admin/departures/1",
+    "/admin/tours/new", "/admin/departures/new",
+    "/admin/seat-layouts", "/admin/seat-layouts/1",
+    "/admin/hotels", "/admin/hotels/1"
+  ]) {
     const response = await fetch(`${base}${path}`, { redirect: "manual" });
     // Streaming server component redirects may be encoded in an HTTP 200 body.
     if (response.status === 200) assert.match(await response.text(), /NEXT_REDIRECT|http-equiv="refresh"/);

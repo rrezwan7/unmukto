@@ -25,21 +25,15 @@ export async function GET(
             );
         }
 
-        const [pricingRecords, roomOptions] = await Promise.all([
-            db.orm.public.DeparturePricing.all(),
-            db.orm.public.DepartureRoomOption.all(),
+        const [pricing, roomOptions] = await Promise.all([
+            db.orm.public.DeparturePricing.where({ departureId }).first(),
+            db.orm.public.DepartureRoomOption.where({ departureId }).all(),
         ]);
-
-        const pricing = pricingRecords.find(
-            (item) => item.departureId === departureId
-        );
 
         return Response.json({
             success: true,
             pricing: pricing ?? null,
-            roomOptions: roomOptions.filter(
-                (room) => room.departureId === departureId
-            ),
+            roomOptions,
         });
     } catch (error) {
         console.error("GET DEPARTURE PRICING ERROR:", error);
@@ -106,20 +100,27 @@ export async function POST(
             );
         }
 
-        const pricing =
-            await db.orm.public.DeparturePricing.create({
-                departureId,
-                adultFare: String(adultFare),
-                childFeeEnabled,
-                childFare: String(childFare),
-            });
+        const values = {
+    adultFare: String(adultFare),
+    childFeeEnabled,
+    childFare: String(childFare),
+};
+
+const pricing = await db.orm.public.DeparturePricing.upsert({
+    create: {
+        departureId,
+        ...values,
+    },
+    update: values,
+    conflictOn: { departureId },
+});
 
         return Response.json(
             {
                 success: true,
                 pricing,
             },
-            { status: 201 }
+            { status: 200 }
         );
     } catch (error) {
         console.error("CREATE DEPARTURE PRICING ERROR:", error);

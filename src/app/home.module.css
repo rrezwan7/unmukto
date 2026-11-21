@@ -22,9 +22,90 @@
 .journeyTop { display: flex; justify-content: space-between; align-items: center; color: #627668; margin-bottom: 33px; font-size: 12px; }.journeyEnglish { font-family: var(--font-geist-sans), sans-serif; font-size: 8px; letter-spacing: 2px; color: #61715c; margin: 0 0 7px; }.journeyCard h3 { font-size: 23px; font-weight: 600; margin: 0 0 10px; }.journeyDetail { font-size: 12px; color: #526558; line-height: 1.9; margin: 0; max-width: 270px; }.journeyDisclaimer { color: #68786b; font-size: 10px; line-height: 1.8; margin: 19px 0 0; }
 .about { max-width: 1200px; margin: 0 auto 86px; display: grid; grid-template-columns: .95fr 1.05fr; background: #e9ecdf; border-radius: 10px; overflow: hidden; scroll-margin-top: 24px; }.aboutVisual { background: #254f3e; position: relative; overflow: hidden; min-height: 340px; padding: 45px 42px; color: #f4f1d9; display: flex; flex-direction: column; justify-content: space-between; }.aboutVisual::before, .aboutVisual::after { content: ''; position: absolute; border: 1px solid #d2e3b622; width: 330px; height: 330px; border-radius: 50%; right: -100px; bottom: -170px; }.aboutVisual::after { width: 460px; height: 460px; right: -165px; bottom: -235px; }.aboutVisual > span { font-family: var(--font-geist-sans), sans-serif; font-size: clamp(33px, 4vw, 49px); line-height: 1.18; font-weight: 500; letter-spacing: -1.5px; }.aboutVisual em { color: #d4dc91; font-style: normal; }.aboutVisual > svg { align-self: end; margin-top: 24px; color: #ced7a9; }
 .aboutCopy { padding: 42px 44px; }.aboutCopy .eyebrow { margin-bottom: 16px; }.aboutCopy p:not(.eyebrow) { font-size: 12px; line-height: 2; color: #5e7062; margin: 18px 0 0; }.aboutSignature { display: flex; align-items: center; gap: 17px; margin-top: 24px; font-size: 13px; font-weight: 500; }
-.upcoming { text-align: center; max-width: 1200px; margin: 0 auto 82px; padding: 15px 24px; scroll-margin-top: 30px; }.upcomingSymbol { width: 72px; height: 72px; display: grid; place-items: center; background: #e7ebdc; border-radius: 50%; margin: 0 auto 23px; }.upcoming .eyebrow { justify-content: center; margin-bottom: 13px; }.upcoming > p:not(.eyebrow) { color: var(--muted); font-size: 13px; line-height: 2; margin: 18px auto 24px; max-width: 650px; }.comingSoon { display: inline-flex; gap: 9px; align-items: center; border: 1px solid #d1dac9; border-radius: 24px; padding: 10px 15px; color: #58704f; font-size: 11px; }.comingSoon > span { height: 6px; width: 6px; background: #839956; border-radius: 50%; }
+.upcoming { text-align: center; max-width: 1200px; margin: 0 auto; padding: 54px 24px 42px; scroll-margin-top: 30px; }.upcoming .eyebrow { justify-content: center; margin-bottom: 13px; }.upcoming > p:not(.eyebrow) { color: var(--muted); font-size: 13px; line-height: 2; margin: 18px auto 24px; max-width: 650px; }
 .footer { border-top: 1px solid #d6ddcd; padding: 30px 50px; display: flex; justify-content: space-between; align-items: center; gap: 22px; max-width: 1300px; margin: auto; font-size: 10px; }.footer > div { display: flex; align-items: center; gap: 20px; }.footer strong { font-family: var(--font-geist-sans), sans-serif; font-size: 17px; letter-spacing: -.3px; }.footer span, .footer p { color: var(--muted); }.footer p { font-size: 9px; }
 @media (min-width: 1500px) { .heroArt { height: 605px; } }
 @media (max-width: 1050px) { .header { padding-inline: 28px; }.hero { padding-inline: 28px; gap: 28px; }.hero h1 { font-size: 41px; }.heroArt { height: 530px; }.journeys { padding-inline: 28px; }.about { margin-inline: 28px; }.aboutCopy { padding: 32px; }.aboutVisual { padding: 36px 30px; }.strip { gap: 25px; } }
-@media (max-width: 760px) { .header { padding: 22px; flex-wrap: wrap; gap: 23px; }.brand strong { font-size: 22px; }.brandMark { width: 43px; height: 43px; }.nav { width: 100%; justify-content: space-between; gap: 12px; font-size: 11px; }.nav .navButton { padding: 8px 12px; gap: 6px; }.hero { grid-template-columns: 1fr; padding: 18px 22px 34px; gap: 34px; }.heroCopy { padding-top: 6px; }.eyebrow { margin-bottom: 20px; }.hero h1 { font-size: clamp(34px, 7.2vw, 48px); letter-spacing: -1.2px; }.heroDescription { font-size: 13px; max-width: 520px; }.heroActions { gap: 19px; margin-top: 25px; font-size: 12px; }.primaryButton { padding: 14px 17px; }.heroNote { margin-top: 29px; }.heroArt { height: 460px; border-top-left-radius: 100px; }.strip { padding: 19px 22px; gap: 12px 18px; font-size: 10px; }.strip > span:nth-child(6) { display: none; }.journeys { padding: 54px 22px; }.sectionHeading { align-items: start; flex-direction: column; gap: 13px; margin-bottom: 25px; }.sectionHeading > p br { display: none; }.journeyGrid { grid-template-columns: 1fr; gap: 13px; }.journeyCard { min-height: auto; padding: 22px; }.journeyTop { margin-bottom: 16px; }.journeyDetail { max-width: 100%; }.journeyCard h3 { font-size: 22px; }.about { grid-template-columns: 1fr; margin: 0 22px 55px; }.aboutVisual { min-height: 230px; padding: 30px; }.aboutVisual > svg { width: 78px; height: 78px; margin-top: 8px; }.aboutCopy { padding: 30px 25px; }.aboutCopy h2 { font-size: 28px; }.upcoming { margin-bottom: 47px; }.upcoming h2 { font-size: 28px; }.desktopBreak { display: none; }.footer { padding: 24px 22px; flex-wrap: wrap; }.footer > div { width: 100%; }.footer p { margin: 0; } }
+@media (max-width: 760px) { .header { padding: 22px; flex-wrap: wrap; gap: 23px; }.brand strong { font-size: 22px; }.brandMark { width: 43px; height: 43px; }.nav { width: 100%; justify-content: space-between; gap: 12px; font-size: 11px; }.nav .navButton { padding: 8px 12px; gap: 6px; }.hero { grid-template-columns: 1fr; padding: 18px 22px 34px; gap: 34px; }.heroCopy { padding-top: 6px; }.eyebrow { margin-bottom: 20px; }.hero h1 { font-size: clamp(34px, 7.2vw, 48px); letter-spacing: -1.2px; }.heroDescription { font-size: 13px; max-width: 520px; }.heroActions { gap: 19px; margin-top: 25px; font-size: 12px; }.primaryButton { padding: 14px 17px; }.heroNote { margin-top: 29px; }.heroArt { height: 460px; border-top-left-radius: 100px; }.strip { padding: 19px 22px; gap: 12px 18px; font-size: 10px; }.strip > span:nth-child(6) { display: none; }.journeys { padding: 54px 22px; }.sectionHeading { align-items: start; flex-direction: column; gap: 13px; margin-bottom: 25px; }.sectionHeading > p br { display: none; }.journeyGrid { grid-template-columns: 1fr; gap: 13px; }.journeyCard { min-height: auto; padding: 22px; }.journeyTop { margin-bottom: 16px; }.journeyDetail { max-width: 100%; }.journeyCard h3 { font-size: 22px; }.about { grid-template-columns: 1fr; margin: 0 22px 55px; }.aboutVisual { min-height: 230px; padding: 30px; }.aboutVisual > svg { width: 78px; height: 78px; margin-top: 8px; }.aboutCopy { padding: 30px 25px; }.aboutCopy h2 { font-size: 28px; }.upcoming h2 { font-size: 28px; }.footer { padding: 24px 22px; flex-wrap: wrap; }.footer > div { width: 100%; }.footer p { margin: 0; } }
 @media (prefers-reduced-motion: reduce) { .primaryButton { transition: none; } }
+
+.progressSection {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(22px, 4vw, 45px);
+  scroll-margin-top: 24px;
+  background: #edf0e4;
+  border: 1px solid #d6ddcd;
+  border-radius: 12px;
+}
+
+.progressHeading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 18px;
+}
+
+.progressHeading strong {
+  color: #254f3e;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.2;
+}
+
+.progressBar {
+  display: block;
+  appearance: none;
+  width: 100%;
+  height: 12px;
+  margin: 14px 0 10px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: #d3ddcb;
+  color: #254f3e;
+}
+
+.progressBar::-webkit-progress-bar { background: #d3ddcb; }
+.progressBar::-webkit-progress-value { background: #254f3e; border-radius: 999px; }
+.progressBar::-moz-progress-bar { background: #254f3e; border-radius: 999px; }
+
+.progressStatus {
+  color: #526558;
+  font-size: 14px;
+}
+
+.progressLists {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.progressLists > div {
+  padding: 18px;
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.progressLists h3 { font-size: 16px; font-weight: 600; }
+.progressLists ul {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+  padding-inline-start: 20px;
+  list-style: disc;
+  color: #526558;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.progressLists li::marker { color: #517455; }
+
+@media (max-width: 1300px) {
+  .progressSection { margin-inline: clamp(22px, 4vw, 50px); }
+}
+
+@media (max-width: 640px) {
+  .progressLists { grid-template-columns: 1fr; }
+}

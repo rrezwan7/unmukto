@@ -1,0 +1,451 @@
+[
+  {
+    "id": "dropConstraint.RoomAssignment.RoomAssignment_hotelStayId_roomId_passengerId_key",
+    "label": "Drop constraint \"RoomAssignment_hotelStayId_roomId_passengerId_key\" on \"RoomAssignment\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "RoomAssignment_hotelStayId_roomId_passengerId_key",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"RoomAssignment_hotelStayId_roomId_passengerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_hotelStayId_roomId_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"RoomAssignment_hotelStayId_roomId_passengerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\" DROP CONSTRAINT \"RoomAssignment_hotelStayId_roomId_passengerId_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"RoomAssignment_hotelStayId_roomId_passengerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_hotelStayId_roomId_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.RoomAssignment.RoomAssignment_passengerId_key",
+    "label": "Drop constraint \"RoomAssignment_passengerId_key\" on \"RoomAssignment\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "RoomAssignment_passengerId_key",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"RoomAssignment_passengerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"RoomAssignment_passengerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\" DROP CONSTRAINT \"RoomAssignment_passengerId_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"RoomAssignment_passengerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.SeatAssignment.SeatAssignment_vehicleId_seatId_key",
+    "label": "Drop constraint \"SeatAssignment_vehicleId_seatId_key\" on \"SeatAssignment\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "SeatAssignment_vehicleId_seatId_key",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"SeatAssignment_vehicleId_seatId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_vehicleId_seatId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"SeatAssignment_vehicleId_seatId_key\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\" DROP CONSTRAINT \"SeatAssignment_vehicleId_seatId_key\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"SeatAssignment_vehicleId_seatId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_vehicleId_seatId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.SeatAssignment.departureId",
+    "label": "Add column \"departureId\" to \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "departureId",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"departureId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "SeatAssignment",
+          "departureId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"departureId\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\" ADD COLUMN \"departureId\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"departureId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "SeatAssignment",
+          "departureId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-SeatAssignment-departureId",
+    "label": "Data transform: backfill-SeatAssignment-departureId",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-SeatAssignment-departureId has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"SeatAssignment\" WHERE \"departureId\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-SeatAssignment-departureId",
+        "sql": "\n          UPDATE public.\"SeatAssignment\" AS assignment\n          SET \"departureId\" = booking.\"departureId\"\n          FROM public.\"Passenger\" AS passenger\n          JOIN public.\"Booking\" AS booking ON booking.id = passenger.\"bookingId\"\n          WHERE passenger.id = assignment.\"passengerId\"\n            AND assignment.\"departureId\" IS NULL\n        ",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-SeatAssignment-departureId resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"SeatAssignment\" WHERE \"departureId\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.SeatAssignment.departureId",
+    "label": "Set NOT NULL on \"SeatAssignment\".\"departureId\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "departureId",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"departureId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "SeatAssignment",
+          "departureId"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"departureId\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"SeatAssignment\" WHERE \"departureId\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"departureId\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\" ALTER COLUMN \"departureId\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"departureId\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "SeatAssignment",
+          "departureId",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.RoomAssignment.RoomAssignment_passengerId_hotelStayId_key",
+    "label": "Add unique constraint on \"RoomAssignment\" (passengerId, hotelStayId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "RoomAssignment_passengerId_hotelStayId_key",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"RoomAssignment_passengerId_hotelStayId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_hotelStayId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"RoomAssignment_passengerId_hotelStayId_key\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAssignment\" ADD CONSTRAINT \"RoomAssignment_passengerId_hotelStayId_key\" UNIQUE (\"passengerId\", \"hotelStayId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"RoomAssignment_passengerId_hotelStayId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAssignment_passengerId_hotelStayId_key",
+          "public",
+          "\"public\".\"RoomAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.SeatAssignment.SeatAssignment_departureId_vehicleId_seatId_key",
+    "label": "Add unique constraint on \"SeatAssignment\" (departureId, vehicleId, seatId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "SeatAssignment_departureId_vehicleId_seatId_key",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"SeatAssignment_departureId_vehicleId_seatId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_departureId_vehicleId_seatId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"SeatAssignment_departureId_vehicleId_seatId_key\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\" ADD CONSTRAINT \"SeatAssignment_departureId_vehicleId_seatId_key\" UNIQUE (\"departureId\", \"vehicleId\", \"seatId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"SeatAssignment_departureId_vehicleId_seatId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_departureId_vehicleId_seatId_key",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.RoomAssignment.RoomAssignment_passengerId_idx_21958ace",
+    "label": "Create index \"RoomAssignment_passengerId_idx_21958ace\" on \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "RoomAssignment_passengerId_idx_21958ace",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"RoomAssignment_passengerId_idx_21958ace\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_passengerId_idx_21958ace\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"RoomAssignment_passengerId_idx_21958ace\"",
+        "sql": "CREATE INDEX \"RoomAssignment_passengerId_idx_21958ace\" ON \"public\".\"RoomAssignment\" (\"passengerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"RoomAssignment_passengerId_idx_21958ace\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_passengerId_idx_21958ace\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.SeatAssignment.SeatAssignment_departureId_vehicleId_idx_3b46d2d1",
+    "label": "Create index \"SeatAssignment_departureId_vehicleId_idx_3b46d2d1\" on \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "SeatAssignment_departureId_vehicleId_idx_3b46d2d1",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"SeatAssignment_departureId_vehicleId_idx_3b46d2d1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment_departureId_vehicleId_idx_3b46d2d1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"SeatAssignment_departureId_vehicleId_idx_3b46d2d1\"",
+        "sql": "CREATE INDEX \"SeatAssignment_departureId_vehicleId_idx_3b46d2d1\" ON \"public\".\"SeatAssignment\" (\"departureId\", \"vehicleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"SeatAssignment_departureId_vehicleId_idx_3b46d2d1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"SeatAssignment_departureId_vehicleId_idx_3b46d2d1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.SeatAssignment.SeatAssignment_departureId_vehicleId_fkey",
+    "label": "Add foreign key \"SeatAssignment_departureId_vehicleId_fkey\" on \"SeatAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "SeatAssignment_departureId_vehicleId_fkey",
+        "table": "SeatAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"SeatAssignment_departureId_vehicleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_departureId_vehicleId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"SeatAssignment_departureId_vehicleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"SeatAssignment\"\nADD CONSTRAINT \"SeatAssignment_departureId_vehicleId_fkey\"\nFOREIGN KEY (\"departureId\", \"vehicleId\")\nREFERENCES \"public\".\"DepartureVehicle\" (\"departureId\", \"vehicleId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"SeatAssignment_departureId_vehicleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "SeatAssignment_departureId_vehicleId_fkey",
+          "public",
+          "\"public\".\"SeatAssignment\""
+        ]
+      }
+    ]
+  }
+]
