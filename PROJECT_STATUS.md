@@ -11,8 +11,9 @@ needs attention.
 
 The development workspace and Vercel share one hosted PostgreSQL database. The
 guest reservation migration was applied and verified on that database on
-2026-11-22 (Asia/Dhaka). The guest reservation code is on the feature branch
-pending review and deployment.
+2026-11-22 (Asia/Dhaka). GitHub's `main` branch still lacks the guest
+reservation endpoint and Booking Settings page. The feature branch contains
+both and is ready for review.
 
 ## Implemented
 
@@ -94,9 +95,15 @@ departure allocation/availability and passenger seat assignment before this sess
   transaction. The departure row lock serializes last-seat requests, and the
   reservation key makes retries idempotent.
 - Availability checks exclude expired holds as soon as their deadline passes.
-  The admin departure page lists active guest reservations. New pending
-  reservations are visible to staff, with seat and room assignment available
-  after confirmation.
+  **Admin → Departures → Open a departure → Pending guest reservations** lists
+  active holds. This list is currently read-only. **Allow guest booking**
+  controls who can submit a hold. A per-booking approval action has yet to be
+  built.
+- The existing bus seat and hotel room assignment tools are on the departure
+  detail page under the allocated vehicle and **Hotel Stays → Manage Room
+  Assignment**. The assignment APIs accept confirmed bookings and older
+  pending bookings that have no expiry. A new pending guest hold is ineligible
+  for both kinds of assignment until it is confirmed.
 - The booking records one requested room option. Physical room inventory holds,
   payment, and booking confirmation remain future work.
 
@@ -158,13 +165,93 @@ Stop any running `next dev` server before tests: the HTTP suite starts its own.
 Two native PostgreSQL migration tests may skip without `TEST_DATABASE_URL`;
 configure only an isolated localhost test server to run those checks.
 
-## Remaining work
+## Implementation plan
 
-- Fix and verify GitHub admin sign-in on Vercel before enabling live guest
-  reservations.
-- Add customer accounts for booking when guest booking is off.
-- Define hotel room allotments by stay and add room inventory holds.
-- Add payment and confirmation, including handling payments that arrive after a
-  hold expires. Admin seat selection remains the operational path.
-- Test simultaneous admin requests for the last physical room spot before multiple
-  staff members use room assignment.
+### 1. Restore production admin access
+
+- Follow `docs/ADMIN_SETUP.md` and verify the actual production hostname, GitHub
+  OAuth callback, environment scope, and numeric GitHub allowlist against the
+  Vercel login failure. Keep the admin allowlist and same-origin checks in place.
+- Verify sign-in, opening a departure, saving an admin setting, and sign-out on
+  the production hostname. Keep guest booking off while confirmation and room
+  availability are being tested.
+
+### 2. Add guest reservation review and approval
+
+- Extend **Pending guest reservations** into a departure-specific booking list.
+  Show the booking reference, contact and passengers, quoted total, requested
+  room, amount received if applicable, and expiry in Bangladesh time. Provide
+  pending, confirmed, expired, and cancelled views with clear action feedback.
+- Add an admin-only **Confirm booking** action backed by one shared transition
+  service. Start with an isolated test scenario. Before enabling it for live
+  guests, agree on the payment or authorized manual approval rule and the
+  lodging availability rule. Store the staff identity, time, and outcome when
+  a booking is approved or cancelled.
+- In the confirmation transaction, lock in a consistent order with booking
+  creation, re-read the booking and expiry using database time, and validate
+  the booking's departure and required capacity. For an eligible active hold,
+  transition `PENDING` to `CONFIRMED` once, keep fare snapshots, and convert the
+  seat hold into committed capacity. Validate lodging for each stay before
+  promising a room. An expired hold must go to staff review. Any replacement
+  hold must check capacity again.
+- Decide how expired reservations are represented in storage. The current
+  system derives expiry from `holdExpiresAt` and excludes elapsed holds from
+  availability. Preserve access to the booking record for later review.
+- Acceptance checks include unauthorized requests, approval twice, approval at
+  the expiry boundary, an expired hold after its seat is resold, and concurrent
+  confirmation and cancellation. Confirming must keep availability stable, and
+  the quote and booking must retain the original fare snapshot.
+
+### 3. Connect confirmed guests to bus and hotel assignment
+
+- Show **Assign bus seat** and **Assign hotel rooms** next to each confirmed
+  booking. Link to the existing departure tools with that booking selected.
+  Display which passengers have seats and which hotel stays still need rooms.
+  Keep staff in the same departure after each assignment.
+- Reuse the seat and room assignment APIs. Filter buses to the departure's
+  allocated vehicles and seats to its enabled layout entries. Respect seat
+  eligibility from the booking snapshot. Keep each room assignment scoped to
+  one hotel stay so the same guest can have a room at every stop.
+- Serialize changes to contested hotel rooms before the capacity check. When
+  moving a passenger, handle both rooms in a consistent lock order. Define
+  by-stay room allotments and account for overlap between departures before
+  offering guaranteed lodging. Shared rooms consume places and exclusive
+  rooms consume a room. Preserve existing assignment data during the change.
+- Acceptance checks cover a new guest from quote through confirmation and
+  assignments, independent assignments at two hotels, an infant excluded
+  from bus seating, concurrent attempts for the last seat or room place, and
+  refresh after assignment. Assigning a bus seat must count the confirmed
+  passenger only once in capacity.
+
+### 4. Add editing and archiving for admin records
+
+| Area | Missing controls and acceptance criteria |
+| --- | --- |
+| **Tours and itineraries** | Add **Edit Tour** and an **Itinerary** editor under Tours. Edit title, description, cover, and publication state. Add, edit, reorder, and remove itinerary days and destination stops with descriptions and arrival or departure times. Preserve existing IDs on edits and reorder. Reject deletion or require an explicit reassignment when a destination is referenced by a hotel stay. Check that saved itinerary changes appear in order on the public tour page. Keep the existing slug stable unless a safe URL change is planned. |
+| **Departures** | Edit departure and return dates and times, customer visibility, and whether bookings are open. Validate chronology, vehicle/stay overlaps, and existing booking commitments. Give staff a clear way to close bookings. Guard date changes or removal when reservations, assignments, or payments exist. |
+| **Vehicles and seat layouts** | Edit vehicle details and active state. Add departure vehicle removal where assignments and capacity permit. Add seat label, position, and availability edits with duplicate checks. Guard changes to a shared layout and removal or disabling of an assigned seat. |
+| **Hotels, rooms, and stays** | Edit hotel details and active state, room number/type/capacity, and scheduled stay details. Guard capacity reductions below occupancy and date or hotel changes that affect assignments or allotments. Preserve the existing remove-stay and unassign-room controls. |
+
+- Reuse the existing admin forms and protected write patterns. Keep new edit
+  pages discoverable from the matching list or detail page. Show validation
+  errors without losing edits.
+- Prefer reversible archive or close actions for records with history. Allow
+  permanent removal only after explicit confirmation and a transaction-level
+  dependency check. Ensure archived entries leave public listings and new
+  selections while historical bookings and assignments remain readable.
+- The order within this step is tour and itinerary first, then departure edit,
+  vehicle and seat layout edit, and hotel, room, and stay edit.
+
+### 5. Complete checkout and verify a release
+
+- Add customer accounts and the signed-in booking path for when guest booking
+  is disabled. Keep customer identity separate from admin authorization.
+- Decide deposit, payment verification, refund, and cancellation rules. Handle
+  late payments through review and capacity revalidation. Run a full booking
+  rehearsal with the operator before opening the live guest flow.
+- For each slice, run lint, typecheck, tests, and the production build. Use an
+  isolated PostgreSQL instance for mutations and concurrency tests, since
+  local development and Vercel share the hosted database. Review any new
+  migration and coordinate merge to `main` and deployment separately.
+- Update this document and the Bangla homepage milestone copy when an
+  acceptance check passes and changes the current project status.
