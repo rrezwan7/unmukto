@@ -19,15 +19,6 @@ export function canAssignPassenger(
     (booking.status === "PENDING" && booking.holdExpiresAt === null);
 }
 
-export async function getActiveGuestHolds(departureId: number) {
-  const bookings = await db.orm.public.Booking.where({ departureId, status: "PENDING" }).all();
-  const now = Date.now();
-  return bookings.flatMap((booking) => {
-    const expiresAt = booking.holdExpiresAt?.epochMilliseconds;
-    return expiresAt !== undefined && expiresAt > now ? [{ ...booking, expiresAt }] : [];
-  });
-}
-
 export async function committedSeatCounts(departureId: number | null = null, tx?: BookingTransaction) {
   // A passenger already assigned a seat still consumes only one place.
   const filter = departureId ?? 0;

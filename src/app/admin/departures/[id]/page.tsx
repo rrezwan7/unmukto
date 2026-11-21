@@ -1,22 +1,17 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin-auth";
-import { getActiveGuestHolds } from "@/lib/reservation-inventory";
 import PricingForm from "./pricing-form";
 import RoomOptionsForm from "./room-options-form";
 import DepartureVehicles from "./departure-vehicles";
 import DepartureHotelStays from "./departure-hotel-stays";
+import GuestReservations from "./guest-reservations";
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ guestStatus?: string | string[]; guestPage?: string | string[] }>;
 };
 
-const holdDeadlineFormat = new Intl.DateTimeFormat("en-GB", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Dhaka",
-});
-
-export default async function DepartureDetailsPage({ params }: Props) {
+export default async function DepartureDetailsPage({ params, searchParams }: Props) {
   await requireAdminPage();
 
   const { id } = await params;
@@ -46,10 +41,10 @@ export default async function DepartureDetailsPage({ params }: Props) {
     );
   }
 
-  const [tour, pricing, guestHolds] = await Promise.all([
+  const [tour, pricing, { guestStatus, guestPage }] = await Promise.all([
     db.orm.public.Tour.where({ id: departure.tourId }).first(),
     db.orm.public.DeparturePricing.where({ departureId }).first(),
-    getActiveGuestHolds(departureId),
+    searchParams,
   ]);
 
   const details = [
@@ -94,30 +89,7 @@ export default async function DepartureDetailsPage({ params }: Props) {
         </dl>
       </section>
 
-      <section className="my-6 rounded-lg border p-6" aria-labelledby="guest-holds">
-        <h2 id="guest-holds" className="text-lg font-semibold">Pending guest reservations</h2>
-        {guestHolds.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">There are no active guest reservations for this departure.</p>
-        ) : (
-          <ul className="mt-3 divide-y">
-            {guestHolds.map((booking) => (
-              <li key={booking.id} className="flex flex-wrap justify-between gap-2 py-3 text-sm">
-                <div>
-                  <p className="font-medium">{booking.bookingNumber}</p>
-                  <p>{booking.guestContactName} · {booking.guestContactPhone}</p>
-                  {booking.guestContactEmail && <p>{booking.guestContactEmail}</p>}
-                </div>
-                <div>
-                  <p>৳{booking.totalAmount}</p>
-                  <p className="text-muted-foreground">
-                    Hold ends {holdDeadlineFormat.format(booking.expiresAt)} (Bangladesh time)
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <GuestReservations departureId={departureId} requestedStatus={guestStatus} requestedPage={guestPage} />
 
       <PricingForm
         key={departureId}

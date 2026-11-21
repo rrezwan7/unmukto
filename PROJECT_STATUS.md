@@ -6,8 +6,8 @@ Last updated: 2026-11-22 (Asia/Dhaka)
 
 Working branch: `feature/gemini-next-task`. Vercel deploys production from
 `main`. The owner reports that the homepage, catalog, and fare calculator from
-the previous release work on Vercel. The production admin GitHub login still
-needs its production OAuth credentials.
+the previous release work on Vercel and confirmed that production admin login
+with GitHub works.
 
 The development workspace and Vercel share one hosted PostgreSQL database. The
 guest reservation migration was applied and verified on that database on
@@ -95,8 +95,10 @@ departure allocation/availability and passenger seat assignment before this sess
   transaction. The departure row lock serializes last-seat requests, and the
   reservation key makes retries idempotent.
 - Availability checks exclude expired holds as soon as their deadline passes.
-  **Admin → Departures → Open a departure → Pending guest reservations** lists
-  active holds. This list is currently read-only. **Allow guest booking**
+  **Admin → Departures → Open a departure → Guest reservations** shows
+  contact details, passenger names and types, the requested room, payment
+  amounts, and hold deadlines. Staff can filter pending, confirmed, expired,
+  and cancelled reservations. This list is currently read-only. **Allow guest booking**
   controls who can submit a hold. A per-booking approval action has yet to be
   built.
 - The existing bus seat and hotel room assignment tools are on the departure
@@ -155,6 +157,9 @@ runner instructions.
   the 15-minute expiry, and reuse of released capacity.
 - The production-built admin form persisted both guest booking settings against
   the isolated database.
+- The production-built guest review page rendered the pending, confirmed,
+  expired, and cancelled filters against isolated PostgreSQL. Guest contact
+  details stayed behind admin sign-in.
 - Manual room checks covered assignment/removal after reload, one passenger at
   two hotels, and rejection of a stale selection for a room that just filled.
 
@@ -167,28 +172,17 @@ configure only an isolated localhost test server to run those checks.
 
 ## Implementation plan
 
-### 1. Restore production admin access
+### 1. Production admin access
 
-- The live `/login` page reports that setup is incomplete. Vercel Production
-  already had `AUTH_SECRET`. The production `AUTH_URL` and the verified owner's
-  numeric ID in `ADMIN_GITHUB_IDS` have been added.
-- The remaining configuration is `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` in
-  Vercel Production, from a GitHub OAuth app with the callback
-  `https://unmukto.vercel.app/api/auth/callback/github`. Enter the credentials
-  directly into Vercel. See `docs/ADMIN_SETUP.md`.
-- Redeploy the existing production release after both credentials are saved.
-  Verify that `/login` shows the sign-in button and that clicking it sends the
-  browser to GitHub with the production callback.
-- Verify sign-in, opening a departure, saving an admin setting, and sign-out on
-  the production hostname. Keep guest booking off while confirmation and room
-  availability are being tested.
+- The owner confirmed GitHub sign-in works on Vercel. The production OAuth
+  callback is `https://unmukto.vercel.app/api/auth/callback/github`. See
+  `docs/ADMIN_SETUP.md` for configuration.
+- Before opening live guest booking, verify opening a departure, saving a
+  booking setting, and sign-out on the production hostname.
 
 ### 2. Add guest reservation review and approval
 
-- Extend **Pending guest reservations** into a departure-specific booking list.
-  Show the booking reference, contact and passengers, quoted total, requested
-  room, amount received if applicable, and expiry in Bangladesh time. Provide
-  pending, confirmed, expired, and cancelled views with clear action feedback.
+- The departure-specific **Guest reservations** review list is implemented.
 - Add an admin-only **Confirm booking** action backed by one shared transition
   service. Start with an isolated test scenario. Before enabling it for live
   guests, agree on the payment or authorized manual approval rule and the
