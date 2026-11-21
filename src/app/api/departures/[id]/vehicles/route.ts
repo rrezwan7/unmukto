@@ -1,4 +1,5 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { committedSeatCounts, lockDeparture, transportSeatCapacity } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -124,11 +125,7 @@ export async function POST(request: Request, { params }: Props) {
     const { db } = await import("@/prisma/db");
 
     return await db.transaction(async (tx) => {
-      const departure = await tx.orm.public.Departure
-        .where({ id: departureId })
-        .first();
-
-      if (!departure) {
+      if (!(await lockDeparture(tx, departureId))) {
         return Response.json(
           { success: false, error: "Departure not found." },
           { status: 404 }
@@ -163,6 +160,23 @@ export async function POST(request: Request, { params }: Props) {
 
       if (!enabledSeat) {
         return badRequest("The vehicle layout needs at least one enabled seat.");
+      }
+
+      if (!body.visibleToCustomer) {
+        const existing = await tx.orm.public.DepartureVehicle.where({ departureId, vehicleId }).first();
+        if (existing?.visibleToCustomer) {
+          const [capacity, committed, seats] = await Promise.all([
+            transportSeatCapacity(departureId, tx),
+            committedSeatCounts(departureId, tx),
+            tx.orm.public.Seat.where({ seatLayoutId: vehicle.seatLayoutId, isAvailable: true }).select("id").all(),
+          ]);
+          if ((committed.get(departureId) ?? 0) > capacity - seats.length) {
+            return Response.json(
+              { success: false, error: "Hiding this vehicle would leave too few seats for existing bookings." },
+              { status: 409 },
+            );
+          }
+        }
       }
 
       const values = {

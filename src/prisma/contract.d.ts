@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7129e5e6c1f3cc89d67400c4a466a019fd026cee2499dae2f163d833c326ea1f'>;
+  StorageHashBase<'aa9da8cd535ad5fc35bfd81cb9cd2a7957ef6f1928a489326ea6430e71d1e71c'>;
 export type ExecutionHash =
   ExecutionHashBase<'88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36'>;
 export type ProfileHash =
@@ -291,6 +291,8 @@ export type FieldOutputTypes = {
       readonly bookingNumber: CodecTypes['pg/text@1']['output'];
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['output'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['output'];
+      readonly confirmedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly confirmedByGithubId: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly customerId: CodecTypes['pg/int4@1']['output'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['output'];
@@ -418,6 +420,7 @@ export type FieldOutputTypes = {
       readonly bookingId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly manualVerificationKey: CodecTypes['pg/text@1']['output'] | null;
       readonly method: 'BKASH' | 'NAGAD' | 'ROCKET' | 'DBBL' | 'CASH' | 'BANK_TRANSFER' | 'OTHER';
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -546,6 +549,8 @@ export type FieldInputTypes = {
       readonly bookingNumber: CodecTypes['pg/text@1']['input'];
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['input'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['input'];
+      readonly confirmedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly confirmedByGithubId: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly customerId: CodecTypes['pg/int4@1']['input'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['input'];
@@ -673,6 +678,7 @@ export type FieldInputTypes = {
       readonly bookingId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly manualVerificationKey: CodecTypes['pg/text@1']['input'] | null;
       readonly method: 'BKASH' | 'NAGAD' | 'ROCKET' | 'DBBL' | 'CASH' | 'BANK_TRANSFER' | 'OTHER';
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -801,6 +807,8 @@ export type StorageColumnTypes = {
       readonly bookingNumber: CodecTypes['pg/text@1']['output'];
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['output'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['output'];
+      readonly confirmedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly confirmedByGithubId: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly customerId: CodecTypes['pg/int4@1']['output'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['output'];
@@ -928,6 +936,7 @@ export type StorageColumnTypes = {
       readonly bookingId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly manualVerificationKey: CodecTypes['pg/text@1']['output'] | null;
       readonly method: 'BKASH' | 'NAGAD' | 'ROCKET' | 'DBBL' | 'CASH' | 'BANK_TRANSFER' | 'OTHER';
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -1056,6 +1065,8 @@ export type StorageColumnInputTypes = {
       readonly bookingNumber: CodecTypes['pg/text@1']['input'];
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['input'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['input'];
+      readonly confirmedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly confirmedByGithubId: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly customerId: CodecTypes['pg/int4@1']['input'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['input'];
@@ -1183,6 +1194,7 @@ export type StorageColumnInputTypes = {
       readonly bookingId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly manualVerificationKey: CodecTypes['pg/text@1']['input'] | null;
       readonly method: 'BKASH' | 'NAGAD' | 'ROCKET' | 'DBBL' | 'CASH' | 'BANK_TRANSFER' | 'OTHER';
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -1322,6 +1334,8 @@ export namespace Models {
     bookingNumber: CodecTypes['pg/text@1']['output'];
     childFareAtBooking: CodecTypes['pg/numeric@1']['output'];
     childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['output'];
+    confirmedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    confirmedByGithubId: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     customerId: CodecTypes['pg/int4@1']['output'] | null;
     departureId: CodecTypes['pg/int4@1']['output'];
@@ -1493,6 +1507,7 @@ export namespace Models {
     bookingId: CodecTypes['pg/int4@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
+    manualVerificationKey: CodecTypes['pg/text@1']['output'] | null;
     method: 'BKASH' | 'NAGAD' | 'ROCKET' | 'DBBL' | 'CASH' | 'BANK_TRANSFER' | 'OTHER';
     notes: CodecTypes['pg/text@1']['output'] | null;
     paymentDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -1966,6 +1981,16 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
+                };
+                readonly confirmedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly confirmedByGithubId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly createdAt: {
                   readonly nativeType: 'timestamptz';
@@ -2986,6 +3011,11 @@ type ContractBase = Omit<
                     readonly expression: 'autoincrement()';
                   };
                 };
+                readonly manualVerificationKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly method: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -3027,7 +3057,7 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['manualVerificationKey'] }];
               indexes: readonly [
                 {
                   readonly name: 'Payment_bookingId_idx_17848f4a';
@@ -4079,6 +4109,17 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
               };
+              readonly confirmedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly confirmedByGithubId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -4239,6 +4280,8 @@ type ContractBase = Omit<
                 readonly bookingNumber: { readonly column: 'bookingNumber' };
                 readonly childFareAtBooking: { readonly column: 'childFareAtBooking' };
                 readonly childFeeEnabledAtBooking: { readonly column: 'childFeeEnabledAtBooking' };
+                readonly confirmedAt: { readonly column: 'confirmedAt' };
+                readonly confirmedByGithubId: { readonly column: 'confirmedByGithubId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly customerId: { readonly column: 'customerId' };
                 readonly departureId: { readonly column: 'departureId' };
@@ -5159,6 +5202,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly manualVerificationKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly method: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -5216,6 +5263,7 @@ type ContractBase = Omit<
                 readonly bookingId: { readonly column: 'bookingId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
+                readonly manualVerificationKey: { readonly column: 'manualVerificationKey' };
                 readonly method: { readonly column: 'method' };
                 readonly notes: { readonly column: 'notes' };
                 readonly paymentDate: { readonly column: 'paymentDate' };

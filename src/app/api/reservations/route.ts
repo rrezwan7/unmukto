@@ -3,6 +3,7 @@ import { Temporal } from "temporal-polyfill";
 import { isSameOrigin } from "@/lib/auth-policy";
 import { guestBookingIsEnabled } from "@/lib/booking-settings";
 import { bookingIdIsValid, getDepartureBookingQuote } from "@/lib/departure-booking-quote";
+import { lockDeparture } from "@/lib/reservation-inventory";
 import { db } from "@/prisma/db";
 
 const holdMinutes = 15;
@@ -76,15 +77,15 @@ export async function POST(request: Request) {
   try {
     return await db.transaction(async (tx) => {
       // Serialize availability checks and inserts for the same departure.
-      const locked = await tx.query(db.raw.sql`
-        SELECT id FROM "Departure" WHERE id = ${departureId}::int FOR UPDATE
-      `.returnsRow({ id: "pg/int4@1" }).build());
-      if (!locked.length) return fail("এই যাত্রাটি পাওয়া যায়নি।", 404);
+      if (!(await lockDeparture(tx, departureId))) return fail("এই যাত্রাটি পাওয়া যায়নি।", 404);
 
       const existing = await tx.orm.public.Booking.where({ reservationKey }).first();
       if (existing) {
         if (existing.reservationFingerprint !== fingerprint) {
           return fail("বুকিংয়ের তথ্য পরিবর্তন হয়েছে। নতুন করে ভাড়ার হিসাব দেখুন।", 409);
+        }
+        if (existing.status === "CONFIRMED") {
+          return Response.json({ bookingNumber: existing.bookingNumber, status: "CONFIRMED" });
         }
         if (existing.status !== "PENDING" || !existing.holdExpiresAt ||
             existing.holdExpiresAt.epochMilliseconds <= Date.now()) {

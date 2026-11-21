@@ -19,6 +19,7 @@ import {
 type Passenger = {
   id: number;
   name: string;
+  bookingId: number;
   bookingNumber: string;
   eligibleForSeat: boolean;
   seatAssignment: {
@@ -47,9 +48,11 @@ async function readResponse(response: Response) {
 export default function SeatAssignmentPanel({
   departureId,
   vehicleId,
+  bookingId,
 }: {
   departureId: number;
   vehicleId: number;
+  bookingId?: number;
 }) {
   const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [seats, setSeats] = useState<Seat[]>([]);
@@ -105,6 +108,7 @@ export default function SeatAssignmentPanel({
 
   const eligiblePassengers = passengers.filter(
     (passenger) =>
+      (bookingId === undefined || passenger.bookingId === bookingId) &&
       passenger.eligibleForSeat && passenger.seatAssignment === null
   );
 

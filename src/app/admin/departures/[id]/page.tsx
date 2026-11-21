@@ -5,10 +5,11 @@ import RoomOptionsForm from "./room-options-form";
 import DepartureVehicles from "./departure-vehicles";
 import DepartureHotelStays from "./departure-hotel-stays";
 import GuestReservations from "./guest-reservations";
+import { bookingIdIsValid } from "@/lib/departure-booking-quote";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ guestStatus?: string | string[]; guestPage?: string | string[] }>;
+  searchParams: Promise<{ guestStatus?: string | string[]; guestPage?: string | string[]; assignmentBooking?: string | string[] }>;
 };
 
 export default async function DepartureDetailsPage({ params, searchParams }: Props) {
@@ -41,11 +42,16 @@ export default async function DepartureDetailsPage({ params, searchParams }: Pro
     );
   }
 
-  const [tour, pricing, { guestStatus, guestPage }] = await Promise.all([
+  const [tour, pricing, { guestStatus, guestPage, assignmentBooking }] = await Promise.all([
     db.orm.public.Tour.where({ id: departure.tourId }).first(),
     db.orm.public.DeparturePricing.where({ departureId }).first(),
     searchParams,
   ]);
+  const parsedBookingId = typeof assignmentBooking === "string" ? Number(assignmentBooking) : 0;
+  const selectedBooking = bookingIdIsValid(parsedBookingId) ? await db.orm.public.Booking
+    .where({ id: parsedBookingId, departureId, status: "CONFIRMED" })
+    .select("id", "bookingNumber")
+    .first() : null;
 
   const details = [
     ["Tour", tour?.title ?? "Unknown Tour"],
@@ -104,15 +110,27 @@ export default async function DepartureDetailsPage({ params, searchParams }: Pro
             : null
         }
       />
-<RoomOptionsForm key={`rooms-${departureId}`} departureId={departureId} />
-<DepartureVehicles
-  key={`vehicles-${departureId}`}
-  departureId={departureId}
-/>
-      <DepartureHotelStays
-        key={`hotel-stays-${departureId}`}
-        departureId={departureId}
-      />
+      <RoomOptionsForm key={`rooms-${departureId}`} departureId={departureId} />
+      <section id="departure-vehicles" aria-label="Departure vehicles" className="scroll-mt-4">
+        {selectedBooking && (
+          <p className="mt-6 text-sm">
+            Assigning seats for {selectedBooking.bookingNumber}.{" "}
+            <Link className="underline" href={`/admin/departures/${departureId}#departure-vehicles`}>Show all bookings</Link>
+          </p>
+        )}
+        <DepartureVehicles key={`vehicles-${departureId}-${selectedBooking?.id ?? "all"}`}
+          departureId={departureId} bookingId={selectedBooking?.id} />
+      </section>
+      <section id="departure-hotel-stays" aria-label="Departure hotel stays" className="scroll-mt-4">
+        {selectedBooking && (
+          <p className="mt-6 text-sm">
+            Assigning rooms for {selectedBooking.bookingNumber}.{" "}
+            <Link className="underline" href={`/admin/departures/${departureId}#departure-hotel-stays`}>Show all bookings</Link>
+          </p>
+        )}
+        <DepartureHotelStays key={`hotel-stays-${departureId}-${selectedBooking?.id ?? "all"}`}
+          departureId={departureId} bookingId={selectedBooking?.id} />
+      </section>
     </main>
   );
 }

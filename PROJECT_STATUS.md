@@ -11,9 +11,9 @@ with GitHub works.
 
 The development workspace and Vercel share one hosted PostgreSQL database. The
 guest reservation migration was applied and verified on that database on
-2026-11-22 (Asia/Dhaka). GitHub's `main` branch still lacks the guest
-reservation endpoint and Booking Settings page. The feature branch contains
-both and is ready for review.
+2026-11-22 (Asia/Dhaka). The feature branch adds manual confirmation and
+booking-specific assignment links. Its new migration was prepared for review
+and must be applied before deploying this release to Vercel.
 
 ## Implemented
 
@@ -98,16 +98,30 @@ departure allocation/availability and passenger seat assignment before this sess
   **Admin → Departures → Open a departure → Guest reservations** shows
   contact details, passenger names and types, the requested room, payment
   amounts, and hold deadlines. Staff can filter pending, confirmed, expired,
-  and cancelled reservations. This list is currently read-only. **Allow guest booking**
-  controls who can submit a hold. A per-booking approval action has yet to be
-  built.
+  and cancelled reservations. **Allow guest booking** controls who can
+  submit a hold. **Confirm booking** is the separate staff action for
+  approving an active hold.
+- For manual verification, staff enter the full amount independently verified
+  as received, the payment method, and its receipt or transaction reference.
+  Staff verify lodging for every stay when the booking includes a room
+  request. A zero-fare booking needs no payment record.
+- Confirmation locks the departure and booking, rechecks the hold and transport
+  capacity, switches the booking to `CONFIRMED`, and records the verified
+  payment, staff GitHub ID, and confirmation time in one transaction.
+  Duplicate confirmation keeps the existing result. A manual payment reference
+  can be recorded once per payment method. Expired holds are sent to staff
+  review. The original quoted fare and passenger eligibility are preserved.
 - The existing bus seat and hotel room assignment tools are on the departure
   detail page under the allocated vehicle and **Hotel Stays → Manage Room
   Assignment**. The assignment APIs accept confirmed bookings and older
   pending bookings that have no expiry. A new pending guest hold is ineligible
-  for both kinds of assignment until it is confirmed.
-- The booking records one requested room option. Physical room inventory holds,
-  payment, and booking confirmation remain future work.
+  for both kinds of assignment until it is confirmed. Links on a confirmed
+  booking open the assignment tools filtered to that booking's passengers.
+  Room assignment edits and stay removal now lock the stay before
+  checking occupancy or existing assignments.
+- The booking records one requested room option. Staff coordinate its
+  availability, then assign physical rooms by stay. Automated room allotments,
+  gateway payment verification, and automatic confirmation remain future work.
 
 ## Stack and database
 
@@ -128,11 +142,13 @@ Migration packages on disk:
 2. `20261004T2133_pricing_and_room_options`
 3. `20261011T2242_departure_scoped_assignments`
 4. `20261121T1722_guest_reservation_holds`
+5. `20261121T2144_manual_booking_confirmation`
 
 Prisma `db verify` confirmed that the shared database marker and actual schema
-match the emitted contract after migration 4. There is no manual migration
-remaining for this release. Use a disposable PostgreSQL instance for development
-tests that create or modify data. See `docs/INVENTORY_MODEL.md` for isolated local
+matched the contract after migration 4. Migration 5 adds nullable confirmation
+audit fields and a unique manual payment reference key. It is pending on the
+shared database. Use a disposable PostgreSQL instance for development tests
+that create or modify data. See `docs/INVENTORY_MODEL.md` for isolated local
 runner instructions.
 
 ## Business rules to preserve
@@ -160,6 +176,12 @@ runner instructions.
 - The production-built guest review page rendered the pending, confirmed,
   expired, and cancelled filters against isolated PostgreSQL. Guest contact
   details stayed behind admin sign-in.
+- Isolated PostgreSQL checks verified full payment validation, expired hold
+  rejection, payment reference deduplication, unchanged capacity on
+  confirmation, and exactly one payment for repeat confirmation. The
+  production-built admin form confirmed a booking, and HTTP checks exercised
+  its assignment links, a bus seat assignment, and two simultaneous requests
+  for the last place in a room.
 - Manual room checks covered assignment/removal after reload, one passenger at
   two hotels, and rejection of a stale selection for a room that just filled.
 
@@ -180,42 +202,28 @@ configure only an isolated localhost test server to run those checks.
 - Before opening live guest booking, verify opening a departure, saving a
   booking setting, and sign-out on the production hostname.
 
-### 2. Add guest reservation review and approval
+### 2. Guest reservation review and approval
 
-- The departure-specific **Guest reservations** review list is implemented.
-- Add an admin-only **Confirm booking** action backed by one shared transition
-  service. Start with an isolated test scenario. Before enabling it for live
-  guests, agree on the payment or authorized manual approval rule and the
-  lodging availability rule. Store the staff identity, time, and outcome when
-  a booking is approved or cancelled.
-- In the confirmation transaction, lock in a consistent order with booking
-  creation, re-read the booking and expiry using database time, and validate
-  the booking's departure and required capacity. For an eligible active hold,
-  transition `PENDING` to `CONFIRMED` once, keep fare snapshots, and convert the
-  seat hold into committed capacity. Validate lodging for each stay before
-  promising a room. An expired hold must go to staff review. Any replacement
-  hold must check capacity again.
-- Decide how expired reservations are represented in storage. The current
-  system derives expiry from `holdExpiresAt` and excludes elapsed holds from
-  availability. Preserve access to the booking record for later review.
-- Acceptance checks include unauthorized requests, approval twice, approval at
-  the expiry boundary, an expired hold after its seat is resold, and concurrent
-  confirmation and cancellation. Confirming must keep availability stable, and
-  the quote and booking must retain the original fare snapshot.
+- Manual verification is the current mode, as requested by the owner. For this
+  release, staff confirm after verifying the full quoted total and lodging for
+  every stay. Establish a deposit policy before supporting partial payment.
+- Expiry is derived from `holdExpiresAt` and the record remains available for
+  review. A replacement hold must check current capacity again.
+- Add cancellation with staff audit details and a refund workflow when the
+  payment policy is agreed. Test the confirmation and cancellation race when
+  that transition is available.
 
 ### 3. Connect confirmed guests to bus and hotel assignment
 
-- Show **Assign bus seat** and **Assign hotel rooms** next to each confirmed
-  booking. Link to the existing departure tools with that booking selected.
-  Display which passengers have seats and which hotel stays still need rooms.
-  Keep staff in the same departure after each assignment.
+- **Assign bus seats** and **Assign hotel rooms** now link from confirmed
+  bookings to the existing departure tools with that booking selected.
+  A per-booking assignment progress summary is still pending.
 - Reuse the seat and room assignment APIs. Filter buses to the departure's
   allocated vehicles and seats to its enabled layout entries. Respect seat
   eligibility from the booking snapshot. Keep each room assignment scoped to
   one hotel stay so the same guest can have a room at every stop.
-- Serialize changes to contested hotel rooms before the capacity check. When
-  moving a passenger, handle both rooms in a consistent lock order. Define
-  by-stay room allotments and account for overlap between departures before
+- Changes within one hotel stay are serialized before the capacity check.
+  Define by-stay room allotments and account for overlap between departures before
   offering guaranteed lodging. Shared rooms consume places and exclusive
   rooms consume a room. Preserve existing assignment data during the change.
 - Acceptance checks cover a new guest from quote through confirmation and
@@ -250,6 +258,9 @@ configure only an isolated localhost test server to run those checks.
 - Decide deposit, payment verification, refund, and cancellation rules. Handle
   late payments through review and capacity revalidation. Run a full booking
   rehearsal with the operator before opening the live guest flow.
+- After payment gateway integration, add an admin setting to select manual
+  or automatic verification. Make both modes use the same confirmation
+  rules for capacity, expiry, and payment deduplication.
 - For each slice, run lint, typecheck, tests, and the production build. Use an
   isolated PostgreSQL instance for mutations and concurrency tests, since
   local development and Vercel share the hosted database. Review any new

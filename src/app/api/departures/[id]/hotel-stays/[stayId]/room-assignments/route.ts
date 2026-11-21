@@ -1,5 +1,5 @@
 import { checkAdminApi } from "@/lib/admin-auth";
-import { canAssignPassenger, holdIsActive } from "@/lib/reservation-inventory";
+import { canAssignPassenger, holdIsActive, lockHotelStay } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string; stayId: string }>;
@@ -8,7 +8,7 @@ type Props = {
 const validId = (value: unknown): value is number =>
   typeof value === "number" &&
   Number.isSafeInteger(value) &&
-  value > 0;
+  value > 0 && value <= 2_147_483_647;
 
 export async function GET(_request: Request, { params }: Props) {
   const denied = await checkAdminApi();
@@ -176,11 +176,8 @@ export async function POST(request: Request, { params }: Props) {
     const { db } = await import("@/prisma/db");
 
     return await db.transaction(async (tx) => {
-      const stay = await tx.orm.public.HotelStay
-        .where({ id: stayId })
-        .first();
-
-      if (!stay || stay.departureId !== departureId) {
+      const stay = await lockHotelStay(tx, departureId, stayId);
+      if (!stay) {
         return fail("Hotel stay not found for this departure.", 404);
       }
 
@@ -303,11 +300,7 @@ export async function DELETE(request: Request, { params }: Props) {
     const { db } = await import("@/prisma/db");
 
     return await db.transaction(async (tx) => {
-      const stay = await tx.orm.public.HotelStay
-        .where({ id: stayId })
-        .first();
-
-      if (!stay || stay.departureId !== departureId) {
+      if (!(await lockHotelStay(tx, departureId, stayId))) {
         return fail("Hotel stay not found for this departure.", 404);
       }
 

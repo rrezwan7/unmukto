@@ -1,0 +1,170 @@
+[
+  {
+    "id": "column.public.Booking.confirmedAt",
+    "label": "Add column \"confirmedAt\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "confirmedAt",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"confirmedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "confirmedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"confirmedAt\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"confirmedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"confirmedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "confirmedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.confirmedByGithubId",
+    "label": "Add column \"confirmedByGithubId\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "confirmedByGithubId",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"confirmedByGithubId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "confirmedByGithubId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"confirmedByGithubId\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"confirmedByGithubId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"confirmedByGithubId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "confirmedByGithubId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Payment.manualVerificationKey",
+    "label": "Add column \"manualVerificationKey\" to \"Payment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "manualVerificationKey",
+        "table": "Payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"manualVerificationKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Payment",
+          "manualVerificationKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"manualVerificationKey\"",
+        "sql": "ALTER TABLE \"public\".\"Payment\" ADD COLUMN \"manualVerificationKey\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"manualVerificationKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Payment",
+          "manualVerificationKey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Payment.Payment_manualVerificationKey_key",
+    "label": "Add unique constraint on \"Payment\" (manualVerificationKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Payment_manualVerificationKey_key",
+        "table": "Payment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Payment_manualVerificationKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Payment_manualVerificationKey_key",
+          "public",
+          "\"public\".\"Payment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Payment_manualVerificationKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"Payment\" ADD CONSTRAINT \"Payment_manualVerificationKey_key\" UNIQUE (\"manualVerificationKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Payment_manualVerificationKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Payment_manualVerificationKey_key",
+          "public",
+          "\"public\".\"Payment\""
+        ]
+      }
+    ]
+  }
+]

@@ -3,7 +3,10 @@
 import { useRef, useState, type FormEvent } from "react";
 import type { PassengerCounts } from "@/lib/booking-quote";
 
-type ReservationResponse = { bookingNumber: string; holdExpiresAt: string } | { error: string };
+type ReservationResponse =
+  | { bookingNumber: string; holdExpiresAt: string }
+  | { bookingNumber: string; status: "CONFIRMED" }
+  | { error: string };
 
 const bangla = new Intl.NumberFormat("bn-BD");
 const deadlineFormat = new Intl.DateTimeFormat("bn-BD", {
@@ -34,12 +37,17 @@ export function GuestReservationForm({
   }
 
   if (result && "bookingNumber" in result) {
+    const confirmed = "status" in result;
     return (
       <div role="status" className="mt-4 space-y-2 rounded-lg border border-[#cad2c4] bg-white p-3">
-        <p className="font-semibold">আসন সাময়িকভাবে সংরক্ষিত হয়েছে</p>
+        <p className="font-semibold">{confirmed ? "বুকিং নিশ্চিত হয়েছে" : "আসন সাময়িকভাবে সংরক্ষিত হয়েছে"}</p>
         <p>বুকিং নম্বর <strong className="break-all">{result.bookingNumber}</strong></p>
-        <p>সংরক্ষণের মেয়াদ {deadlineFormat.format(new Date(result.holdExpiresAt))} পর্যন্ত (বাংলাদেশ সময়)।</p>
-        <p>রুমের অনুরোধটি বুকিংয়ের সঙ্গে জমা হয়েছে। চূড়ান্ত বুকিংয়ের জন্য নিশ্চিতকরণ প্রয়োজন।</p>
+        {!confirmed && (
+          <>
+            <p>সংরক্ষণের মেয়াদ {deadlineFormat.format(new Date(result.holdExpiresAt))} পর্যন্ত (বাংলাদেশ সময়)।</p>
+            <p>রুমের অনুরোধটি বুকিংয়ের সঙ্গে জমা হয়েছে। চূড়ান্ত বুকিংয়ের জন্য নিশ্চিতকরণ প্রয়োজন।</p>
+          </>
+        )}
       </div>
     );
   }

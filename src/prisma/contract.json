@@ -752,6 +752,20 @@
                   "kind": "scalar"
                 }
               },
+              "confirmedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "confirmedByGithubId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -1001,6 +1015,12 @@
                 },
                 "childFeeEnabledAtBooking": {
                   "column": "childFeeEnabledAtBooking"
+                },
+                "confirmedAt": {
+                  "column": "confirmedAt"
+                },
+                "confirmedByGithubId": {
+                  "column": "confirmedByGithubId"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -2435,6 +2455,13 @@
                   "kind": "scalar"
                 }
               },
+              "manualVerificationKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "method": {
                 "nullable": false,
                 "type": {
@@ -2528,6 +2555,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "manualVerificationKey": {
+                  "column": "manualVerificationKey"
                 },
                 "method": {
                   "column": "method"
@@ -3998,6 +4028,16 @@
                   "nativeType": "bool",
                   "nullable": false
                 },
+                "confirmedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "confirmedByGithubId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -5278,6 +5318,11 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "manualVerificationKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "method": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -5364,7 +5409,13 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "manualVerificationKey"
+                  ]
+                }
+              ]
             },
             "Room": {
               "checks": [
@@ -6264,7 +6315,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7129e5e6c1f3cc89d67400c4a466a019fd026cee2499dae2f163d833c326ea1f"
+    "storageHash": "aa9da8cd535ad5fc35bfd81cb9cd2a7957ef6f1928a489326ea6430e71d1e71c"
   },
   "execution": {
     "executionHash": "88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36",

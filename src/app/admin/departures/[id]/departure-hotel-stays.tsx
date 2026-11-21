@@ -57,8 +57,10 @@ function formatDate(iso: string) {
 
 export default function DepartureHotelStays({
   departureId,
+  bookingId,
 }: {
   departureId: number;
+  bookingId?: number;
 }) {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [stays, setStays] = useState<Stay[]>([]);
@@ -374,6 +376,7 @@ export default function DepartureHotelStays({
                         departureId={departureId}
                         stayId={stay.id}
                         hotelId={stay.hotelId}
+                        bookingId={bookingId}
                         onAssignmentChange={() => setRevision((r) => r + 1)}
                       />
                     )}

@@ -48,8 +48,10 @@ async function readResponse(response: Response) {
 
 export default function DepartureVehicles({
   departureId,
+  bookingId,
 }: {
   departureId: number;
+  bookingId?: number;
 }) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [allocations, setAllocations] = useState<Allocation[]>([]);
@@ -346,6 +348,7 @@ export default function DepartureVehicles({
                       <SeatAssignmentPanel
                         departureId={departureId}
                         vehicleId={allocation.vehicleId}
+                        bookingId={bookingId}
                       />
                     </CardContent>
                   </Card>

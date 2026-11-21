@@ -332,6 +332,8 @@ model Booking {
   reservationKey    String? @unique
   reservationFingerprint String?
   holdExpiresAt     DateTime?
+  confirmedAt       DateTime?
+  confirmedByGithubId String?
 
   // Selected room option for this booking.
   roomOptionId  Int?
@@ -437,6 +439,7 @@ model Payment {
 
   transactionId   String?
   referenceNumber String?
+  manualVerificationKey String?            @unique
   paymentDate     DateTime?
   notes           String?
 

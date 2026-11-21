@@ -3,6 +3,33 @@ import { db } from "@/prisma/db";
 
 export type BookingTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
+export async function lockDeparture(tx: BookingTransaction, departureId: number) {
+  const rows = await tx.query(db.raw.sql`
+    SELECT id FROM "Departure" WHERE id = ${departureId}::int FOR UPDATE
+  `.returnsRow({ id: "pg/int4@1" }).build());
+  return rows.length > 0;
+}
+
+export async function lockHotelStay(tx: BookingTransaction, departureId: number, stayId: number) {
+  const [stay] = await tx.query(db.raw.sql`
+    SELECT "hotelId" FROM "HotelStay"
+    WHERE id = ${stayId}::int AND "departureId" = ${departureId}::int FOR UPDATE
+  `.returnsRow({ hotelId: "pg/int4@1" }).build());
+  return stay;
+}
+
+export async function transportSeatCapacity(departureId: number, tx?: BookingTransaction) {
+  const plan = db.raw.sql`
+    SELECT count(*)::int AS capacity
+    FROM "DepartureVehicle" a
+    JOIN "Vehicle" v ON v.id = a."vehicleId" AND v."isActive"
+    JOIN "Seat" s ON s."seatLayoutId" = v."seatLayoutId" AND s."isAvailable"
+    WHERE a."departureId" = ${departureId}::int AND a."visibleToCustomer"
+  `.returnsRow({ capacity: "pg/int4@1" }).build();
+  const [row] = tx ? await tx.query(plan) : await db.runtime().query(plan);
+  return row.capacity;
+}
+
 export function holdIsActive(
   booking: { status: string; holdExpiresAt: { epochMilliseconds: number } | null },
   now: number,

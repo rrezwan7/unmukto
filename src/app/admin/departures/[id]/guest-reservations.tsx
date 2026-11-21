@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Temporal } from "temporal-polyfill";
 import { db } from "@/prisma/db";
+import { confirmGuestBooking } from "./confirm-guest-booking";
+import ManualConfirmationForm from "./manual-confirmation-form";
 
 const filters = [
   { value: "all", label: "All" },
@@ -42,7 +44,7 @@ async function loadReservations(departureId: number, filter: string, page: numbe
 
   const bookings = await query
     .select("id", "bookingNumber", "status", "guestContactName", "guestContactPhone",
-      "guestContactEmail", "totalAmount", "paidAmount", "holdExpiresAt")
+      "guestContactEmail", "totalAmount", "paidAmount", "holdExpiresAt", "confirmedAt", "confirmedByGithubId")
     .include("roomOption", (room) => room.select("roomType"))
     .include("passengers", (passengers) => passengers.select("id", "name", "passengerType")
       .orderBy((passenger) => passenger.id.asc()))
@@ -122,10 +124,17 @@ export default async function GuestReservations({
                       <dt className="text-muted-foreground">Quoted total / paid</dt>
                       <dd>৳{booking.totalAmount} / ৳{booking.paidAmount}</dd>
                     </div>
-                    {booking.holdExpiresAt && (
+                    {booking.reviewStatus !== "CONFIRMED" && booking.holdExpiresAt && (
                       <div>
                         <dt className="text-muted-foreground">Hold deadline (Bangladesh time)</dt>
                         <dd><time dateTime={booking.holdExpiresAt.toString()}>{deadlineFormat.format(booking.holdExpiresAt.epochMilliseconds)}</time></dd>
+                      </div>
+                    )}
+                    {booking.confirmedAt && (
+                      <div>
+                        <dt className="text-muted-foreground">Manually confirmed (Bangladesh time)</dt>
+                        <dd><time dateTime={booking.confirmedAt.toString()}>{deadlineFormat.format(booking.confirmedAt.epochMilliseconds)}</time></dd>
+                        {booking.confirmedByGithubId && <dd>GitHub admin ID {booking.confirmedByGithubId}</dd>}
                       </div>
                     )}
                   </dl>
@@ -140,6 +149,19 @@ export default async function GuestReservations({
                     </ul>
                   </div>
                 </div>
+                {booking.reviewStatus === "PENDING" && booking.holdExpiresAt && (
+                  <ManualConfirmationForm
+                    confirm={confirmGuestBooking.bind(null, departureId, booking.id)}
+                    total={booking.totalAmount}
+                    hasRoomRequest={booking.roomOption !== null}
+                  />
+                )}
+                {booking.reviewStatus === "CONFIRMED" && (
+                  <div className="mt-4 flex flex-wrap gap-4">
+                    <Link className="underline" href={`/admin/departures/${departureId}?assignmentBooking=${booking.id}#departure-vehicles`}>Assign bus seats</Link>
+                    <Link className="underline" href={`/admin/departures/${departureId}?assignmentBooking=${booking.id}#departure-hotel-stays`}>Assign hotel rooms</Link>
+                  </div>
+                )}
               </details>
             </li>
           ))}

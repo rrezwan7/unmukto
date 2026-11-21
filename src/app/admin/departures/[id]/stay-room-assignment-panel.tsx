@@ -54,11 +54,13 @@ export default function StayRoomAssignmentPanel({
   departureId,
   stayId,
   hotelId,
+  bookingId,
   onAssignmentChange,
 }: {
   departureId: number;
   stayId: number;
   hotelId: number;
+  bookingId?: number;
   onAssignmentChange?: () => void;
 }) {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -188,6 +190,8 @@ export default function StayRoomAssignmentPanel({
     );
   }
 
+  const visiblePassengers = bookingId === undefined ? passengers : passengers.filter((passenger) => passenger.bookingId === bookingId);
+
   return (
     <div className="mt-4 space-y-4 rounded-md border p-4">
       {/* Rooms occupancy snapshot */}
@@ -229,12 +233,12 @@ export default function StayRoomAssignmentPanel({
       {/* Passenger Assignment Table */}
       <div>
         <h4 className="mb-2 text-sm font-semibold">
-          Departure Passengers ({passengers.length})
+          Passengers ({visiblePassengers.length})
         </h4>
 
-        {passengers.length === 0 ? (
+        {visiblePassengers.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No pending or confirmed bookings on this departure yet.
+            No passengers to show for this selection.
           </p>
         ) : (
           <Table>
@@ -250,7 +254,7 @@ export default function StayRoomAssignmentPanel({
             </TableHeader>
 
             <TableBody>
-              {passengers.map((passenger) => {
+              {visiblePassengers.map((passenger) => {
                 const isPending = pendingPassengerId === passenger.id;
                 const hasAssignment = Boolean(passenger.assignment);
 
