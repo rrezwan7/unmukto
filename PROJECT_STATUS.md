@@ -12,8 +12,9 @@ with GitHub works.
 The development workspace and Vercel share one hosted PostgreSQL database. The
 guest reservation migration was applied and verified on that database on
 2026-11-22 (Asia/Dhaka). The feature branch adds manual confirmation and
-booking-specific assignment links. Its new migration was prepared for review
-and must be applied before deploying this release to Vercel.
+booking-specific assignment links. The manual confirmation migration has also
+been applied and verified on the shared database, so the feature is ready for
+localhost testing. Vercel deployment can be handled separately.
 
 ## Implemented
 
@@ -145,11 +146,10 @@ Migration packages on disk:
 5. `20261121T2144_manual_booking_confirmation`
 
 Prisma `db verify` confirmed that the shared database marker and actual schema
-matched the contract after migration 4. Migration 5 adds nullable confirmation
-audit fields and a unique manual payment reference key. It is pending on the
-shared database. Use a disposable PostgreSQL instance for development tests
-that create or modify data. See `docs/INVENTORY_MODEL.md` for isolated local
-runner instructions.
+match the contract after migration 5. This migration adds nullable confirmation
+audit fields and a unique manual payment reference key. Use a disposable
+PostgreSQL instance for development tests that create or modify data. See
+`docs/INVENTORY_MODEL.md` for isolated local runner instructions.
 
 ## Business rules to preserve
 
