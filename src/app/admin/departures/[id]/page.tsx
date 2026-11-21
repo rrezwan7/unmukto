@@ -6,6 +6,9 @@ import DepartureVehicles from "./departure-vehicles";
 import DepartureHotelStays from "./departure-hotel-stays";
 import GuestReservations from "./guest-reservations";
 import { bookingIdIsValid } from "@/lib/departure-booking-quote";
+import { departureHasHistory } from "@/lib/departure-editor";
+import { scheduleFields } from "@/lib/departure-schedule";
+import DepartureSettingsForm from "./departure-settings-form";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -42,9 +45,10 @@ export default async function DepartureDetailsPage({ params, searchParams }: Pro
     );
   }
 
-  const [tour, pricing, { guestStatus, guestPage, assignmentBooking }] = await Promise.all([
+  const [tour, pricing, hasHistory, { guestStatus, guestPage, assignmentBooking }] = await Promise.all([
     db.orm.public.Tour.where({ id: departure.tourId }).first(),
     db.orm.public.DeparturePricing.where({ departureId }).first(),
+    departureHasHistory(departureId),
     searchParams,
   ]);
   const parsedBookingId = typeof assignmentBooking === "string" ? Number(assignmentBooking) : 0;
@@ -52,15 +56,6 @@ export default async function DepartureDetailsPage({ params, searchParams }: Pro
     .where({ id: parsedBookingId, departureId, status: "CONFIRMED" })
     .select("id", "bookingNumber")
     .first() : null;
-
-  const details = [
-    ["Tour", tour?.title ?? "Unknown Tour"],
-    ["Departure Date", departure.departureDate.toString()],
-    ["Departure Time", departure.departureTime ?? "-"],
-    ["Return Date", departure.returnDate?.toString() ?? "-"],
-    ["Return Time", departure.returnTime ?? "-"],
-    ["Booking Open", departure.bookingOpen ? "Yes" : "No"],
-  ];
 
   return (
     <main className="mx-auto max-w-5xl p-6">
@@ -78,22 +73,8 @@ export default async function DepartureDetailsPage({ params, searchParams }: Pro
         <p className="text-muted-foreground">Departure details</p>
       </div>
 
-      <section className="rounded-lg border p-6">
-        <h2 className="mb-4 text-lg font-semibold">
-          Departure Information
-        </h2>
-
-        <dl className="grid gap-4 md:grid-cols-2">
-          {details.map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-sm text-muted-foreground">
-                {label}
-              </dt>
-              <dd className="font-medium">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <DepartureSettingsForm id={departureId} initialSchedule={scheduleFields(departure)} initialUpdatedAt={departure.updatedAt}
+        initialVisible={departure.customerVisible} initialOpen={departure.bookingOpen} hasHistory={hasHistory} />
 
       <GuestReservations departureId={departureId} requestedStatus={guestStatus} requestedPage={guestPage} />
 

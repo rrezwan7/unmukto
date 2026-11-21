@@ -1,5 +1,6 @@
 import "server-only";
 import { committedSeatCounts } from "@/lib/reservation-inventory";
+import { localDepartureDay } from "@/lib/departure-schedule";
 
 export type PublicTourSummary = {
   id: number;
@@ -73,14 +74,6 @@ export type PublicTourDetail = {
   departures: PublicDeparture[];
 };
 
-function formatIsoDate(instant: { toString: () => string }): string {
-  try {
-    return instant.toString().split("T")[0];
-  } catch {
-    return String(instant);
-  }
-}
-
 export async function getPublicTours(): Promise<PublicTourSummary[]> {
   const { db } = await import("@/prisma/db");
 
@@ -139,8 +132,9 @@ export async function getPublicTours(): Promise<PublicTourSummary[]> {
 
   tours.sort((a, b) => a.id - b.id);
 
+  const now = Date.now();
   return tours.map((tour) => {
-    const tourDepartures = departuresByTour.get(tour.id) ?? [];
+    const tourDepartures = (departuresByTour.get(tour.id) ?? []).filter((departure) => departure.departureDate.epochMilliseconds > now);
     tourDepartures.sort((a, b) => {
       const aTime = a.departureDate.epochNanoseconds;
       const bTime = b.departureDate.epochNanoseconds;
@@ -164,7 +158,9 @@ export async function getPublicTours(): Promise<PublicTourSummary[]> {
         }
       }
 
-      // Calculate seats for this departure
+      if (!dep.bookingOpen) continue;
+
+      // Calculate seats for open departures only.
       const depAllocations = allocationsByDeparture.get(dep.id) ?? [];
       let depCapacity = 0;
       for (const alloc of depAllocations) {
@@ -178,7 +174,7 @@ export async function getPublicTours(): Promise<PublicTourSummary[]> {
     }
 
     const nextDep = tourDepartures[0];
-    const nextDepartureDate = nextDep ? formatIsoDate(nextDep.departureDate) : null;
+    const nextDepartureDate = nextDep ? localDepartureDay(nextDep.departureDate).toString() : null;
 
     const daysCount = itineraryCountByTour.get(tour.id) ?? 0;
     const durationLabel =
@@ -309,9 +305,9 @@ export async function getPublicTourBySlug(
 
     return {
       id: dep.id,
-      departureDate: formatIsoDate(dep.departureDate),
+      departureDate: localDepartureDay(dep.departureDate).toString(),
       departureTime: dep.departureTime,
-      returnDate: dep.returnDate ? formatIsoDate(dep.returnDate) : null,
+      returnDate: dep.returnDate ? localDepartureDay(dep.returnDate).toString() : null,
       returnTime: dep.returnTime,
       bookingOpen: dep.bookingOpen && availableSeats > 0 && dep.departureDate.epochMilliseconds > Date.now(),
       pricing: pricing

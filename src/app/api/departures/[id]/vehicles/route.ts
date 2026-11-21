@@ -1,5 +1,7 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { lockVehicle, vehicleScheduleConflict } from "@/lib/departure-editor";
 import { committedSeatCounts, lockDeparture, transportSeatCapacity } from "@/lib/reservation-inventory";
+import { isDatabaseId } from "@/lib/tour-editor";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -12,7 +14,7 @@ export async function GET(_request: Request, { params }: Props) {
   const { id } = await params;
   const departureId = Number(id);
 
-  if (!Number.isSafeInteger(departureId) || departureId <= 0) {
+  if (!isDatabaseId(departureId)) {
     return Response.json(
       { success: false, error: "Invalid departure ID." },
       { status: 400 }
@@ -75,7 +77,7 @@ export async function POST(request: Request, { params }: Props) {
   const badRequest = (error: string) =>
     Response.json({ success: false, error }, { status: 400 });
 
-  if (!Number.isSafeInteger(departureId) || departureId <= 0) {
+  if (!isDatabaseId(departureId)) {
     return badRequest("Invalid departure ID.");
   }
 
@@ -93,11 +95,7 @@ export async function POST(request: Request, { params }: Props) {
 
   const vehicleId = body.vehicleId;
 
-  if (
-    typeof vehicleId !== "number" ||
-    !Number.isSafeInteger(vehicleId) ||
-    vehicleId <= 0
-  ) {
+  if (!isDatabaseId(vehicleId)) {
     return badRequest("Choose a valid vehicle.");
   }
 
@@ -132,6 +130,9 @@ export async function POST(request: Request, { params }: Props) {
         );
       }
 
+      if (!(await lockVehicle(tx, vehicleId))) {
+        return Response.json({ success: false, error: "Vehicle not found." }, { status: 404 });
+      }
       const vehicle = await tx.orm.public.Vehicle
         .where({ id: vehicleId })
         .first();
@@ -162,20 +163,25 @@ export async function POST(request: Request, { params }: Props) {
         return badRequest("The vehicle layout needs at least one enabled seat.");
       }
 
-      if (!body.visibleToCustomer) {
-        const existing = await tx.orm.public.DepartureVehicle.where({ departureId, vehicleId }).first();
-        if (existing?.visibleToCustomer) {
-          const [capacity, committed, seats] = await Promise.all([
-            transportSeatCapacity(departureId, tx),
-            committedSeatCounts(departureId, tx),
-            tx.orm.public.Seat.where({ seatLayoutId: vehicle.seatLayoutId, isAvailable: true }).select("id").all(),
-          ]);
-          if ((committed.get(departureId) ?? 0) > capacity - seats.length) {
-            return Response.json(
-              { success: false, error: "Hiding this vehicle would leave too few seats for existing bookings." },
-              { status: 409 },
-            );
-          }
+      const existing = await tx.orm.public.DepartureVehicle.where({ departureId, vehicleId }).first();
+      if (!existing) {
+        const departure = await tx.orm.public.Departure.where({ id: departureId }).first();
+        if (!departure) return Response.json({ success: false, error: "Departure not found." }, { status: 404 });
+        const conflict = await vehicleScheduleConflict(tx, departureId, vehicleId, departure);
+        if (conflict) {
+          return Response.json({ success: false, error: `This vehicle is already scheduled for departure #${conflict.id} at that time.` }, { status: 409 });
+        }
+      } else if (existing.visibleToCustomer && !body.visibleToCustomer) {
+        const [capacity, committed, seats] = await Promise.all([
+          transportSeatCapacity(departureId, tx),
+          committedSeatCounts(departureId, tx),
+          tx.orm.public.Seat.where({ seatLayoutId: vehicle.seatLayoutId, isAvailable: true }).select("id").all(),
+        ]);
+        if ((committed.get(departureId) ?? 0) > capacity - seats.length) {
+          return Response.json(
+            { success: false, error: "Hiding this vehicle would leave too few seats for existing bookings." },
+            { status: 409 },
+          );
         }
       }
 

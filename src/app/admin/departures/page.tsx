@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin-auth";
+import { scheduleFields } from "@/lib/departure-schedule";
 
 export default async function DeparturesPage() {
     await requireAdminPage();
@@ -40,41 +41,31 @@ export default async function DeparturesPage() {
                             <th className="px-4 py-3 text-left">Return</th>
                             <th className="px-4 py-3 text-left">Departure Time</th>
                             <th className="px-4 py-3 text-left">Return Time</th>
+                            <th className="px-4 py-3 text-left">Customer status</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {departures.map((departure) => (
-                            <tr
-                                key={departure.id}
-                                className="border-b hover:bg-muted/50"
-                            >
-                                <td className="px-4 py-3">
-                                    <Link
-                                        href={`/admin/departures/${departure.id}`}
-                                        className="font-medium hover:underline"
-                                    >
-                                        {tourMap.get(departure.tourId) ?? "Unknown Tour"}
-                                    </Link>
-                                </td>
-
-                                <td className="px-4 py-3">
-                                    {departure.departureDate.toString()}
-                                </td>
-
-                                <td className="px-4 py-3">
-                                    {departure.returnDate?.toString() ?? "-"}
-                                </td>
-
-                                <td className="px-4 py-3">
-                                    {departure.departureTime ?? "-"}
-                                </td>
-
-                                <td className="px-4 py-3">
-                                    {departure.returnTime ?? "-"}
-                                </td>
-                            </tr>
-                        ))}
+                        {departures.map((departure) => {
+                            const schedule = scheduleFields(departure);
+                            const status = departure.customerVisible
+                                ? departure.bookingOpen ? "Booking open" : "Booking closed"
+                                : "Hidden";
+                            return (
+                                <tr key={departure.id} className="border-b hover:bg-muted/50">
+                                    <td className="px-4 py-3">
+                                        <Link href={`/admin/departures/${departure.id}`} className="font-medium hover:underline">
+                                            {tourMap.get(departure.tourId) ?? "Unknown Tour"}
+                                        </Link>
+                                    </td>
+                                    <td className="px-4 py-3">{schedule.departureDate}</td>
+                                    <td className="px-4 py-3">{schedule.returnDate || "—"}</td>
+                                    <td className="px-4 py-3">{schedule.departureTime || "—"}</td>
+                                    <td className="px-4 py-3">{schedule.returnTime || "—"}</td>
+                                    <td className="px-4 py-3">{status}</td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

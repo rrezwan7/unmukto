@@ -1,4 +1,7 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { stayOutsideSchedule } from "@/lib/departure-editor";
+import { lockDeparture } from "@/lib/reservation-inventory";
+import { isDatabaseId } from "@/lib/tour-editor";
 import { Temporal } from "temporal-polyfill";
 
 type Props = {
@@ -12,7 +15,7 @@ export async function GET(_request: Request, { params }: Props) {
   const { id } = await params;
   const departureId = Number(id);
 
-  if (!Number.isSafeInteger(departureId) || departureId <= 0) {
+  if (!isDatabaseId(departureId)) {
     return Response.json(
       { success: false, error: "Invalid departure ID." },
       { status: 400 }
@@ -109,7 +112,7 @@ export async function POST(request: Request, { params }: Props) {
   const badRequest = (error: string) =>
     Response.json({ success: false, error }, { status: 400 });
 
-  if (!Number.isSafeInteger(departureId) || departureId <= 0) {
+  if (!isDatabaseId(departureId)) {
     return badRequest("Invalid departure ID.");
   }
 
@@ -126,7 +129,7 @@ export async function POST(request: Request, { params }: Props) {
   }
 
   const hotelId = Number(body.hotelId);
-  if (!Number.isSafeInteger(hotelId) || hotelId <= 0) {
+  if (!isDatabaseId(hotelId)) {
     return badRequest("Select a valid hotel.");
   }
 
@@ -163,37 +166,34 @@ export async function POST(request: Request, { params }: Props) {
   try {
     const { db } = await import("@/prisma/db");
 
-    const [departure, hotel] = await Promise.all([
-      db.orm.public.Departure.where({ id: departureId }).first(),
-      db.orm.public.Hotel.where({ id: hotelId }).first(),
-    ]);
+    return await db.transaction(async (tx) => {
+      if (!(await lockDeparture(tx, departureId))) {
+        return Response.json({ success: false, error: "Departure not found." }, { status: 404 });
+      }
+      const [departure, hotel] = await Promise.all([
+        tx.orm.public.Departure.where({ id: departureId }).first(),
+        tx.orm.public.Hotel.where({ id: hotelId }).first(),
+      ]);
 
-    if (!departure) {
-      return Response.json(
-        { success: false, error: "Departure not found." },
-        { status: 404 }
-      );
-    }
+      if (!departure) return Response.json({ success: false, error: "Departure not found." }, { status: 404 });
+      if (!hotel || !hotel.isActive) return badRequest("Selected hotel is inactive or does not exist.");
 
-    if (!hotel || !hotel.isActive) {
-      return Response.json(
-        { success: false, error: "Selected hotel is inactive or does not exist." },
-        { status: 400 }
-      );
-    }
+      const dates = { checkInDate: checkInInstant, checkOutDate: checkOutInstant };
+      if (stayOutsideSchedule(departure, dates)) {
+        return Response.json({ success: false, error: "The hotel stay must fall within the departure's travel dates." }, { status: 409 });
+      }
+      const conflict = await tx.orm.public.HotelStay.where({ departureId, hotelId })
+        .where((stay) => stay.checkInDate.lt(checkOutInstant))
+        .where((stay) => stay.checkOutDate.gt(checkInInstant))
+        .select("id")
+        .first();
+      if (conflict) {
+        return Response.json({ success: false, error: "This hotel already has a stay on this departure during the selected dates." }, { status: 409 });
+      }
 
-    const stay = await db.orm.public.HotelStay.create({
-      departureId,
-      hotelId,
-      destinationId,
-      checkInDate: checkInInstant,
-      checkOutDate: checkOutInstant,
+      const stay = await tx.orm.public.HotelStay.create({ departureId, hotelId, destinationId, ...dates });
+      return Response.json({ success: true, stay }, { status: 201 });
     });
-
-    return Response.json(
-      { success: true, stay },
-      { status: 201 }
-    );
   } catch (error) {
     console.error("CREATE HOTEL STAY ERROR:", error);
 

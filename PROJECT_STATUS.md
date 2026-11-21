@@ -15,7 +15,8 @@ guest reservation migration was applied and verified on that database on
 booking-specific assignment links. The manual confirmation migration has also
 been applied and verified on the shared database. The owner tested booking
 confirmation, bus seat assignment, and hotel room assignment successfully on
-localhost. The tour and itinerary editor is ready for localhost testing. Vercel
+localhost. Tour, itinerary, and departure editing are ready for localhost
+testing. The departure editor uses the existing database schema. Vercel
 deployment can be handled separately.
 
 ## Implemented
@@ -101,6 +102,24 @@ departure allocation/availability and passenger seat assignment before this sess
   removed. The server checks this again on save. Stale saves return a conflict
   and leave the current itinerary intact.
 
+## Departure editing
+
+- Open **Admin → Departures → Select a departure → Edit departure**. Staff can
+  edit departure and return dates and times, customer visibility, and whether
+  to accept new bookings. Dates are entered and displayed in Bangladesh time.
+- Booking or assignment history locks the schedule. Staff can still close or
+  hide that departure and manage its existing reservations and assignments.
+- For a public departure to reopen booking, its tour must be published and
+  it needs a future schedule, pricing, an available room option, and an
+  active customer-visible vehicle with enabled seats.
+- Schedule changes and new vehicle allocations check for overlaps. A vehicle
+  can start another trip at the previous one's known return time. With a
+  blank return time, the vehicle is considered in use through the return
+  date, or through the departure date if the return date is blank.
+- Hotel stays must fit within the known travel dates. Creating a second
+  overlapping stay for the same hotel on one departure is blocked.
+  Across-departure room inventory remains part of the allotment work.
+
 ## Guest reservations and seat holds (Phase 5)
 
 - `POST /api/booking-quote` calculates fares on the server for the selected
@@ -185,7 +204,7 @@ instructions.
 
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
-- `npm test`: 13 passed with an isolated PostgreSQL server.
+- `npm test`: 16 passed with an isolated PostgreSQL server.
 - `npm run build`: passed.
 - `git diff --check`: passed.
 - An isolated PostgreSQL integration check verified the guest toggle, updated
@@ -208,6 +227,10 @@ instructions.
   PostgreSQL covering archive and republish, legacy Bengali times, stable IDs,
   public itinerary order, concurrent saves, and blocking removal of a
   hotel-linked stop.
+- Departure editing passed authenticated production-build checks for date and
+  time changes, Bangladesh dates around midnight, closing and reopening,
+  preserving reservation history, and rejecting concurrent vehicle and
+  hotel-stay overlaps.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite now covers seat-layout endpoints, hotel endpoints, room endpoints,
@@ -261,7 +284,7 @@ configure only an isolated localhost test server to run those checks.
 | Area | Missing controls and acceptance criteria |
 | --- | --- |
 | **Tours and itineraries** | **Edit Tour** and the day and stop editor are implemented and verified on disposable PostgreSQL. Verify the normal browser editing flow on localhost. |
-| **Departures** | Edit departure and return dates and times, customer visibility, and whether bookings are open. Validate chronology, vehicle/stay overlaps, and existing booking commitments. Give staff a clear way to close bookings. Guard date changes or removal when reservations, assignments, or payments exist. |
+| **Departures** | Editing the schedule, visibility, and booking status is implemented. Use hide and close to retire departures with history. |
 | **Vehicles and seat layouts** | Edit vehicle details and active state. Add departure vehicle removal where assignments and capacity permit. Add seat label, position, and availability edits with duplicate checks. Guard changes to a shared layout and removal or disabling of an assigned seat. |
 | **Hotels, rooms, and stays** | Edit hotel details and active state, room number/type/capacity, and scheduled stay details. Guard capacity reductions below occupancy and date or hotel changes that affect assignments or allotments. Preserve the existing remove-stay and unassign-room controls. |
 
@@ -272,8 +295,8 @@ configure only an isolated localhost test server to run those checks.
   permanent removal only after explicit confirmation and a transaction-level
   dependency check. Ensure archived entries leave public listings and new
   selections while historical bookings and assignments remain readable.
-- Next, add departure editing, followed by vehicle and seat layout editing
-  and hotel, room, and stay editing.
+- Next, add vehicle and seat layout editing, followed by hotel, room, and
+  stay editing.
 
 ### 5. Complete checkout and verify a release
 
