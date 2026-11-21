@@ -7,7 +7,7 @@ Last updated: 2026-11-22 (Asia/Dhaka)
 Working branch: `feature/gemini-next-task`. Vercel deploys production from
 `main`. The owner reports that the homepage, catalog, and fare calculator from
 the previous release work on Vercel. The production admin GitHub login still
-needs attention.
+needs its production OAuth credentials.
 
 The development workspace and Vercel share one hosted PostgreSQL database. The
 guest reservation migration was applied and verified on that database on
@@ -169,9 +169,16 @@ configure only an isolated localhost test server to run those checks.
 
 ### 1. Restore production admin access
 
-- Follow `docs/ADMIN_SETUP.md` and verify the actual production hostname, GitHub
-  OAuth callback, environment scope, and numeric GitHub allowlist against the
-  Vercel login failure. Keep the admin allowlist and same-origin checks in place.
+- The live `/login` page reports that setup is incomplete. Vercel Production
+  already had `AUTH_SECRET`. The production `AUTH_URL` and the verified owner's
+  numeric ID in `ADMIN_GITHUB_IDS` have been added.
+- The remaining configuration is `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` in
+  Vercel Production, from a GitHub OAuth app with the callback
+  `https://unmukto.vercel.app/api/auth/callback/github`. Enter the credentials
+  directly into Vercel. See `docs/ADMIN_SETUP.md`.
+- Redeploy the existing production release after both credentials are saved.
+  Verify that `/login` shows the sign-in button and that clicking it sends the
+  browser to GitHub with the production callback.
 - Verify sign-in, opening a departure, saving an admin setting, and sign-out on
   the production hostname. Keep guest booking off while confirmation and room
   availability are being tested.
