@@ -1,4 +1,5 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { canAssignPassenger, holdIsActive } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -37,11 +38,8 @@ export async function GET(_request: Request, { params }: Props) {
       db.orm.public.SeatAssignment.where({ departureId }).all(),
     ]);
 
-    const activeBookings = bookings.filter(
-      (booking) =>
-        booking.status === "PENDING" ||
-        booking.status === "CONFIRMED"
-    );
+    const now = Date.now();
+    const activeBookings = bookings.filter((booking) => holdIsActive(booking, now));
 
     const assignmentByPassenger = new Map(
       assignments.map((assignment) => [
@@ -59,12 +57,13 @@ export async function GET(_request: Request, { params }: Props) {
         return passengers.map((passenger) => {
           const assignment = assignmentByPassenger.get(passenger.id);
 
-          const eligibleForSeat =
+          const eligibleForSeat = canAssignPassenger(booking) && (
             passenger.passengerType === "ADULT" ||
             (
               passenger.passengerType === "CHILD" &&
               booking.childFeeEnabledAtBooking
-            );
+            )
+          );
 
           return {
             id: passenger.id,

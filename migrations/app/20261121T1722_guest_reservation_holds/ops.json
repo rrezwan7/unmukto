@@ -1,0 +1,378 @@
+[
+  {
+    "id": "table.BookingSettings",
+    "label": "Create table \"BookingSettings\"",
+    "summary": "Creates table \"BookingSettings\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BookingSettings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BookingSettings\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BookingSettings\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BookingSettings\"",
+        "sql": "CREATE TABLE \"public\".\"BookingSettings\" (\n  \"guestBookingEnabled\" bool DEFAULT false NOT NULL,\n  \"id\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BookingSettings\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BookingSettings\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.guestContactEmail",
+    "label": "Add column \"guestContactEmail\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "guestContactEmail",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"guestContactEmail\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "guestContactEmail"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"guestContactEmail\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"guestContactEmail\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"guestContactEmail\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "guestContactEmail"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.guestContactName",
+    "label": "Add column \"guestContactName\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "guestContactName",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"guestContactName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "guestContactName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"guestContactName\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"guestContactName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"guestContactName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "guestContactName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.guestContactPhone",
+    "label": "Add column \"guestContactPhone\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "guestContactPhone",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"guestContactPhone\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "guestContactPhone"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"guestContactPhone\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"guestContactPhone\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"guestContactPhone\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "guestContactPhone"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.holdExpiresAt",
+    "label": "Add column \"holdExpiresAt\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "holdExpiresAt",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"holdExpiresAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "holdExpiresAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"holdExpiresAt\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"holdExpiresAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"holdExpiresAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "holdExpiresAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.reservationFingerprint",
+    "label": "Add column \"reservationFingerprint\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "reservationFingerprint",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"reservationFingerprint\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "reservationFingerprint"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"reservationFingerprint\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"reservationFingerprint\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"reservationFingerprint\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "reservationFingerprint"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Booking.reservationKey",
+    "label": "Add column \"reservationKey\" to \"Booking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "reservationKey",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"reservationKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "reservationKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"reservationKey\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD COLUMN \"reservationKey\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"reservationKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "reservationKey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.dropNotNull.Booking.customerId",
+    "label": "Drop NOT NULL on \"Booking\".\"customerId\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "customerId",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"customerId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "customerId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"customerId\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ALTER COLUMN \"customerId\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"customerId\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Booking",
+          "customerId",
+          "YES"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Booking.Booking_reservationKey_key",
+    "label": "Add unique constraint on \"Booking\" (reservationKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Booking_reservationKey_key",
+        "table": "Booking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Booking_reservationKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_reservationKey_key",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Booking_reservationKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"Booking\" ADD CONSTRAINT \"Booking_reservationKey_key\" UNIQUE (\"reservationKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Booking_reservationKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Booking_reservationKey_key",
+          "public",
+          "\"public\".\"Booking\""
+        ]
+      }
+    ]
+  }
+]

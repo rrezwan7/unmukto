@@ -1,4 +1,5 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { canAssignPassenger } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -62,10 +63,7 @@ export async function POST(request: Request, { params }: Props) {
         return fail("Passenger does not belong to this departure.", 409);
       }
 
-      if (
-        booking.status !== "PENDING" &&
-        booking.status !== "CONFIRMED"
-      ) {
+      if (!canAssignPassenger(booking)) {
         return fail("This booking cannot receive a seat assignment.", 409);
       }
 

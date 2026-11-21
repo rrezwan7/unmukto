@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'c4fd7104ddd4f09f5554ead159f3fcd48993b669c5234ddba1f1cc27db7a8198'>;
+  StorageHashBase<'7129e5e6c1f3cc89d67400c4a466a019fd026cee2499dae2f163d833c326ea1f'>;
 export type ExecutionHash =
   ExecutionHashBase<'88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36'>;
 export type ProfileHash =
@@ -292,18 +292,28 @@ export type FieldOutputTypes = {
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['output'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
-      readonly customerId: CodecTypes['pg/int4@1']['output'];
+      readonly customerId: CodecTypes['pg/int4@1']['output'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['output'];
       readonly dueAmount: CodecTypes['pg/numeric@1']['output'];
+      readonly guestContactEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly guestContactName: CodecTypes['pg/text@1']['output'] | null;
+      readonly guestContactPhone: CodecTypes['pg/text@1']['output'] | null;
       readonly guideId: CodecTypes['pg/int4@1']['output'] | null;
+      readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly paidAmount: CodecTypes['pg/numeric@1']['output'];
+      readonly reservationFingerprint: CodecTypes['pg/text@1']['output'] | null;
+      readonly reservationKey: CodecTypes['pg/text@1']['output'] | null;
       readonly roomOptionId: CodecTypes['pg/int4@1']['output'] | null;
       readonly roomSurchargeAtBooking: CodecTypes['pg/numeric@1']['output'];
       readonly status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REFUNDED';
       readonly totalAmount: CodecTypes['pg/numeric@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly BookingSettings: {
+      readonly guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
     };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['output'];
@@ -537,18 +547,28 @@ export type FieldInputTypes = {
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['input'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
-      readonly customerId: CodecTypes['pg/int4@1']['input'];
+      readonly customerId: CodecTypes['pg/int4@1']['input'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['input'];
       readonly dueAmount: CodecTypes['pg/numeric@1']['input'];
+      readonly guestContactEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly guestContactName: CodecTypes['pg/text@1']['input'] | null;
+      readonly guestContactPhone: CodecTypes['pg/text@1']['input'] | null;
       readonly guideId: CodecTypes['pg/int4@1']['input'] | null;
+      readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly paidAmount: CodecTypes['pg/numeric@1']['input'];
+      readonly reservationFingerprint: CodecTypes['pg/text@1']['input'] | null;
+      readonly reservationKey: CodecTypes['pg/text@1']['input'] | null;
       readonly roomOptionId: CodecTypes['pg/int4@1']['input'] | null;
       readonly roomSurchargeAtBooking: CodecTypes['pg/numeric@1']['input'];
       readonly status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REFUNDED';
       readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly BookingSettings: {
+      readonly guestBookingEnabled: CodecTypes['pg/bool@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
     };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['input'];
@@ -782,18 +802,28 @@ export type StorageColumnTypes = {
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['output'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
-      readonly customerId: CodecTypes['pg/int4@1']['output'];
+      readonly customerId: CodecTypes['pg/int4@1']['output'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['output'];
       readonly dueAmount: CodecTypes['pg/numeric@1']['output'];
+      readonly guestContactEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly guestContactName: CodecTypes['pg/text@1']['output'] | null;
+      readonly guestContactPhone: CodecTypes['pg/text@1']['output'] | null;
       readonly guideId: CodecTypes['pg/int4@1']['output'] | null;
+      readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly paidAmount: CodecTypes['pg/numeric@1']['output'];
+      readonly reservationFingerprint: CodecTypes['pg/text@1']['output'] | null;
+      readonly reservationKey: CodecTypes['pg/text@1']['output'] | null;
       readonly roomOptionId: CodecTypes['pg/int4@1']['output'] | null;
       readonly roomSurchargeAtBooking: CodecTypes['pg/numeric@1']['output'];
       readonly status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REFUNDED';
       readonly totalAmount: CodecTypes['pg/numeric@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly BookingSettings: {
+      readonly guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
     };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['output'];
@@ -1027,18 +1057,28 @@ export type StorageColumnInputTypes = {
       readonly childFareAtBooking: CodecTypes['pg/numeric@1']['input'];
       readonly childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
-      readonly customerId: CodecTypes['pg/int4@1']['input'];
+      readonly customerId: CodecTypes['pg/int4@1']['input'] | null;
       readonly departureId: CodecTypes['pg/int4@1']['input'];
       readonly dueAmount: CodecTypes['pg/numeric@1']['input'];
+      readonly guestContactEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly guestContactName: CodecTypes['pg/text@1']['input'] | null;
+      readonly guestContactPhone: CodecTypes['pg/text@1']['input'] | null;
       readonly guideId: CodecTypes['pg/int4@1']['input'] | null;
+      readonly holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly paidAmount: CodecTypes['pg/numeric@1']['input'];
+      readonly reservationFingerprint: CodecTypes['pg/text@1']['input'] | null;
+      readonly reservationKey: CodecTypes['pg/text@1']['input'] | null;
       readonly roomOptionId: CodecTypes['pg/int4@1']['input'] | null;
       readonly roomSurchargeAtBooking: CodecTypes['pg/numeric@1']['input'];
       readonly status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REFUNDED';
       readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly BookingSettings: {
+      readonly guestBookingEnabled: CodecTypes['pg/bool@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
     };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['input'];
@@ -1283,19 +1323,25 @@ export namespace Models {
     childFareAtBooking: CodecTypes['pg/numeric@1']['output'];
     childFeeEnabledAtBooking: CodecTypes['pg/bool@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
-    customerId: CodecTypes['pg/int4@1']['output'];
+    customerId: CodecTypes['pg/int4@1']['output'] | null;
     departureId: CodecTypes['pg/int4@1']['output'];
     dueAmount: CodecTypes['pg/numeric@1']['output'];
+    guestContactEmail: CodecTypes['pg/text@1']['output'] | null;
+    guestContactName: CodecTypes['pg/text@1']['output'] | null;
+    guestContactPhone: CodecTypes['pg/text@1']['output'] | null;
     guideId: CodecTypes['pg/int4@1']['output'] | null;
+    holdExpiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     id: CodecTypes['pg/int4@1']['output'];
     notes: CodecTypes['pg/text@1']['output'] | null;
     paidAmount: CodecTypes['pg/numeric@1']['output'];
+    reservationFingerprint: CodecTypes['pg/text@1']['output'] | null;
+    reservationKey: CodecTypes['pg/text@1']['output'] | null;
     roomOptionId: CodecTypes['pg/int4@1']['output'] | null;
     roomSurchargeAtBooking: CodecTypes['pg/numeric@1']['output'];
     status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REFUNDED';
     totalAmount: CodecTypes['pg/numeric@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
-    customer: public_User;
+    customer: public_User | null;
     departure: public_Departure;
     guide: public_User | null;
     passengers: public_Passenger[];
@@ -1303,6 +1349,11 @@ export namespace Models {
     roomOption: public_DepartureRoomOption | null;
     readonly [RelationKeys]?:
       'customer' | 'departure' | 'guide' | 'passengers' | 'payments' | 'roomOption';
+  };
+  export type public_BookingSettings = {
+    guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    readonly [RelationKeys]?: never;
   };
   export type public_Departure = {
     bookingOpen: CodecTypes['pg/bool@1']['output'];
@@ -1565,6 +1616,7 @@ export declare const models: {
     BlogPostTag: Models.public_BlogPostTag;
     BlogTag: Models.public_BlogTag;
     Booking: Models.public_Booking;
+    BookingSettings: Models.public_BookingSettings;
     Departure: Models.public_Departure;
     DeparturePricing: Models.public_DeparturePricing;
     DepartureRoomOption: Models.public_DepartureRoomOption;
@@ -1924,7 +1976,7 @@ type ContractBase = Omit<
                 readonly customerId: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                 };
                 readonly departureId: {
                   readonly nativeType: 'int4';
@@ -1940,9 +1992,29 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
                   };
                 };
+                readonly guestContactEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly guestContactName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly guestContactPhone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly guideId: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly holdExpiresAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: true;
                 };
                 readonly id: {
@@ -1967,6 +2039,16 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/numeric@1', '0'>;
                   };
+                };
+                readonly reservationFingerprint: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly reservationKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly roomOptionId: {
                   readonly nativeType: 'int4';
@@ -2008,7 +2090,10 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['bookingNumber'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['bookingNumber'] },
+                { readonly columns: readonly ['reservationKey'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'Booking_customerId_idx_b2a8a46c';
@@ -2085,6 +2170,28 @@ type ContractBase = Omit<
                   };
                 },
               ];
+            };
+            readonly BookingSettings: {
+              columns: {
+                readonly guestBookingEnabled: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
             };
             readonly Departure: {
               columns: {
@@ -3619,6 +3726,10 @@ type ContractBase = Omit<
     };
     readonly BlogTag: { readonly namespace: 'public' & NamespaceId; readonly model: 'BlogTag' };
     readonly Booking: { readonly namespace: 'public' & NamespaceId; readonly model: 'Booking' };
+    readonly BookingSettings: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BookingSettings';
+    };
     readonly Departure: { readonly namespace: 'public' & NamespaceId; readonly model: 'Departure' };
     readonly DeparturePricing: {
       readonly namespace: 'public' & NamespaceId;
@@ -3976,7 +4087,7 @@ type ContractBase = Omit<
                 };
               };
               readonly customerId: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly departureId: {
@@ -3987,9 +4098,28 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
+              readonly guestContactEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly guestContactName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly guestContactPhone: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly guideId: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly holdExpiresAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
               };
               readonly id: {
                 readonly nullable: false;
@@ -4002,6 +4132,14 @@ type ContractBase = Omit<
               readonly paidAmount: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly reservationFingerprint: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reservationKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly roomOptionId: {
                 readonly nullable: true;
@@ -4031,7 +4169,7 @@ type ContractBase = Omit<
               readonly customer: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['customerId'];
                   readonly targetFields: readonly ['id'];
@@ -4105,15 +4243,42 @@ type ContractBase = Omit<
                 readonly customerId: { readonly column: 'customerId' };
                 readonly departureId: { readonly column: 'departureId' };
                 readonly dueAmount: { readonly column: 'dueAmount' };
+                readonly guestContactEmail: { readonly column: 'guestContactEmail' };
+                readonly guestContactName: { readonly column: 'guestContactName' };
+                readonly guestContactPhone: { readonly column: 'guestContactPhone' };
                 readonly guideId: { readonly column: 'guideId' };
+                readonly holdExpiresAt: { readonly column: 'holdExpiresAt' };
                 readonly id: { readonly column: 'id' };
                 readonly notes: { readonly column: 'notes' };
                 readonly paidAmount: { readonly column: 'paidAmount' };
+                readonly reservationFingerprint: { readonly column: 'reservationFingerprint' };
+                readonly reservationKey: { readonly column: 'reservationKey' };
                 readonly roomOptionId: { readonly column: 'roomOptionId' };
                 readonly roomSurchargeAtBooking: { readonly column: 'roomSurchargeAtBooking' };
                 readonly status: { readonly column: 'status' };
                 readonly totalAmount: { readonly column: 'totalAmount' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly BookingSettings: {
+            readonly fields: {
+              readonly guestBookingEnabled: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BookingSettings';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly guestBookingEnabled: { readonly column: 'guestBookingEnabled' };
+                readonly id: { readonly column: 'id' };
               };
             };
           };

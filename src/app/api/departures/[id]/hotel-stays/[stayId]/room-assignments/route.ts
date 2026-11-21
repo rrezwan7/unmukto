@@ -1,4 +1,5 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { canAssignPassenger, holdIsActive } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string; stayId: string }>;
@@ -50,9 +51,8 @@ export async function GET(_request: Request, { params }: Props) {
       a.id - b.id
     );
 
-    const activeBookings = bookings.filter(
-      (b) => b.status === "PENDING" || b.status === "CONFIRMED"
-    );
+    const now = Date.now();
+    const activeBookings = bookings.filter((booking) => holdIsActive(booking, now));
 
     const bookingMap = new Map(activeBookings.map((b) => [b.id, b]));
 
@@ -105,6 +105,7 @@ export async function GET(_request: Request, { params }: Props) {
         bookingId: passenger.bookingId,
         bookingNumber: booking?.bookingNumber ?? "",
         bookingStatus: booking?.status ?? "PENDING",
+        canAssign: booking ? canAssignPassenger(booking) : false,
         assignment: assignment
           ? {
               id: assignment.id,
@@ -199,7 +200,7 @@ export async function POST(request: Request, { params }: Props) {
         return fail("Passenger does not belong to this departure.", 409);
       }
 
-      if (booking.status !== "PENDING" && booking.status !== "CONFIRMED") {
+      if (!canAssignPassenger(booking)) {
         return fail("This booking cannot receive a room assignment.", 409);
       }
 

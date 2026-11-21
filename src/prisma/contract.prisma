@@ -313,13 +313,25 @@ model HotelStay {
   updatedAt       temporal.updatedAtString()
 }
 
+model BookingSettings {
+  id                  Int     @id
+  guestBookingEnabled Boolean @default(false)
+}
+
 model Booking {
   id            Int      @id @default(autoincrement())
   bookingNumber String   @unique
 
   departureId   Int
-  customerId    Int
+  customerId    Int?
   guideId       Int?
+
+  guestContactName  String?
+  guestContactPhone String?
+  guestContactEmail String?
+  reservationKey    String? @unique
+  reservationFingerprint String?
+  holdExpiresAt     DateTime?
 
   // Selected room option for this booking.
   roomOptionId  Int?
@@ -342,7 +354,7 @@ model Booking {
   notes         String?
 
   departure    Departure @relation(fields: [departureId], references: [id])
-  customer     User      @relation("CustomerBookings", fields: [customerId], references: [id])
+  customer     User?     @relation("CustomerBookings", fields: [customerId], references: [id])
   guide        User?     @relation("AssignedGuide", fields: [guideId], references: [id])
   roomOption   DepartureRoomOption? @relation(fields: [roomOptionId], references: [id])
 
@@ -376,6 +388,8 @@ model Passenger {
 
   createdAt      TimestamptzString          @default(now())
   updatedAt      temporal.updatedAtString()
+
+  @@index([bookingId])
 }
 
 model SeatAssignment {

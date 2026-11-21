@@ -24,6 +24,10 @@
       "model": "Booking",
       "namespace": "public"
     },
+    "BookingSettings": {
+      "model": "BookingSettings",
+      "namespace": "public"
+    },
     "Departure": {
       "model": "Departure",
       "namespace": "public"
@@ -756,7 +760,7 @@
                 }
               },
               "customerId": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
@@ -776,10 +780,38 @@
                   "kind": "scalar"
                 }
               },
+              "guestContactEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "guestContactName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "guestContactPhone": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "guideId": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "holdExpiresAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
                   "kind": "scalar"
                 }
               },
@@ -801,6 +833,20 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "reservationFingerprint": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reservationKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -849,7 +895,7 @@
             "relations": {
               "customer": {
                 "cardinality": "N:1",
-                "nullable": false,
+                "nullable": true,
                 "on": {
                   "localFields": [
                     "customerId"
@@ -968,8 +1014,20 @@
                 "dueAmount": {
                   "column": "dueAmount"
                 },
+                "guestContactEmail": {
+                  "column": "guestContactEmail"
+                },
+                "guestContactName": {
+                  "column": "guestContactName"
+                },
+                "guestContactPhone": {
+                  "column": "guestContactPhone"
+                },
                 "guideId": {
                   "column": "guideId"
+                },
+                "holdExpiresAt": {
+                  "column": "holdExpiresAt"
                 },
                 "id": {
                   "column": "id"
@@ -979,6 +1037,12 @@
                 },
                 "paidAmount": {
                   "column": "paidAmount"
+                },
+                "reservationFingerprint": {
+                  "column": "reservationFingerprint"
+                },
+                "reservationKey": {
+                  "column": "reservationKey"
                 },
                 "roomOptionId": {
                   "column": "roomOptionId"
@@ -998,6 +1062,37 @@
               },
               "namespaceId": "public",
               "table": "Booking"
+            }
+          },
+          "BookingSettings": {
+            "fields": {
+              "guestBookingEnabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "guestBookingEnabled": {
+                  "column": "guestBookingEnabled"
+                },
+                "id": {
+                  "column": "id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "BookingSettings"
             }
           },
           "Departure": {
@@ -3915,7 +4010,7 @@
                 "customerId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
-                  "nullable": false
+                  "nullable": true
                 },
                 "departureId": {
                   "codecId": "pg/int4@1",
@@ -3931,9 +4026,29 @@
                   "nativeType": "numeric",
                   "nullable": false
                 },
+                "guestContactEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "guestContactName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "guestContactPhone": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "guideId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
+                  "nullable": true
+                },
+                "holdExpiresAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
                   "nullable": true
                 },
                 "id": {
@@ -3958,6 +4073,16 @@
                   },
                   "nativeType": "numeric",
                   "nullable": false
+                },
+                "reservationFingerprint": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "reservationKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "roomOptionId": {
                   "codecId": "pg/int4@1",
@@ -4117,8 +4242,39 @@
                   "columns": [
                     "bookingNumber"
                   ]
+                },
+                {
+                  "columns": [
+                    "reservationKey"
+                  ]
                 }
               ]
+            },
+            "BookingSettings": {
+              "columns": {
+                "guestBookingEnabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             },
             "Departure": {
               "columns": {
@@ -6108,7 +6264,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c4fd7104ddd4f09f5554ead159f3fcd48993b669c5234ddba1f1cc27db7a8198"
+    "storageHash": "7129e5e6c1f3cc89d67400c4a466a019fd026cee2499dae2f163d833c326ea1f"
   },
   "execution": {
     "executionHash": "88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36",

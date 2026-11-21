@@ -102,7 +102,7 @@ test("admin pages redirect anonymous users and allow an authorized session", asy
     "/admin/tours", "/admin/departures", "/admin/departures/1",
     "/admin/tours/new", "/admin/departures/new",
     "/admin/seat-layouts", "/admin/seat-layouts/1",
-    "/admin/hotels", "/admin/hotels/1"
+    "/admin/hotels", "/admin/hotels/1", "/admin/booking-settings"
   ]) {
     const response = await fetch(`${base}${path}`, { redirect: "manual" });
     // Streaming server component redirects may be encoded in an HTTP 200 body.

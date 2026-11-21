@@ -1,4 +1,5 @@
 import "server-only";
+import { committedSeatCounts } from "@/lib/reservation-inventory";
 
 export type PublicTourSummary = {
   id: number;
@@ -83,7 +84,7 @@ function formatIsoDate(instant: { toString: () => string }): string {
 export async function getPublicTours(): Promise<PublicTourSummary[]> {
   const { db } = await import("@/prisma/db");
 
-  const [tours, departures, itineraries, pricingRecords, allocations, vehicles, seats, assignments] =
+  const [tours, departures, itineraries, pricingRecords, allocations, vehicles, seats, committedSeats] =
     await Promise.all([
       db.orm.public.Tour.where({ isActive: true }).all(),
       db.orm.public.Departure.where({ customerVisible: true }).all(),
@@ -92,7 +93,7 @@ export async function getPublicTours(): Promise<PublicTourSummary[]> {
       db.orm.public.DepartureVehicle.where({ visibleToCustomer: true }).all(),
       db.orm.public.Vehicle.where({ isActive: true }).all(),
       db.orm.public.Seat.where({ isAvailable: true }).all(),
-      db.orm.public.SeatAssignment.all(),
+      committedSeatCounts(),
     ]);
 
   const vehicleMap = new Map(vehicles.map((v) => [v.id, v]));
@@ -103,15 +104,6 @@ export async function getPublicTours(): Promise<PublicTourSummary[]> {
     seatCountByLayout.set(
       s.seatLayoutId,
       (seatCountByLayout.get(s.seatLayoutId) ?? 0) + 1
-    );
-  }
-
-  // Count assignments per departure
-  const assignmentCountByDeparture = new Map<number, number>();
-  for (const a of assignments) {
-    assignmentCountByDeparture.set(
-      a.departureId,
-      (assignmentCountByDeparture.get(a.departureId) ?? 0) + 1
     );
   }
 
@@ -181,7 +173,7 @@ export async function getPublicTours(): Promise<PublicTourSummary[]> {
           depCapacity += seatCountByLayout.get(v.seatLayoutId) ?? 0;
         }
       }
-      const depAssigned = assignmentCountByDeparture.get(dep.id) ?? 0;
+      const depAssigned = committedSeats.get(dep.id) ?? 0;
       totalAvailSeats += Math.max(0, depCapacity - depAssigned);
     }
 
@@ -223,7 +215,7 @@ export async function getPublicTourBySlug(
     return null;
   }
 
-  const [itineraries, destinations, departures, pricingRecords, roomOptions, allocations, vehicles, seats, assignments] =
+  const [itineraries, destinations, departures, pricingRecords, roomOptions, allocations, vehicles, seats, committedSeats] =
     await Promise.all([
       db.orm.public.Itinerary.where({ tourId: tour.id }).all(),
       db.orm.public.Destination.all(),
@@ -233,7 +225,7 @@ export async function getPublicTourBySlug(
       db.orm.public.DepartureVehicle.where({ visibleToCustomer: true }).all(),
       db.orm.public.Vehicle.where({ isActive: true }).all(),
       db.orm.public.Seat.where({ isAvailable: true }).all(),
-      db.orm.public.SeatAssignment.all(),
+      committedSeatCounts(),
     ]);
 
   const visibleDepartures = departures.filter((d) => d.customerVisible);
@@ -287,14 +279,6 @@ export async function getPublicTourBySlug(
     );
   }
 
-  const assignmentCountByDeparture = new Map<number, number>();
-  for (const a of assignments) {
-    assignmentCountByDeparture.set(
-      a.departureId,
-      (assignmentCountByDeparture.get(a.departureId) ?? 0) + 1
-    );
-  }
-
   const pricingByDeparture = new Map(
     pricingRecords.map((p) => [p.departureId, p])
   );
@@ -333,7 +317,7 @@ export async function getPublicTourBySlug(
       }
     }
 
-    const assignedCount = assignmentCountByDeparture.get(dep.id) ?? 0;
+    const assignedCount = committedSeats.get(dep.id) ?? 0;
     const availableSeats = Math.max(0, depCapacity - assignedCount);
     const isSoldOut = depCapacity > 0 && availableSeats === 0;
 

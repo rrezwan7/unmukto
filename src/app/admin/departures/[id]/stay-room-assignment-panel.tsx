@@ -33,6 +33,7 @@ type Passenger = {
   bookingId: number;
   bookingNumber: string;
   bookingStatus: string;
+  canAssign: boolean;
   assignment: {
     id: number;
     roomId: number;
@@ -276,7 +277,7 @@ export default function StayRoomAssignmentPanel({
                         </span>
                       ) : (
                         <span className="text-xs text-muted-foreground">
-                          Unassigned
+                          {passenger.canAssign ? "Unassigned" : "Awaiting confirmation"}
                         </span>
                       )}
                     </TableCell>
@@ -293,7 +294,7 @@ export default function StayRoomAssignmentPanel({
                             [passenger.id]: e.target.value,
                           }))
                         }
-                        disabled={isPending || rooms.length === 0}
+                        disabled={!passenger.canAssign || isPending || rooms.length === 0}
                         className="w-44 text-xs"
                       >
                         <NativeSelectOption value="">
@@ -323,7 +324,7 @@ export default function StayRoomAssignmentPanel({
                         variant="outline"
                         onClick={() => handleAssign(passenger.id)}
                         disabled={
-                          isPending ||
+                          !passenger.canAssign || isPending ||
                           !selectedRoomByPassenger[passenger.id] ||
                           selectedRoomByPassenger[passenger.id] === String(passenger.assignment?.roomId)
                         }

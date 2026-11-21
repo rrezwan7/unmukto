@@ -1,15 +1,18 @@
 # Unmukto — Project Status & Continuity
 
-Last updated: 2026-11-14 (UTC)
+Last updated: 2026-11-22 (Asia/Dhaka)
 
 ## Current checkpoint
 
-Working branch: `feature/admin-ui`. Production database migration and merging
-into `main` are deferred. This session adds no schema changes or migrations.
-The pre-existing uncommitted `package-lock.json` change must be preserved.
+Working branch: `feature/gemini-next-task`. Vercel deploys production from
+`main`. The owner reports that the homepage, catalog, and fare calculator from
+the previous release work on Vercel. The production admin GitHub login still
+needs attention.
 
-Use current code and the contract as the source of truth. Earlier status notes
-incorrectly listed pricing and vehicle features as pending; they are implemented.
+The development workspace and Vercel share one hosted PostgreSQL database. The
+guest reservation migration was applied and verified on that database on
+2026-11-22 (Asia/Dhaka). The guest reservation code is on the feature branch
+pending review and deployment.
 
 ## Implemented
 
@@ -22,9 +25,10 @@ incorrectly listed pricing and vehicle features as pending; they are implemented
   cannot switch layouts. Seat-layout list and detail map pages are available.
 - Departure vehicle allocation and departure-specific seat availability.
 - Admin passenger seat assignment with booking/departure membership, allocation,
-  seat/layout membership, enabled-seat and passenger eligibility checks. Eligible
-  passengers are adults and paid children on pending/confirmed bookings; child
-  eligibility uses the booking pricing snapshot. Infants do not consume seats.
+  seat/layout membership, enabled-seat and passenger eligibility checks. Adults
+  and paid children on confirmed bookings and older pending bookings without an
+  expiry can be assigned. Child eligibility uses the booking pricing snapshot.
+  Infants do not consume seats.
 - Departure-scoped seat assignment uniqueness and per-hotel-stay room assignment
   uniqueness are represented in the contract and migration packages.
 
@@ -57,7 +61,7 @@ departure allocation/availability and passenger seat assignment before this sess
   - Stays are scheduled with check-in and check-out dates (`POST /api/departures/[id]/hotel-stays`).
   - Stays can be removed when unassigned (`DELETE /api/departures/[id]/hotel-stays/[stayId]`).
   - Per-stay room assignment engine (`POST/DELETE /api/departures/[id]/hotel-stays/[stayId]/room-assignments`)
-    enforces departure membership, active booking checks (`PENDING`/`CONFIRMED`), stay
+    enforces departure membership, booking eligibility, stay
     membership, room capacity limits, and per-stay uniqueness `(passengerId, hotelStayId)`.
 - The in-memory table scans in `GET /api/departures/[id]/pricing` were replaced with
   database-filtered queries (`.where({ departureId }).first()` and `.all()`).
@@ -74,6 +78,27 @@ departure allocation/availability and passenger seat assignment before this sess
   room option surcharge breakdown, and traveler inclusions.
 - Shared public header (`src/components/public-header.tsx`) and footer (`src/components/public-footer.tsx`),
   linking navigation on the homepage directly to `/tours`.
+- The homepage shows a Bangla progress indicator at `/#progress`, calculated
+  from six of ten milestones, with completed and remaining work listed.
+
+## Guest reservations and seat holds (Phase 5)
+
+- `POST /api/booking-quote` calculates fares on the server for the selected
+  departure, passenger counts, and room option. The quote includes a version
+  for detecting fare changes at submission.
+- **Admin → Booking Settings → Allow guest booking** is off by default. Fare
+  quotes remain available when guest booking is off. Customer accounts and
+  customer sign-in are still pending.
+- When enabled, `POST /api/reservations` saves contact details, passengers,
+  pricing snapshots, a booking reference, and a 15-minute seat hold in one
+  transaction. The departure row lock serializes last-seat requests, and the
+  reservation key makes retries idempotent.
+- Availability checks exclude expired holds as soon as their deadline passes.
+  The admin departure page lists active guest reservations. New pending
+  reservations are visible to staff, with seat and room assignment available
+  after confirmation.
+- The booking records one requested room option. Physical room inventory holds,
+  payment, and booking confirmation remain future work.
 
 ## Stack and database
 
@@ -93,11 +118,13 @@ Migration packages on disk:
 1. `20261004T2132_baseline`
 2. `20261004T2133_pricing_and_room_options`
 3. `20261011T2242_departure_scoped_assignments`
+4. `20261121T1722_guest_reservation_holds`
 
-Packages on disk do not prove a database has applied them. Production migration
-status has not been checked in this session. See `docs/INVENTORY_MODEL.md` for
-migration scope and isolated local runner instructions. Its historical notes about
-assignment validation predate the implemented admin seat-assignment APIs.
+Prisma `db verify` confirmed that the shared database marker and actual schema
+match the emitted contract after migration 4. There is no manual migration
+remaining for this release. Use a disposable PostgreSQL instance for development
+tests that create or modify data. See `docs/INVENTORY_MODEL.md` for isolated local
+runner instructions.
 
 ## Business rules to preserve
 
@@ -113,11 +140,16 @@ assignment validation predate the implemented admin seat-assignment APIs.
 
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
-- `npm test`: 9 passed, 2 skipped (no `TEST_DATABASE_URL`). The successful run
-  followed stopping the pre-existing dev server; sandbox process inspection did
-  not see that server, and earlier attempts failed before completing HTTP tests.
+- `npm test`: 13 passed with an isolated PostgreSQL server.
 - `npm run build`: passed.
-- `git diff --check`: passed; the existing lockfile checksum is unchanged.
+- `git diff --check`: passed.
+- An isolated PostgreSQL integration check verified the guest toggle, updated
+  quote revalidation, simultaneous last-seat requests, idempotent retries,
+  the 15-minute expiry, and reuse of released capacity.
+- The production-built admin form persisted both guest booking settings against
+  the isolated database.
+- Manual room checks covered assignment/removal after reload, one passenger at
+  two hotels, and rejection of a stale selection for a room that just filled.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite now covers seat-layout endpoints, hotel endpoints, room endpoints,
@@ -128,14 +160,11 @@ configure only an isolated localhost test server to run those checks.
 
 ## Remaining work
 
-Manually verify the new layout/seat forms with an authorized admin and local DB:
-create a layout, add enabled/disabled seats, leave an aisle, reject duplicate
-labels/positions, reload the map, then assign the layout to a vehicle. This
-session does not use live OAuth or write application database records.
-
-Customer booking/reservations, holds/capacity enforcement, customer seat selection,
-and payment flows remain future work (Phase 5 & 6).
-Payment methods are separate from pricing.
-
-Do not run production migrations or merge into `main`. Coordinate migration and
-deployment separately. Never print environment files or credentials.
+- Fix and verify GitHub admin sign-in on Vercel before enabling live guest
+  reservations.
+- Add customer accounts for booking when guest booking is off.
+- Define hotel room allotments by stay and add room inventory holds.
+- Add payment and confirmation, including handling payments that arrive after a
+  hold expires. Admin seat selection remains the operational path.
+- Test simultaneous admin requests for the last physical room spot before multiple
+  staff members use room assignment.

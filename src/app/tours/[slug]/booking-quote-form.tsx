@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { BookingQuote } from "@/lib/booking-quote";
+import type { BookingQuote, PassengerCounts } from "@/lib/booking-quote";
+import { GuestReservationForm } from "./guest-reservation-form";
 
-type QuoteResponse = { quote: BookingQuote } | { error: string };
+type QuoteResponse = { quote: BookingQuote; quoteVersion: string; guestBookingEnabled: boolean } | { error: string };
+type SubmittedParty = PassengerCounts & { roomOptionId: number };
 
 const banglaNumber = new Intl.NumberFormat("bn-BD");
 const banglaFraction = new Intl.NumberFormat("bn-BD", { minimumIntegerDigits: 2 });
@@ -27,7 +29,7 @@ export function BookingQuoteForm({
   departureId: number;
   rooms: { id: number; label: string }[];
 }) {
-  const [result, setResult] = useState<QuoteResponse | null>(null);
+  const [result, setResult] = useState<(QuoteResponse & { party: SubmittedParty }) | { error: string } | null>(null);
   const [pending, setPending] = useState(false);
 
   async function requestQuote(event: FormEvent<HTMLFormElement>) {
@@ -38,18 +40,19 @@ export function BookingQuoteForm({
     setResult(null);
 
     try {
+      const party = {
+        roomOptionId: Number(form.get("roomOptionId")),
+        adults: Number(form.get("adults")),
+        children: Number(form.get("children")),
+        infants: Number(form.get("infants")),
+      };
       const response = await fetch("/api/booking-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          departureId,
-          roomOptionId: Number(form.get("roomOptionId")),
-          adults: Number(form.get("adults")),
-          children: Number(form.get("children")),
-          infants: Number(form.get("infants")),
-        }),
+        body: JSON.stringify({ departureId, ...party }),
       });
-      setResult(await response.json() as QuoteResponse);
+      const quoteResponse = await response.json() as QuoteResponse;
+      setResult({ ...quoteResponse, party });
     } catch {
       setResult({ error: "এখন ভাড়া হিসাব করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।" });
     } finally {
@@ -57,7 +60,8 @@ export function BookingQuoteForm({
     }
   }
 
-  const quote = result && "quote" in result ? result.quote : null;
+  const quoted = result && "quote" in result ? result : null;
+  const quote = quoted?.quote;
 
   return (
     <details className="mt-4 border-t border-[#cad2c4] pt-3">
@@ -97,7 +101,16 @@ export function BookingQuoteForm({
               <div className="flex justify-between gap-2 border-t border-[#cad2c4] pt-1.5 font-bold"><dt>মোট ভাড়া</dt><dd>{money(quote.total)}</dd></div>
               <div className="flex justify-between gap-2"><dt>প্রয়োজনীয় আসন</dt><dd>{banglaNumber.format(quote.seatsRequired)}টি</dd></div>
             </dl>
-            <p className="mt-2 text-[#526558]">এটি ভাড়ার হিসাব। আসন ও রুম সংরক্ষণ সুবিধা শিগগিরই যুক্ত হবে।</p>
+            {quoted.guestBookingEnabled ? (
+              <GuestReservationForm
+                departureId={departureId}
+                roomOptionId={quoted.party.roomOptionId}
+                quoteVersion={quoted.quoteVersion}
+                counts={quoted.party}
+              />
+            ) : (
+              <p className="mt-2 text-[#526558]">এই মুহূর্তে অতিথি হিসেবে আসন সংরক্ষণ বন্ধ আছে।</p>
+            )}
           </div>
         )}
       </div>
