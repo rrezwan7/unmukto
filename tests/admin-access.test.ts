@@ -66,7 +66,7 @@ after(() => {
   }
 });
 
-test("every existing API denies anonymous reads and writes before database access", async () => {
+test("admin APIs deny anonymous reads and writes before database access", async () => {
   for (const path of paths) {
     for (const method of ["GET", "POST"]) {
       const response = await fetch(`${base}${path}`, { method });

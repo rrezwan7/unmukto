@@ -16,6 +16,7 @@ import {
 import { getPublicTourBySlug } from "@/lib/catalog";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+import { BookingQuoteForm } from "./booking-quote-form";
 
 const bengali = Noto_Sans_Bengali({
   subsets: ["bengali", "latin"],
@@ -335,6 +336,15 @@ export default async function TourDetailPage({ params }: Props) {
                               <span className="text-xs font-normal text-[#61746a]">/জন</span>
                             </strong>
                           </div>
+                        )}
+                        {dep.bookingOpen && dep.pricing && dep.roomOptions.length > 0 && (
+                          <BookingQuoteForm
+                            departureId={dep.id}
+                            rooms={dep.roomOptions.map((room) => ({
+                              id: room.id,
+                              label: roomTypeTitles[room.roomType],
+                            }))}
+                          />
                         )}
                       </div>
                     ))}

@@ -343,7 +343,7 @@ export async function getPublicTourBySlug(
       departureTime: dep.departureTime,
       returnDate: dep.returnDate ? formatIsoDate(dep.returnDate) : null,
       returnTime: dep.returnTime,
-      bookingOpen: dep.bookingOpen && !isSoldOut,
+      bookingOpen: dep.bookingOpen && availableSeats > 0 && dep.departureDate.epochMilliseconds > Date.now(),
       pricing: pricing
         ? {
             adultFare: pricing.adultFare.toString(),
