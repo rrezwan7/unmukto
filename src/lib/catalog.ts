@@ -215,10 +215,12 @@ export async function getPublicTourBySlug(
     return null;
   }
 
-  const [itineraries, destinations, departures, pricingRecords, roomOptions, allocations, vehicles, seats, committedSeats] =
+  const [itineraries, departures, pricingRecords, roomOptions, allocations, vehicles, seats, committedSeats] =
     await Promise.all([
-      db.orm.public.Itinerary.where({ tourId: tour.id }).all(),
-      db.orm.public.Destination.all(),
+      db.orm.public.Itinerary.where({ tourId: tour.id })
+        .include("destinations", (stops) => stops.orderBy([(stop) => stop.displayOrder.asc(), (stop) => stop.id.asc()]))
+        .orderBy((day) => day.dayNumber.asc())
+        .all(),
       db.orm.public.Departure.where({ tourId: tour.id }).all(),
       db.orm.public.DeparturePricing.all(),
       db.orm.public.DepartureRoomOption.where({ isAvailable: true }).all(),
@@ -230,35 +232,19 @@ export async function getPublicTourBySlug(
 
   const visibleDepartures = departures.filter((d) => d.customerVisible);
 
-  // Sort itineraries
-  itineraries.sort((a, b) => a.dayNumber - b.dayNumber || a.id - b.id);
-
-  // Group destinations by itineraryId
-  const destinationsByItinerary = new Map<number, typeof destinations>();
-  for (const dest of destinations) {
-    const list = destinationsByItinerary.get(dest.itineraryId) ?? [];
-    list.push(dest);
-    destinationsByItinerary.set(dest.itineraryId, list);
-  }
-
-  const structuredItineraries: PublicItinerary[] = itineraries.map((it) => {
-    const itDests = destinationsByItinerary.get(it.id) ?? [];
-    itDests.sort((a, b) => a.id - b.id);
-
-    return {
-      id: it.id,
-      dayNumber: it.dayNumber,
-      title: it.title,
-      description: it.description,
-      destinations: itDests.map((d) => ({
-        id: d.id,
-        name: d.name,
-        description: d.description,
-        arrivalTime: d.arrivalTime,
-        departureTime: d.departureTime,
-      })),
-    };
-  });
+  const structuredItineraries: PublicItinerary[] = itineraries.map((it) => ({
+    id: it.id,
+    dayNumber: it.dayNumber,
+    title: it.title,
+    description: it.description,
+    destinations: it.destinations.map((d) => ({
+      id: d.id,
+      name: d.name,
+      description: d.description,
+      arrivalTime: d.arrivalTime,
+      departureTime: d.departureTime,
+    })),
+  }));
 
   // Sort departures chronologically
   visibleDepartures.sort((a, b) => {

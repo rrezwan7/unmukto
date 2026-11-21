@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 type Tour = {
     id: number;
     title: string;
+    isActive: boolean;
 };
 
 export default function NewDeparturePage() {
@@ -26,7 +27,7 @@ export default function NewDeparturePage() {
             const data = await response.json();
 
             if (response.ok) {
-                setTours(data.tours);
+                setTours((data.tours as Tour[]).filter((tour) => tour.isActive));
             }
         }
 

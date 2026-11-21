@@ -5,6 +5,7 @@ import { ArrowUpRight, Calendar, Compass, MapPin, Users } from "lucide-react";
 import { getPublicTours } from "@/lib/catalog";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+import { TourCoverImage } from "@/components/tour-cover-image";
 
 const bengali = Noto_Sans_Bengali({
   subsets: ["bengali", "latin"],
@@ -80,7 +81,8 @@ export default async function ToursCatalogPage() {
                 >
                   {/* Card Header Banner */}
                   <div className="relative flex h-48 flex-col justify-between bg-gradient-to-br from-[#254f3e] to-[#193d32] p-6 text-white">
-                    <div className="flex items-center justify-between gap-2">
+                    <TourCoverImage cover={tour.coverImage} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                    <div className="relative flex items-center justify-between gap-2">
                       <span className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-sm">
                         {tour.durationLabel}
                       </span>
@@ -100,7 +102,7 @@ export default async function ToursCatalogPage() {
                       )}
                     </div>
 
-                    <div>
+                    <div className="relative">
                       <h2 className="text-xl font-bold tracking-tight text-white line-clamp-1">
                         {tour.title}
                       </h2>

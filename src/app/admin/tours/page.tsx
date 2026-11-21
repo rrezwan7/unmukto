@@ -35,12 +35,13 @@ export default async function ToursPage() {
                             key={tour.id}
                             className="rounded-lg border p-5"
                         >
-                            <h2 className="text-xl font-semibold">
-                                {tour.title}
-                            </h2>
+                            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                <h2 className="text-xl font-semibold">{tour.title}</h2>
+                                <Link href={`/admin/tours/${tour.id}`} className="text-sm underline underline-offset-4" aria-label={`Edit tour ${tour.title}`}>Edit tour</Link>
+                            </div>
 
                             <p className="mt-1 text-sm text-gray-500">
-                                /{tour.slug}
+                                /{tour.slug} · {tour.isActive ? "Published" : "Archived"}
                             </p>
 
                             {tour.description && (

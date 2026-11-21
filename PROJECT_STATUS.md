@@ -13,8 +13,10 @@ The development workspace and Vercel share one hosted PostgreSQL database. The
 guest reservation migration was applied and verified on that database on
 2026-11-22 (Asia/Dhaka). The feature branch adds manual confirmation and
 booking-specific assignment links. The manual confirmation migration has also
-been applied and verified on the shared database, so the feature is ready for
-localhost testing. Vercel deployment can be handled separately.
+been applied and verified on the shared database. The owner tested booking
+confirmation, bus seat assignment, and hotel room assignment successfully on
+localhost. The tour and itinerary editor is ready for localhost testing. Vercel
+deployment can be handled separately.
 
 ## Implemented
 
@@ -83,6 +85,22 @@ departure allocation/availability and passenger seat assignment before this sess
 - The homepage shows a Bangla progress indicator at `/#progress`, calculated
   from six of ten milestones, with completed and remaining work listed.
 
+## Tour and itinerary editing
+
+- Open **Admin → Tours → Edit tour** for the title, description, cover image,
+  and publication status. Existing public tour URLs keep their slug. The
+  catalog cards and tour detail pages display the saved cover.
+- Archiving hides a tour from visitors and new departure creation. Staff can
+  republish it from the same editor. Departures, bookings, and assignments
+  remain accessible to staff.
+- The **Itinerary** section adds, edits, removes, and reorders days and stops.
+  Save writes the whole itinerary in one transaction. Existing day and stop
+  IDs persist through reordering, and the public itinerary uses the saved
+  order. Times can retain Bengali digits.
+- Stops linked to hotel stays and days containing those stops cannot be
+  removed. The server checks this again on save. Stale saves return a conflict
+  and leave the current itinerary intact.
+
 ## Guest reservations and seat holds (Phase 5)
 
 - `POST /api/booking-quote` calculates fares on the server for the selected
@@ -144,12 +162,14 @@ Migration packages on disk:
 3. `20261011T2242_departure_scoped_assignments`
 4. `20261121T1722_guest_reservation_holds`
 5. `20261121T2144_manual_booking_confirmation`
+6. `20261121T2205_itinerary_stop_order`
 
 Prisma `db verify` confirmed that the shared database marker and actual schema
-match the contract after migration 5. This migration adds nullable confirmation
-audit fields and a unique manual payment reference key. Use a disposable
-PostgreSQL instance for development tests that create or modify data. See
-`docs/INVENTORY_MODEL.md` for isolated local runner instructions.
+match the contract after migration 6. The stop-order column defaults to zero,
+so existing stops keep their previous ID-based order until staff save an
+itinerary. Use a disposable PostgreSQL instance for automated mutation and
+concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
+instructions.
 
 ## Business rules to preserve
 
@@ -184,6 +204,10 @@ PostgreSQL instance for development tests that create or modify data. See
   for the last place in a room.
 - Manual room checks covered assignment/removal after reload, one passenger at
   two hotels, and rejection of a stale selection for a room that just filled.
+- The tour editor passed authenticated production-build checks on disposable
+  PostgreSQL covering archive and republish, legacy Bengali times, stable IDs,
+  public itinerary order, concurrent saves, and blocking removal of a
+  hotel-linked stop.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite now covers seat-layout endpoints, hotel endpoints, room endpoints,
@@ -236,7 +260,7 @@ configure only an isolated localhost test server to run those checks.
 
 | Area | Missing controls and acceptance criteria |
 | --- | --- |
-| **Tours and itineraries** | Add **Edit Tour** and an **Itinerary** editor under Tours. Edit title, description, cover, and publication state. Add, edit, reorder, and remove itinerary days and destination stops with descriptions and arrival or departure times. Preserve existing IDs on edits and reorder. Reject deletion or require an explicit reassignment when a destination is referenced by a hotel stay. Check that saved itinerary changes appear in order on the public tour page. Keep the existing slug stable unless a safe URL change is planned. |
+| **Tours and itineraries** | **Edit Tour** and the day and stop editor are implemented and verified on disposable PostgreSQL. Verify the normal browser editing flow on localhost. |
 | **Departures** | Edit departure and return dates and times, customer visibility, and whether bookings are open. Validate chronology, vehicle/stay overlaps, and existing booking commitments. Give staff a clear way to close bookings. Guard date changes or removal when reservations, assignments, or payments exist. |
 | **Vehicles and seat layouts** | Edit vehicle details and active state. Add departure vehicle removal where assignments and capacity permit. Add seat label, position, and availability edits with duplicate checks. Guard changes to a shared layout and removal or disabling of an assigned seat. |
 | **Hotels, rooms, and stays** | Edit hotel details and active state, room number/type/capacity, and scheduled stay details. Guard capacity reductions below occupancy and date or hotel changes that affect assignments or allotments. Preserve the existing remove-stay and unassign-room controls. |
@@ -248,8 +272,8 @@ configure only an isolated localhost test server to run those checks.
   permanent removal only after explicit confirmation and a transaction-level
   dependency check. Ensure archived entries leave public listings and new
   selections while historical bookings and assignments remain readable.
-- The order within this step is tour and itinerary first, then departure edit,
-  vehicle and seat layout edit, and hotel, room, and stay edit.
+- Next, add departure editing, followed by vehicle and seat layout editing
+  and hotel, room, and stay editing.
 
 ### 5. Complete checkout and verify a release
 

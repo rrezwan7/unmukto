@@ -16,6 +16,7 @@ import {
 import { getPublicTourBySlug } from "@/lib/catalog";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+import { TourCoverImage } from "@/components/tour-cover-image";
 import { BookingQuoteForm } from "./booking-quote-form";
 
 const bengali = Noto_Sans_Bengali({
@@ -95,8 +96,9 @@ export default async function TourDetailPage({ params }: Props) {
 
         {/* Hero Banner */}
         <section className="mx-auto max-w-[1300px] px-6 pt-6 pb-10 md:px-12 md:pb-12">
-          <div className="rounded-3xl bg-gradient-to-br from-[#193d32] to-[#254f3e] p-8 text-white md:p-12">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#193d32] to-[#254f3e] p-8 text-white md:p-12">
+            <TourCoverImage cover={tour.coverImage} sizes="(max-width: 1300px) 100vw, 1200px" />
+            <div className="relative flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3.5 py-1 text-xs font-medium backdrop-blur-sm">
                 <Clock size={14} />
                 {tour.durationLabel}
@@ -113,12 +115,12 @@ export default async function TourDetailPage({ params }: Props) {
               )}
             </div>
 
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+            <h1 className="relative mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
               {tour.title}
             </h1>
 
             {tour.description && (
-              <p className="mt-4 max-w-3xl text-base leading-relaxed text-[#f4f1d9] md:text-lg">
+              <p className="relative mt-4 max-w-3xl text-base leading-relaxed text-[#f4f1d9] md:text-lg">
                 {tour.description}
               </p>
             )}

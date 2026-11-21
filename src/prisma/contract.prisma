@@ -107,6 +107,7 @@ model Destination {
   description   String?
   arrivalTime   String?
   departureTime String?
+  displayOrder  Int                        @default(0)
 
   itinerary     Itinerary                  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
 

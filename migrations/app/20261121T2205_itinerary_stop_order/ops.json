@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.Destination.displayOrder",
+    "label": "Add column \"displayOrder\" to \"Destination\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "displayOrder",
+        "table": "Destination"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"displayOrder\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Destination",
+          "displayOrder"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"displayOrder\"",
+        "sql": "ALTER TABLE \"public\".\"Destination\" ADD COLUMN \"displayOrder\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"displayOrder\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Destination",
+          "displayOrder"
+        ]
+      }
+    ]
+  }
+]
