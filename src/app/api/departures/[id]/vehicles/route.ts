@@ -1,6 +1,7 @@
 import { checkAdminApi } from "@/lib/admin-auth";
 import { lockVehicle, vehicleScheduleConflict } from "@/lib/departure-editor";
-import { committedSeatCounts, lockDeparture, transportSeatCapacity } from "@/lib/reservation-inventory";
+import { lockDeparture } from "@/lib/reservation-inventory";
+import { lockTransportConfiguration, seatCapacityConflict } from "@/lib/transport-editor";
 import { isDatabaseId } from "@/lib/tour-editor";
 
 type Props = {
@@ -123,6 +124,7 @@ export async function POST(request: Request, { params }: Props) {
     const { db } = await import("@/prisma/db");
 
     return await db.transaction(async (tx) => {
+      await lockTransportConfiguration(tx);
       if (!(await lockDeparture(tx, departureId))) {
         return Response.json(
           { success: false, error: "Departure not found." },
@@ -144,45 +146,30 @@ export async function POST(request: Request, { params }: Props) {
         );
       }
 
-      if (!vehicle.isActive) {
-        return badRequest("Choose an active vehicle.");
-      }
-
-      if (vehicle.seatLayoutId === null) {
-        return badRequest("Assign a seat layout to this vehicle first.");
-      }
-
-      const enabledSeat = await tx.orm.public.Seat
-        .where({
-          seatLayoutId: vehicle.seatLayoutId,
-          isAvailable: true,
-        })
-        .first();
-
-      if (!enabledSeat) {
-        return badRequest("The vehicle layout needs at least one enabled seat.");
-      }
-
       const existing = await tx.orm.public.DepartureVehicle.where({ departureId, vehicleId }).first();
       if (!existing) {
+        if (!vehicle.isActive) return badRequest("Choose an active vehicle.");
+        if (vehicle.seatLayoutId === null) {
+          return badRequest("Assign a seat layout to this vehicle first.");
+        }
+        const enabledSeat = await tx.orm.public.Seat
+          .where({ seatLayoutId: vehicle.seatLayoutId, isAvailable: true })
+          .first();
+        if (!enabledSeat) return badRequest("The vehicle layout needs at least one enabled seat.");
+
         const departure = await tx.orm.public.Departure.where({ id: departureId }).first();
         if (!departure) return Response.json({ success: false, error: "Departure not found." }, { status: 404 });
         const conflict = await vehicleScheduleConflict(tx, departureId, vehicleId, departure);
         if (conflict) {
           return Response.json({ success: false, error: `This vehicle is already scheduled for departure #${conflict.id} at that time.` }, { status: 409 });
         }
-      } else if (existing.visibleToCustomer && !body.visibleToCustomer) {
-        const [capacity, committed, seats] = await Promise.all([
-          transportSeatCapacity(departureId, tx),
-          committedSeatCounts(departureId, tx),
-          tx.orm.public.Seat.where({ seatLayoutId: vehicle.seatLayoutId, isAvailable: true }).select("id").all(),
-        ]);
-        if ((committed.get(departureId) ?? 0) > capacity - seats.length) {
-          return Response.json(
-            { success: false, error: "Hiding this vehicle would leave too few seats for existing bookings." },
-            { status: 409 },
-          );
-        }
+      } else if (existing.visibleToCustomer && !body.visibleToCustomer &&
+          vehicle.isActive && vehicle.seatLayoutId !== null) {
+        const seats = await tx.orm.public.Seat.where({
+          seatLayoutId: vehicle.seatLayoutId, isAvailable: true,
+        }).select("id").all();
+        const conflict = await seatCapacityConflict(tx, departureId, seats.length);
+        if (conflict) return Response.json({ success: false, error: conflict }, { status: 409 });
       }
 
       const values = {

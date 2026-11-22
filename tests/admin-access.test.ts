@@ -10,11 +10,18 @@ let base: string;
 let serverOutput = "";
 const secret = randomBytes(32).toString("hex");
 const cookieName = "authjs.session-token";
-const paths = [
+const readWritePaths = [
   "/api/tours", "/api/departures", "/api/departures/1/pricing",
+  "/api/vehicles", "/api/departures/1/vehicles",
   "/api/seat-layouts", "/api/seat-layouts/1/seats",
   "/api/hotels", "/api/hotels/1/rooms",
   "/api/departures/1/hotel-stays", "/api/departures/1/hotel-stays/1/room-assignments",
+];
+const routes = [
+  ...readWritePaths.flatMap((path) => [{ path, method: "GET" }, { path, method: "POST" }]),
+  { path: "/api/vehicles/1", method: "PATCH" },
+  { path: "/api/seat-layouts/1/seats", method: "PATCH" },
+  { path: "/api/departures/1/vehicles/1", method: "DELETE" },
 ];
 
 async function sessionCookie(id: string, maxAge = 3600) {
@@ -67,19 +74,17 @@ after(() => {
 });
 
 test("admin APIs deny anonymous reads and writes before database access", async () => {
-  for (const path of paths) {
-    for (const method of ["GET", "POST"]) {
-      const response = await fetch(`${base}${path}`, { method });
-      assert.equal(response.status, 401, `${method} ${path}`);
-      assert.equal(response.headers.get("cache-control"), "no-store");
-    }
+  for (const { path, method } of routes) {
+    const response = await fetch(`${base}${path}`, { method });
+    assert.equal(response.status, 401, `${method} ${path}`);
+    assert.equal(response.headers.get("cache-control"), "no-store");
   }
 });
 
 test("invalid, expired and non-admin sessions cannot access management APIs", async () => {
   for (const cookie of ["authjs.session-token=forged", await sessionCookie("123", -120), await sessionCookie("456")]) {
-    for (const path of paths) {
-      const response = await fetch(`${base}${path}`, { headers: { cookie } });
+    for (const { path, method } of routes) {
+      const response = await fetch(`${base}${path}`, { method, headers: { cookie } });
       assert([401, 403].includes(response.status), `${path}: ${response.status}`);
     }
   }
@@ -87,11 +92,12 @@ test("invalid, expired and non-admin sessions cannot access management APIs", as
 
 test("even an admin session cannot make cross-origin or originless writes", async () => {
   const cookie = await sessionCookie("123");
-  for (const path of paths) {
+  for (const { path, method } of routes) {
+    if (method === "GET") continue;
     for (const origin of [undefined, "https://evil.example"]) {
       const headers: Record<string, string> = { cookie };
       if (origin) headers.origin = origin;
-      const response = await fetch(`${base}${path}`, { method: "POST", headers });
+      const response = await fetch(`${base}${path}`, { method, headers });
       assert.equal(response.status, 403, path);
     }
   }
@@ -101,7 +107,7 @@ test("admin pages redirect anonymous users and allow an authorized session", asy
   for (const path of [
     "/admin/tours", "/admin/departures", "/admin/departures/1",
     "/admin/tours/new", "/admin/departures/new",
-    "/admin/seat-layouts", "/admin/seat-layouts/1",
+    "/admin/vehicles", "/admin/vehicles/1", "/admin/seat-layouts", "/admin/seat-layouts/1",
     "/admin/hotels", "/admin/hotels/1", "/admin/booking-settings"
   ]) {
     const response = await fetch(`${base}${path}`, { redirect: "manual" });

@@ -1,4 +1,6 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { isDatabaseId } from "@/lib/tour-editor";
+import { lockTransportConfiguration } from "@/lib/transport-editor";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -14,7 +16,7 @@ export async function PATCH(request: Request, { params }: Props) {
   const badRequest = (error: string) =>
     Response.json({ success: false, error }, { status: 400 });
 
-  if (!Number.isSafeInteger(vehicleId) || vehicleId <= 0) {
+  if (!isDatabaseId(vehicleId)) {
     return badRequest("Invalid vehicle ID.");
   }
 
@@ -28,11 +30,7 @@ export async function PATCH(request: Request, { params }: Props) {
 
   const layoutId = body?.seatLayoutId;
 
-  if (
-    typeof layoutId !== "number" ||
-    !Number.isSafeInteger(layoutId) ||
-    layoutId <= 0
-  ) {
+  if (!isDatabaseId(layoutId)) {
     return badRequest("Provide a valid seat layout ID.");
   }
 
@@ -40,6 +38,7 @@ export async function PATCH(request: Request, { params }: Props) {
     const { db } = await import("@/prisma/db");
 
     return await db.transaction(async (tx) => {
+      await lockTransportConfiguration(tx);
       const vehicle = await tx.orm.public.Vehicle
         .where({ id: vehicleId })
         .first();

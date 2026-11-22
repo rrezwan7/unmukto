@@ -120,51 +120,71 @@ export default function DepartureVehicles({
     clearFeedback();
   }
 
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (saving || !selected) return;
-
+  async function updateAllocation(url: string, options: RequestInit, success: string) {
     setSaving(true);
     clearFeedback();
-
-    let saved = false;
+    let updated = false;
 
     try {
-      await fetch(`/api/departures/${departureId}/vehicles`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          vehicleId: Number(selected),
-          displayName: displayName.trim() || null,
-          displayOrder: Number(displayOrder),
-          visibleToCustomer: visible,
-        }),
-      }).then(readResponse);
-
-      saved = true;
-
+      await fetch(url, options).then(readResponse);
+      updated = true;
       const result = await fetch(
         `/api/departures/${departureId}/vehicles`,
         { cache: "no-store" }
       ).then(readResponse);
 
       setAllocations(result.vehicles);
-      setMessage("Vehicle assignment saved.");
+      setMessage(success);
     } catch (error) {
       setError(
-        saved
-          ? "Assignment saved, but the list could not refresh. Reload this page."
+        updated
+          ? `${success} Reload this page to refresh the vehicle list.`
           : error instanceof Error
             ? error.message
-            : "Unable to assign vehicle."
+            : "Unable to update vehicle allocation."
       );
     } finally {
       setSaving(false);
     }
+    return updated;
+  }
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (saving || !selected) return;
+
+    await updateAllocation(`/api/departures/${departureId}/vehicles`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vehicleId: Number(selected),
+        displayName: displayName.trim() || null,
+        displayOrder: Number(displayOrder),
+        visibleToCustomer: visible,
+      }),
+    }, "Vehicle assignment saved.");
+  }
+
+  async function remove(allocation: Allocation) {
+    const name = allocation.displayName || allocation.vehicle?.name || `vehicle #${allocation.vehicleId}`;
+    if (saving || !window.confirm(`Remove ${name} from this departure?`)) return;
+
+    const removed = await updateAllocation(
+      `/api/departures/${departureId}/vehicles/${allocation.vehicleId}`,
+      { method: "DELETE" },
+      "Vehicle removed from this departure.",
+    );
+    if (removed && Number(selected) === allocation.vehicleId) {
+      setSelected("");
+      setDisplayName("");
+      setDisplayOrder("0");
+      setVisible(false);
+    }
   }
 
   const eligibleVehicles = vehicles.filter(
-    (vehicle) => vehicle.isActive && vehicle.seatLayoutId !== null
+    (vehicle) => (vehicle.isActive && vehicle.seatLayoutId !== null) ||
+      allocations.some((allocation) => allocation.vehicleId === vehicle.id)
   );
 
   return (
@@ -296,18 +316,18 @@ export default function DepartureVehicles({
                     </p>
                   </div>
                 </fieldset>
-
-                {message && (
-                  <p role="status" className="mt-4 text-sm text-green-700">
-                    {message}
-                  </p>
-                )}
-                {error && (
-                  <p role="alert" className="mt-4 text-sm text-destructive">
-                    {error}
-                  </p>
-                )}
               </form>
+            )}
+
+            {message && (
+              <p role="status" className="mt-4 text-sm text-green-700">
+                {message}
+              </p>
+            )}
+            {error && (
+              <p role="alert" className="mt-4 text-sm text-destructive">
+                {error}
+              </p>
             )}
 
             <div className="mt-8 space-y-5">
@@ -332,6 +352,7 @@ export default function DepartureVehicles({
                         {allocation.visibleToCustomer
                           ? "Visible to customers"
                           : "Hidden from customers"}
+                        {allocation.vehicle && !allocation.vehicle.isActive ? " · Inactive vehicle" : ""}
                       </CardDescription>
                     </CardHeader>
 
@@ -344,6 +365,17 @@ export default function DepartureVehicles({
                           View seat layout
                         </Link>
                       )}
+
+                      <div className="mt-3">
+                        <Button
+                          variant="outline"
+                          type="button"
+                          disabled={saving}
+                          onClick={() => void remove(allocation)}
+                        >
+                          Remove vehicle from departure
+                        </Button>
+                      </div>
 
                       <SeatAssignmentPanel
                         departureId={departureId}

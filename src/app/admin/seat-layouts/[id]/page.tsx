@@ -1,6 +1,8 @@
 import Link from "next/link";
 import SeatForm from "./seat-form";
+import SeatEditor from "./seat-editor";
 import { requireAdminPage } from "@/lib/admin-auth";
+import { isDatabaseId } from "@/lib/tour-editor";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -12,7 +14,7 @@ export default async function SeatLayoutPage({ params }: Props) {
   const { id } = await params;
   const layoutId = Number(id);
 
-  if (!Number.isSafeInteger(layoutId) || layoutId <= 0) {
+  if (!isDatabaseId(layoutId)) {
     return <main className="p-6">Invalid layout ID.</main>;
   }
 
@@ -33,9 +35,11 @@ export default async function SeatLayoutPage({ params }: Props) {
     );
   }
 
-  const seats = await db.orm.public.Seat
-    .where({ seatLayoutId: layoutId })
-    .all();
+  const [seats, vehicles] = await Promise.all([
+    db.orm.public.Seat.where({ seatLayoutId: layoutId })
+      .select("id", "seatNumber", "rowNumber", "columnNumber", "isAvailable", "updatedAt").all(),
+    db.orm.public.Vehicle.where({ seatLayoutId: layoutId }).select("id").all(),
+  ]);
 
   seats.sort(
     (a, b) =>
@@ -90,7 +94,8 @@ export default async function SeatLayoutPage({ params }: Props) {
         </p>
       </header>
 
-      <SeatForm layoutId={layoutId} />
+      <SeatForm layoutId={layoutId} vehicleCount={vehicles.length} />
+      {seats.length > 0 && <SeatEditor layoutId={layoutId} seats={seats} vehicleCount={vehicles.length} />}
 
       <section className="rounded-lg border p-6">
         <h2 className="text-lg font-semibold">Seat Layout</h2>

@@ -96,7 +96,12 @@ export default async function VehiclesPage() {
                 {vehicles.map((vehicle) => (
                   <TableRow key={vehicle.id}>
                     <TableCell className="font-medium">
-                      {vehicle.name}
+                      <Link
+                        href={`/admin/vehicles/${vehicle.id}`}
+                        className="underline underline-offset-4"
+                      >
+                        Edit {vehicle.name}
+                      </Link>
                     </TableCell>
 
                     <TableCell>

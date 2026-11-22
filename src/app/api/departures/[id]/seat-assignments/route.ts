@@ -1,5 +1,6 @@
 import { checkAdminApi } from "@/lib/admin-auth";
-import { canAssignPassenger } from "@/lib/reservation-inventory";
+import { isDatabaseId } from "@/lib/tour-editor";
+import { canAssignPassenger, lockDeparture } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -15,12 +16,7 @@ export async function POST(request: Request, { params }: Props) {
   const fail = (error: string, status = 400) =>
     Response.json({ success: false, error }, { status });
 
-  const validId = (value: unknown): value is number =>
-    typeof value === "number" &&
-    Number.isSafeInteger(value) &&
-    value > 0;
-
-  if (!validId(departureId)) {
+  if (!isDatabaseId(departureId)) {
     return fail("Invalid departure ID.");
   }
 
@@ -34,9 +30,9 @@ export async function POST(request: Request, { params }: Props) {
 
   if (
     !body ||
-    !validId(body.passengerId) ||
-    !validId(body.vehicleId) ||
-    !validId(body.seatId)
+    !isDatabaseId(body.passengerId) ||
+    !isDatabaseId(body.vehicleId) ||
+    !isDatabaseId(body.seatId)
   ) {
     return fail("Provide valid passenger, vehicle, and seat IDs.");
   }
@@ -47,6 +43,7 @@ export async function POST(request: Request, { params }: Props) {
     const { db } = await import("@/prisma/db");
 
     return await db.transaction(async (tx) => {
+      if (!(await lockDeparture(tx, departureId))) return fail("Departure not found.", 404);
       const passenger = await tx.orm.public.Passenger
         .where({ id: passengerId })
         .first();

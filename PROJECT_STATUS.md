@@ -15,9 +15,11 @@ guest reservation migration was applied and verified on that database on
 booking-specific assignment links. The manual confirmation migration has also
 been applied and verified on the shared database. The owner tested booking
 confirmation, bus seat assignment, and hotel room assignment successfully on
-localhost. Tour, itinerary, and departure editing are ready for localhost
-testing. The departure editor uses the existing database schema. Vercel
-deployment can be handled separately.
+localhost. Vehicle and seat editing and guarded departure vehicle removal have
+passed browser checks on a disposable database. The tour, itinerary, and
+departure editors are ready for the owner's walkthrough. Departure and
+transport editing use the existing database schema. Vercel deployment can be
+handled separately.
 
 ## Implemented
 
@@ -51,8 +53,8 @@ departure allocation/availability and passenger seat assignment before this sess
   The form displays server errors, preserves input on failure, prevents repeated
   submissions while saving, and refreshes the map/counts on success.
 - Detail pages link back to the layout list. Layout changes affect all vehicles
-  sharing that layout; gaps can represent aisles. Editing/removing existing seats
-  and bulk seat-entry controls are not implemented.
+  sharing that layout; gaps can represent aisles. Adding or editing a seat
+  requires confirmation when multiple vehicles use the layout.
 
 ## Hotel & Room Stays Management milestone
 
@@ -119,6 +121,24 @@ departure allocation/availability and passenger seat assignment before this sess
 - Hotel stays must fit within the known travel dates. Creating a second
   overlapping stay for the same hotel on one departure is blocked.
   Across-departure room inventory remains part of the allotment work.
+
+## Vehicle and seat layout editing
+
+- Open **Admin → Vehicles → Edit** to change the name, type, registration,
+  description, and active status. Deactivation hides the vehicle from customers
+  and new allocations. Historical allocations and assigned seats stay readable.
+- On a seat layout page, choose an existing seat to edit its label, row, column,
+  or enabled status. Labels and positions must be unique within the layout.
+  An assigned seat keeps its label, position, and availability. Disable unused
+  seats to retire them.
+- **Admin → Departures → Departure Vehicles** can remove an allocation after
+  confirmation if it has no passenger seat assignments and enough capacity
+  remains. Active trips keep enough customer-visible seats for bookings and
+  active holds. Future public departures open for booking must retain at
+  least one enabled seat on a customer-visible vehicle.
+- Transport configuration changes, seat assignment, and reservation holds
+  coordinate through database locks so concurrent requests enforce the same
+  assignment and capacity rules.
 
 ## Guest reservations and seat holds (Phase 5)
 
@@ -205,7 +225,8 @@ instructions.
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
 - `npm test`: 16 passed with an isolated PostgreSQL server.
-- `npm run build`: passed.
+- `npm run build -- --webpack`: passed. Turbopack could not bind its worker
+  port in the local tool environment.
 - `git diff --check`: passed.
 - An isolated PostgreSQL integration check verified the guest toggle, updated
   quote revalidation, simultaneous last-seat requests, idempotent retries,
@@ -231,10 +252,16 @@ instructions.
   time changes, Bangladesh dates around midnight, closing and reopening,
   preserving reservation history, and rejecting concurrent vehicle and
   hotel-stay overlaps.
+- Authenticated transport checks on disposable PostgreSQL verified vehicle
+  edits and historical seat assignments, shared layout confirmation, duplicate
+  labels and positions, stale edits, booking and hold capacity checks, and
+  concurrent seat edits and assignments. Headless Chrome verified saving a
+  vehicle, confirming a shared seat edit, and removing a departure vehicle.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
-checks. The HTTP suite now covers seat-layout endpoints, hotel endpoints, room endpoints,
-departure stay endpoints, room assignment endpoints, and page protection.
+checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle
+removal, hotel and room endpoints, departure stays, room assignments, and page
+protection.
 Stop any running `next dev` server before tests: the HTTP suite starts its own.
 Two native PostgreSQL migration tests may skip without `TEST_DATABASE_URL`;
 configure only an isolated localhost test server to run those checks.
@@ -285,7 +312,7 @@ configure only an isolated localhost test server to run those checks.
 | --- | --- |
 | **Tours and itineraries** | **Edit Tour** and the day and stop editor are implemented and verified on disposable PostgreSQL. Verify the normal browser editing flow on localhost. |
 | **Departures** | Editing the schedule, visibility, and booking status is implemented. Use hide and close to retire departures with history. |
-| **Vehicles and seat layouts** | Edit vehicle details and active state. Add departure vehicle removal where assignments and capacity permit. Add seat label, position, and availability edits with duplicate checks. Guard changes to a shared layout and removal or disabling of an assigned seat. |
+| **Vehicles and seat layouts** | Vehicle details and active status, shared seat layout edits, and guarded departure vehicle removal are implemented and verified on disposable PostgreSQL. |
 | **Hotels, rooms, and stays** | Edit hotel details and active state, room number/type/capacity, and scheduled stay details. Guard capacity reductions below occupancy and date or hotel changes that affect assignments or allotments. Preserve the existing remove-stay and unassign-room controls. |
 
 - Reuse the existing admin forms and protected write patterns. Keep new edit
@@ -295,8 +322,7 @@ configure only an isolated localhost test server to run those checks.
   permanent removal only after explicit confirmation and a transaction-level
   dependency check. Ensure archived entries leave public listings and new
   selections while historical bookings and assignments remain readable.
-- Next, add vehicle and seat layout editing, followed by hotel, room, and
-  stay editing.
+- Next, add hotel, room, and stay editing.
 
 ### 5. Complete checkout and verify a release
 

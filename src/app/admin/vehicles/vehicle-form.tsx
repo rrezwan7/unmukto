@@ -19,9 +19,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function VehicleForm() {
+type Vehicle = {
+  id: number;
+  name: string;
+  type: string;
+  registrationNumber: string | null;
+  description: string | null;
+  isActive: boolean;
+  updatedAt: string;
+};
+
+export default function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
   const router = useRouter();
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(vehicle?.isActive ?? true);
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(vehicle?.updatedAt);
+  const actionError = vehicle ? "Unable to update vehicle." : "Unable to create vehicle.";
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -42,8 +54,8 @@ export default function VehicleForm() {
     clearFeedback();
 
     try {
-      const response = await fetch("/api/vehicles", {
-        method: "POST",
+      const response = await fetch(vehicle ? `/api/vehicles/${vehicle.id}` : "/api/vehicles", {
+        method: vehicle ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.get("name"),
@@ -51,24 +63,28 @@ export default function VehicleForm() {
           registrationNumber: data.get("registrationNumber"),
           description: data.get("description"),
           isActive,
+          expectedUpdatedAt,
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error ?? "Unable to create vehicle.");
+        throw new Error(result.error ?? actionError);
       }
 
-      form.reset();
-      setIsActive(true);
-      setMessage("Vehicle created.");
+      if (vehicle) {
+        setExpectedUpdatedAt(result.vehicle.updatedAt);
+        setMessage("Vehicle saved.");
+      } else {
+        form.reset();
+        setIsActive(true);
+        setMessage("Vehicle created.");
+      }
       router.refresh();
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to create vehicle."
+        error instanceof Error ? error.message : actionError
       );
     } finally {
       setSaving(false);
@@ -78,9 +94,11 @@ export default function VehicleForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add Vehicle</CardTitle>
+        <CardTitle>{vehicle ? "Edit Vehicle" : "Add Vehicle"}</CardTitle>
         <CardDescription>
-          Create a vehicle, then assign its seat layout from the list below.
+          {vehicle
+            ? "Inactive vehicles are hidden from customers and cannot receive new seat assignments."
+            : "Create a vehicle, then assign its seat layout from the list below."}
         </CardDescription>
       </CardHeader>
 
@@ -99,6 +117,7 @@ export default function VehicleForm() {
               <Input
                 id="vehicle-name"
                 name="name"
+                defaultValue={vehicle?.name}
                 required
                 maxLength={120}
                 placeholder="Example: Dhaka Tour Bus"
@@ -110,7 +129,7 @@ export default function VehicleForm() {
               <NativeSelect
                 id="vehicle-type"
                 name="type"
-                defaultValue="BUS"
+                defaultValue={vehicle?.type ?? "BUS"}
                 className="w-full"
               >
                 <NativeSelectOption value="BUS">Bus</NativeSelectOption>
@@ -132,6 +151,7 @@ export default function VehicleForm() {
               <Input
                 id="vehicle-registration"
                 name="registrationNumber"
+                defaultValue={vehicle?.registrationNumber ?? ""}
                 maxLength={100}
               />
             </div>
@@ -143,6 +163,7 @@ export default function VehicleForm() {
               <Textarea
                 id="vehicle-description"
                 name="description"
+                defaultValue={vehicle?.description ?? ""}
                 maxLength={2000}
                 rows={2}
               />
@@ -163,7 +184,7 @@ export default function VehicleForm() {
 
             <div className="md:col-span-2">
               <Button type="submit" disabled={saving}>
-                {saving ? "Creating…" : "Create vehicle"}
+                {saving ? "Saving…" : vehicle ? "Save vehicle" : "Create vehicle"}
               </Button>
             </div>
           </fieldset>
