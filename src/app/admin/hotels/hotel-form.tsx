@@ -15,9 +15,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function HotelForm() {
+type Hotel = {
+  id: number;
+  name: string;
+  location: string;
+  address: string | null;
+  phone: string | null;
+  description: string | null;
+  isActive: boolean;
+  updatedAt: string;
+};
+
+export default function HotelForm({ hotel }: { hotel?: Hotel }) {
   const router = useRouter();
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(hotel?.isActive ?? true);
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(hotel?.updatedAt);
+  const actionError = hotel ? "Unable to update hotel." : "Unable to create hotel.";
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -38,8 +51,8 @@ export default function HotelForm() {
     clearFeedback();
 
     try {
-      const response = await fetch("/api/hotels", {
-        method: "POST",
+      const response = await fetch(hotel ? `/api/hotels/${hotel.id}` : "/api/hotels", {
+        method: hotel ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.get("name"),
@@ -48,24 +61,28 @@ export default function HotelForm() {
           phone: data.get("phone"),
           description: data.get("description"),
           isActive,
+          expectedUpdatedAt,
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error ?? "Unable to create hotel.");
+        throw new Error(result.error ?? actionError);
       }
 
-      form.reset();
-      setIsActive(true);
-      setMessage("Hotel created.");
+      if (hotel) {
+        setExpectedUpdatedAt(result.hotel.updatedAt);
+        setMessage("Hotel saved.");
+      } else {
+        form.reset();
+        setIsActive(true);
+        setMessage("Hotel created.");
+      }
       router.refresh();
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to create hotel."
+        err instanceof Error ? err.message : actionError
       );
     } finally {
       setSaving(false);
@@ -75,9 +92,11 @@ export default function HotelForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add Hotel</CardTitle>
+        <CardTitle>{hotel ? "Edit Hotel" : "Add Hotel"}</CardTitle>
         <CardDescription>
-          Register a hotel partner and configure its rooms for tour stays.
+          {hotel
+            ? "Inactive hotels are excluded from new stays. Staff can still manage existing stays and assignments."
+            : "Register a hotel partner and configure its rooms for tour stays."}
         </CardDescription>
       </CardHeader>
 
@@ -96,6 +115,7 @@ export default function HotelForm() {
               <Input
                 id="hotel-name"
                 name="name"
+                defaultValue={hotel?.name ?? ""}
                 required
                 maxLength={150}
                 placeholder="Example: Hill View Resort"
@@ -107,6 +127,7 @@ export default function HotelForm() {
               <Input
                 id="hotel-location"
                 name="location"
+                defaultValue={hotel?.location ?? ""}
                 required
                 maxLength={150}
                 placeholder="Example: Bandarban Sadar"
@@ -118,6 +139,7 @@ export default function HotelForm() {
               <Input
                 id="hotel-phone"
                 name="phone"
+                defaultValue={hotel?.phone ?? ""}
                 type="tel"
                 maxLength={50}
                 placeholder="Example: +880 1700-000000"
@@ -129,6 +151,7 @@ export default function HotelForm() {
               <Input
                 id="hotel-address"
                 name="address"
+                defaultValue={hotel?.address ?? ""}
                 maxLength={500}
                 placeholder="Street address or landmark"
               />
@@ -139,6 +162,7 @@ export default function HotelForm() {
               <Textarea
                 id="hotel-description"
                 name="description"
+                defaultValue={hotel?.description ?? ""}
                 maxLength={2000}
                 placeholder="Amenities, check-in policies, or partner contract notes"
               />

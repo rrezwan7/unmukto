@@ -1,15 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import StayRoomAssignmentPanel from "./stay-room-assignment-panel";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+import HotelStayForm, { type EditableStay, type StayHotel, type StayStop } from "./hotel-stay-form";
 import {
   Card,
   CardContent,
@@ -18,25 +13,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type Hotel = {
-  id: number;
-  name: string;
-  location: string;
-  isActive: boolean;
-};
-
-type Stay = {
-  id: number;
-  departureId: number;
-  hotelId: number;
-  destinationId: number | null;
-  checkInDate: string;
-  checkOutDate: string;
+type Stay = EditableStay & {
   hotelName: string;
   hotelLocation: string;
-  hotelPhone: string | null;
   roomCount: number;
-  assignmentCount: number;
 };
 
 async function readResponse(response: Response) {
@@ -47,14 +27,6 @@ async function readResponse(response: Response) {
   return result;
 }
 
-function formatDate(iso: string) {
-  try {
-    return iso.split("T")[0];
-  } catch {
-    return iso;
-  }
-}
-
 export default function DepartureHotelStays({
   departureId,
   bookingId,
@@ -62,17 +34,15 @@ export default function DepartureHotelStays({
   departureId: number;
   bookingId?: number;
 }) {
-  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [hotels, setHotels] = useState<StayHotel[]>([]);
   const [stays, setStays] = useState<Stay[]>([]);
+  const [stops, setStops] = useState<StayStop[]>([]);
+  const [editingStayId, setEditingStayId] = useState<number | null>(null);
+  const [removingStayId, setRemovingStayId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [revision, setRevision] = useState(0);
 
-  // New Stay Form State
-  const [selectedHotelId, setSelectedHotelId] = useState("");
-  const [checkInDate, setCheckInDate] = useState("");
-  const [checkOutDate, setCheckOutDate] = useState("");
-  const [savingStay, setSavingStay] = useState(false);
   const [stayError, setStayError] = useState("");
   const [stayMessage, setStayMessage] = useState("");
 
@@ -95,8 +65,11 @@ export default function DepartureHotelStays({
           }).then(readResponse),
         ]);
 
-        setHotels(hotelData.hotels.filter((h: Hotel) => h.isActive));
+        if (controller.signal.aborted) return;
+        setHotels(hotelData.hotels);
         setStays(stayData.stays);
+        setStops(stayData.stops);
+        setLoadError("");
       } catch (err) {
         if (controller.signal.aborted) return;
         setLoadError(
@@ -116,66 +89,30 @@ export default function DepartureHotelStays({
     setStayMessage("");
   }
 
-  async function handleAddStay(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (savingStay) return;
-
-    if (!selectedHotelId) {
-      setStayError("Select a hotel.");
-      return;
-    }
-
-    if (!checkInDate || !checkOutDate) {
-      setStayError("Provide both check-in and check-out dates.");
-      return;
-    }
-
-    setSavingStay(true);
-    clearStayFeedback();
-
-    try {
-      await fetch(`/api/departures/${departureId}/hotel-stays`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          hotelId: Number(selectedHotelId),
-          checkInDate,
-          checkOutDate,
-        }),
-      }).then(readResponse);
-
-      setStayMessage("Hotel stay scheduled successfully.");
-      setSelectedHotelId("");
-      setCheckInDate("");
-      setCheckOutDate("");
-      setRevision((r) => r + 1);
-    } catch (err) {
-      setStayError(
-        err instanceof Error ? err.message : "Unable to schedule stay."
-      );
-    } finally {
-      setSavingStay(false);
-    }
+  function staySaved(message: string) {
+    setStayError("");
+    setStayMessage(message);
+    setRevision((revision) => revision + 1);
   }
 
   async function handleDeleteStay(stayId: number) {
-    if (!confirm("Are you sure you want to remove this hotel stay?")) return;
+    if (removingStayId !== null || !confirm("Remove this hotel stay?")) return;
 
     clearStayFeedback();
+    setRemovingStayId(stayId);
     try {
       await fetch(`/api/departures/${departureId}/hotel-stays/${stayId}`, {
         method: "DELETE",
       }).then(readResponse);
 
-      setStayMessage("Hotel stay removed.");
-      if (expandedStayId === stayId) {
-        setExpandedStayId(null);
-      }
-      setRevision((r) => r + 1);
+      if (expandedStayId === stayId) setExpandedStayId(null);
+      staySaved("Hotel stay removed.");
     } catch (err) {
       setStayError(
         err instanceof Error ? err.message : "Unable to remove stay."
       );
+    } finally {
+      setRemovingStayId(null);
     }
   }
 
@@ -189,7 +126,7 @@ export default function DepartureHotelStays({
     );
   }
 
-  if (loadError) {
+  if (loadError && revision === 0) {
     return (
       <Card className="mt-6">
         <CardContent className="p-6 text-sm text-destructive">
@@ -201,7 +138,7 @@ export default function DepartureHotelStays({
 
   return (
     <div className="mt-6 space-y-6">
-      {/* 1. Schedule Hotel Stay Form */}
+      {loadError && <p role="alert" className="text-sm text-destructive">{loadError} Reload to refresh the stay list.</p>}
       <Card>
         <CardHeader>
           <CardTitle>Hotels & Accommodations</CardTitle>
@@ -211,97 +148,11 @@ export default function DepartureHotelStays({
         </CardHeader>
 
         <CardContent>
-          <form
-            onSubmit={handleAddStay}
-            onChange={clearStayFeedback}
-            aria-busy={savingStay}
-          >
-            <fieldset
-              disabled={savingStay}
-              className="grid gap-4 sm:grid-cols-4"
-            >
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="stay-hotel">Select Partner Hotel</Label>
-                {hotels.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No active hotels found.{" "}
-                    <Link
-                      href="/admin/hotels"
-                      className="text-primary underline"
-                    >
-                      Register a hotel first
-                    </Link>
-                    .
-                  </p>
-                ) : (
-                  <NativeSelect
-                    id="stay-hotel"
-                    value={selectedHotelId}
-                    onChange={(e) => setSelectedHotelId(e.target.value)}
-                    className="w-full"
-                  >
-                    <NativeSelectOption value="">
-                      Choose a hotel…
-                    </NativeSelectOption>
-                    {hotels.map((h) => (
-                      <NativeSelectOption key={h.id} value={String(h.id)}>
-                        {h.name} ({h.location})
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="stay-checkin">Check-in Date</Label>
-                <Input
-                  id="stay-checkin"
-                  type="date"
-                  required
-                  value={checkInDate}
-                  onChange={(e) => setCheckInDate(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="stay-checkout">Check-out Date</Label>
-                <Input
-                  id="stay-checkout"
-                  type="date"
-                  required
-                  value={checkOutDate}
-                  onChange={(e) => setCheckOutDate(e.target.value)}
-                />
-              </div>
-
-              <div className="sm:col-span-4">
-                <Button
-                  type="submit"
-                  disabled={savingStay || hotels.length === 0}
-                >
-                  {savingStay ? "Scheduling…" : "Schedule Hotel Stay"}
-                </Button>
-              </div>
-            </fieldset>
-
-            {stayMessage && (
-              <p
-                role="status"
-                className="mt-3 text-sm font-medium text-green-700"
-              >
-                {stayMessage}
-              </p>
-            )}
-            {stayError && (
-              <p role="alert" className="mt-3 text-sm text-destructive">
-                {stayError}
-              </p>
-            )}
-          </form>
+          <HotelStayForm departureId={departureId} hotels={hotels} stops={stops}
+            onSaved={() => staySaved("Hotel stay scheduled.")} />
         </CardContent>
       </Card>
 
-      {/* 2. Scheduled Stays List */}
       <Card>
         <CardHeader>
           <CardTitle>Scheduled Stays ({stays.length})</CardTitle>
@@ -311,6 +162,8 @@ export default function DepartureHotelStays({
         </CardHeader>
 
         <CardContent>
+          {stayMessage && <p role="status" className="mb-4 text-sm font-medium text-green-700">{stayMessage}</p>}
+          {stayError && <p role="alert" className="mb-4 text-sm text-destructive">{stayError}</p>}
           {stays.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No hotel stays scheduled for this departure yet. Add a hotel stay above.
@@ -319,6 +172,8 @@ export default function DepartureHotelStays({
             <div className="space-y-4">
               {stays.map((stay) => {
                 const isExpanded = expandedStayId === stay.id;
+                const isEditing = editingStayId === stay.id;
+                const stop = stops.find((stop) => stop.id === stay.destinationId);
 
                 return (
                   <div
@@ -328,7 +183,9 @@ export default function DepartureHotelStays({
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{stay.hotelName}</h3>
+                          <h3 className="font-semibold">
+                            <Link href={`/admin/hotels/${stay.hotelId}`} className="hover:underline">{stay.hotelName}</Link>
+                          </h3>
                           <span className="text-xs text-muted-foreground">
                             ({stay.hotelLocation})
                           </span>
@@ -337,17 +194,25 @@ export default function DepartureHotelStays({
                         <div className="mt-1 text-xs text-muted-foreground">
                           <span>
                             <strong>Check-in:</strong>{" "}
-                            {formatDate(stay.checkInDate)} ·{" "}
+                            {stay.checkInDay} ·{" "}
                             <strong>Check-out:</strong>{" "}
-                            {formatDate(stay.checkOutDate)}
+                            {stay.checkOutDay}
                           </span>
-                          <span className="ml-3 font-medium text-foreground">
+                          {stop && <span className="block">Day {stop.dayNumber} · {stop.name}</span>}
+                          <span className="block font-medium text-foreground">
                             {stay.assignmentCount} assigned · {stay.roomCount} physical rooms
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" size="sm" disabled={editingStayId !== null || removingStayId !== null}
+                          onClick={() => {
+                            clearStayFeedback();
+                            setEditingStayId(stay.id);
+                          }}>
+                          Edit Stay
+                        </Button>
                         <Button
                           variant={isExpanded ? "default" : "outline"}
                           size="sm"
@@ -364,15 +229,27 @@ export default function DepartureHotelStays({
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteStay(stay.id)}
+                          disabled={isEditing || removingStayId !== null}
+                          onClick={() => void handleDeleteStay(stay.id)}
                         >
                           Remove Stay
                         </Button>
                       </div>
                     </div>
 
+                    {isEditing && (
+                      <div className="mt-4 border-t pt-4">
+                        <HotelStayForm key={stay.id} departureId={departureId} hotels={hotels} stops={stops} stay={stay}
+                          onSaved={() => {
+                            setEditingStayId(null);
+                            staySaved("Hotel stay saved.");
+                          }}
+                          onCancel={() => setEditingStayId(null)} />
+                      </div>
+                    )}
+
                     {isExpanded && (
-                      <StayRoomAssignmentPanel
+                      <StayRoomAssignmentPanel key={stay.hotelId}
                         departureId={departureId}
                         stayId={stay.id}
                         hotelId={stay.hotelId}

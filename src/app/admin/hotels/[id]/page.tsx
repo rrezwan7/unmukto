@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin-auth";
 import RoomForm from "./room-form";
+import HotelForm from "../hotel-form";
+import { isDatabaseId } from "@/lib/tour-editor";
 import {
   Card,
   CardContent,
@@ -36,7 +38,7 @@ export default async function HotelDetailPage({ params }: Props) {
   const { id } = await params;
   const hotelId = Number(id);
 
-  if (!Number.isSafeInteger(hotelId) || hotelId <= 0) {
+  if (!isDatabaseId(hotelId)) {
     return <main className="p-6">Invalid hotel ID.</main>;
   }
 
@@ -113,7 +115,9 @@ export default async function HotelDetailPage({ params }: Props) {
         </p>
       </header>
 
-      <RoomForm hotelId={hotelId} />
+      <HotelForm key={hotelId} hotel={hotel} />
+
+      <RoomForm key={hotelId} hotelId={hotelId} />
 
       <Card>
         <CardHeader>
@@ -147,7 +151,9 @@ export default async function HotelDetailPage({ params }: Props) {
                 {rooms.map((room) => (
                   <TableRow key={room.id}>
                     <TableCell className="font-semibold">
-                      {room.roomNumber}
+                      <Link href={`/admin/hotels/${hotelId}/rooms/${room.id}`} className="underline underline-offset-4">
+                        Edit {room.roomNumber}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">

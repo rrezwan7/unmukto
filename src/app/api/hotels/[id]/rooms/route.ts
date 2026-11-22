@@ -1,4 +1,7 @@
 import { checkAdminApi } from "@/lib/admin-auth";
+import { lockHotel, roomNumberExists } from "@/lib/accommodation-editor";
+import { parseRoom } from "@/lib/accommodation-input";
+import { isDatabaseId } from "@/lib/tour-editor";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -11,7 +14,7 @@ export async function GET(_request: Request, { params }: Props) {
   const { id } = await params;
   const hotelId = Number(id);
 
-  if (!Number.isSafeInteger(hotelId) || hotelId <= 0) {
+  if (!isDatabaseId(hotelId)) {
     return Response.json(
       { success: false, error: "Invalid hotel ID." },
       { status: 400 }
@@ -65,7 +68,7 @@ export async function POST(request: Request, { params }: Props) {
   const badRequest = (error: string) =>
     Response.json({ success: false, error }, { status: 400 });
 
-  if (!Number.isSafeInteger(hotelId) || hotelId <= 0) {
+  if (!isDatabaseId(hotelId)) {
     return badRequest("Invalid hotel ID.");
   }
 
@@ -77,83 +80,24 @@ export async function POST(request: Request, { params }: Props) {
     return badRequest("Invalid JSON.");
   }
 
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return badRequest("Room details are required.");
-  }
-
-  const roomNumber = String(body.roomNumber ?? "").trim().toUpperCase();
-
-  if (!roomNumber || roomNumber.length > 50) {
-    return badRequest("Provide a room number of 1–50 characters.");
-  }
-
-  const roomType = body.roomType;
-  if (
-    roomType !== "SHARED" &&
-    roomType !== "COUPLE" &&
-    roomType !== "PRIVATE"
-  ) {
-    return badRequest("Choose SHARED, COUPLE, or PRIVATE room type.");
-  }
-
-  const capacity = Number(body.capacity);
-  if (!Number.isSafeInteger(capacity) || capacity < 1 || capacity > 20) {
-    return badRequest("Capacity must be an integer between 1 and 20.");
-  }
-
-  if (
-    body.description != null &&
-    (typeof body.description !== "string" || body.description.length > 1000)
-  ) {
-    return badRequest("Description must contain at most 1,000 characters.");
-  }
+  const input = parseRoom(body);
+  if (!input.room) return badRequest(input.error);
 
   try {
     const { db } = await import("@/prisma/db");
-
-    const hotel = await db.orm.public.Hotel
-      .where({ id: hotelId })
-      .first();
-
-    if (!hotel) {
-      return Response.json(
-        { success: false, error: "Hotel not found." },
-        { status: 404 }
-      );
-    }
-
-    const existing = await db.orm.public.Room
-      .where({ hotelId, roomNumber })
-      .first();
-
-    if (existing) {
-      return Response.json(
-        {
-          success: false,
-          error: `Room ${roomNumber} already exists in this hotel.`,
-        },
-        { status: 409 }
-      );
-    }
-
-    const room = await db.orm.public.Room.create({
-      hotelId,
-      roomNumber,
-      roomType,
-      capacity,
-      description: body.description?.trim() || null,
+    return await db.transaction(async (tx) => {
+      if (!await lockHotel(tx, hotelId)) {
+        return Response.json({ success: false, error: "Hotel not found." }, { status: 404 });
+      }
+      const { roomNumber } = input.room;
+      if (await roomNumberExists(tx, hotelId, roomNumber)) {
+        return Response.json({ success: false, error: `Room ${roomNumber} already exists in this hotel.` }, { status: 409 });
+      }
+      const room = await tx.orm.public.Room.create({ hotelId, ...input.room });
+      return Response.json({ success: true, room }, { status: 201 });
     });
-
-    return Response.json(
-      { success: true, room },
-      { status: 201 }
-    );
   } catch (error) {
     console.error("CREATE ROOM ERROR:", error);
-
-    return Response.json(
-      { success: false, error: "Unable to create room." },
-      { status: 500 }
-    );
+    return Response.json({ success: false, error: "Unable to create room." }, { status: 500 });
   }
 }

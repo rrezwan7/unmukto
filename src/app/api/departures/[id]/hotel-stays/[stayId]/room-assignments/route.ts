@@ -1,3 +1,4 @@
+import { lockRoom } from "@/lib/accommodation-editor";
 import { checkAdminApi } from "@/lib/admin-auth";
 import { canAssignPassenger, holdIsActive, lockHotelStay } from "@/lib/reservation-inventory";
 
@@ -201,6 +202,9 @@ export async function POST(request: Request, { params }: Props) {
         return fail("This booking cannot receive a room assignment.", 409);
       }
 
+      if (!await lockRoom(tx, stay.hotelId, roomId)) {
+        return fail("Room does not belong to this stay's hotel.", 409);
+      }
       const room = await tx.orm.public.Room
         .where({ id: roomId })
         .first();

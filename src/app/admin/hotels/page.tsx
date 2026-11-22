@@ -62,7 +62,7 @@ export default async function HotelsPage() {
         <CardHeader>
           <CardTitle>Registered Hotels</CardTitle>
           <CardDescription>
-            {hotels.length} hotels registered. Click a hotel to manage its rooms.
+            {hotels.length} hotels registered. Open a hotel to edit its details and manage rooms.
           </CardDescription>
         </CardHeader>
 
@@ -123,7 +123,7 @@ export default async function HotelsPage() {
                           href={`/admin/hotels/${hotel.id}`}
                           className="text-sm font-medium text-primary hover:underline"
                         >
-                          Manage rooms →
+                          Manage hotel →
                         </Link>
                       </TableCell>
                     </TableRow>

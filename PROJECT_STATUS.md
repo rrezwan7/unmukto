@@ -16,10 +16,10 @@ booking-specific assignment links. The manual confirmation migration has also
 been applied and verified on the shared database. The owner tested booking
 confirmation, bus seat assignment, and hotel room assignment successfully on
 localhost. Vehicle and seat editing and guarded departure vehicle removal have
-passed browser checks on a disposable database. The tour, itinerary, and
-departure editors are ready for the owner's walkthrough. Departure and
-transport editing use the existing database schema. Vercel deployment can be
-handled separately.
+passed browser checks on a disposable database. Hotel, room, and scheduled
+stay editing passed the same verification. The tour, itinerary, and departure
+editors are ready for the owner's walkthrough. Admin editing uses the existing
+database schema. Vercel deployment can be handled separately.
 
 ## Implemented
 
@@ -140,6 +140,23 @@ departure allocation/availability and passenger seat assignment before this sess
   coordinate through database locks so concurrent requests enforce the same
   assignment and capacity rules.
 
+## Hotel, room, and stay editing
+
+- Open **Admin → Hotels → Manage hotel** to update the hotel's details and
+  active status. Inactive hotels are excluded from new stays. Existing stays
+  and room assignments remain manageable.
+- Open a room from the hotel detail page to change its number, type, capacity,
+  or notes. Room numbers are unique within a hotel. A room's capacity must
+  cover the passengers already assigned to it on each stay.
+- Open **Admin → Departures → Scheduled Stays → Edit Stay** to change the hotel,
+  check-in and check-out dates, or optional itinerary stop. Dates use the
+  Bangladesh calendar and must fit within the trip. A hotel's stays on the
+  same departure may meet at checkout and must otherwise be disjoint.
+- Existing room assignments lock a stay's hotel and dates. Staff can still
+  link the stay to a stop on the departure's itinerary, manage assignments,
+  or remove the stay after unassigning its passengers. Physical room
+  allotments across departures are still pending.
+
 ## Guest reservations and seat holds (Phase 5)
 
 - `POST /api/booking-quote` calculates fares on the server for the selected
@@ -257,11 +274,15 @@ instructions.
   labels and positions, stale edits, booking and hold capacity checks, and
   concurrent seat edits and assignments. Headless Chrome verified saving a
   vehicle, confirming a shared seat edit, and removing a departure vehicle.
+- Authenticated accommodation checks on disposable PostgreSQL verified hotel
+  archive and reactivation, per-stay occupancy, duplicate room numbers,
+  Bangladesh date boundaries, itinerary stop ownership, and concurrent
+  edits and assignments. Headless Chrome verified saving all three edit
+  forms and showed that room assignments lock a stay's hotel and dates.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle
-removal, hotel and room endpoints, departure stays, room assignments, and page
-protection.
+removal, hotel, room, and stay edits, room assignments, and page protection.
 Stop any running `next dev` server before tests: the HTTP suite starts its own.
 Two native PostgreSQL migration tests may skip without `TEST_DATABASE_URL`;
 configure only an isolated localhost test server to run those checks.
@@ -313,7 +334,7 @@ configure only an isolated localhost test server to run those checks.
 | **Tours and itineraries** | **Edit Tour** and the day and stop editor are implemented and verified on disposable PostgreSQL. Verify the normal browser editing flow on localhost. |
 | **Departures** | Editing the schedule, visibility, and booking status is implemented. Use hide and close to retire departures with history. |
 | **Vehicles and seat layouts** | Vehicle details and active status, shared seat layout edits, and guarded departure vehicle removal are implemented and verified on disposable PostgreSQL. |
-| **Hotels, rooms, and stays** | Edit hotel details and active state, room number/type/capacity, and scheduled stay details. Guard capacity reductions below occupancy and date or hotel changes that affect assignments or allotments. Preserve the existing remove-stay and unassign-room controls. |
+| **Hotels, rooms, and stays** | Hotel details and active status, physical room editing, and guarded hotel stay editing are implemented and verified on disposable PostgreSQL. |
 
 - Reuse the existing admin forms and protected write patterns. Keep new edit
   pages discoverable from the matching list or detail page. Show validation
@@ -322,7 +343,6 @@ configure only an isolated localhost test server to run those checks.
   permanent removal only after explicit confirmation and a transaction-level
   dependency check. Ensure archived entries leave public listings and new
   selections while historical bookings and assignments remain readable.
-- Next, add hotel, room, and stay editing.
 
 ### 5. Complete checkout and verify a release
 

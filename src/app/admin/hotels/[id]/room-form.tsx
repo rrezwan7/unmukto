@@ -18,10 +18,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function RoomForm({ hotelId }: { hotelId: number }) {
+type Room = {
+  id: number;
+  roomNumber: string;
+  roomType: string;
+  capacity: number;
+  description: string | null;
+  updatedAt: string;
+};
+
+export default function RoomForm({ hotelId, room }: { hotelId: number; room?: Room }) {
   const router = useRouter();
-  const [roomType, setRoomType] = useState("COUPLE");
-  const [capacity, setCapacity] = useState("2");
+  const [roomType, setRoomType] = useState(room?.roomType ?? "COUPLE");
+  const [capacity, setCapacity] = useState(String(room?.capacity ?? 2));
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(room?.updatedAt);
+  const actionError = room ? "Unable to update room." : "Unable to create room.";
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -34,6 +45,7 @@ export default function RoomForm({ hotelId }: { hotelId: number }) {
   function handleRoomTypeChange(type: string) {
     setRoomType(type);
     clearFeedback();
+    if (room) return;
     if (type === "COUPLE") {
       setCapacity("2");
     } else if (type === "SHARED") {
@@ -54,12 +66,14 @@ export default function RoomForm({ hotelId }: { hotelId: number }) {
     clearFeedback();
 
     try {
-      const response = await fetch(`/api/hotels/${hotelId}/rooms`, {
-        method: "POST",
+      const roomsUrl = `/api/hotels/${hotelId}/rooms`;
+      const response = await fetch(room ? `${roomsUrl}/${room.id}` : roomsUrl, {
+        method: room ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           roomNumber: data.get("roomNumber"),
           roomType,
+          expectedUpdatedAt,
           capacity: Number(capacity),
           description: data.get("description"),
         }),
@@ -68,19 +82,22 @@ export default function RoomForm({ hotelId }: { hotelId: number }) {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error ?? "Unable to create room.");
+        throw new Error(result.error ?? actionError);
       }
 
-      form.reset();
-      setRoomType("COUPLE");
-      setCapacity("2");
-      setMessage(`Room ${result.room.roomNumber} created.`);
+      if (room) {
+        setExpectedUpdatedAt(result.room.updatedAt);
+        setMessage(`Room ${result.room.roomNumber} saved.`);
+      } else {
+        form.reset();
+        setRoomType("COUPLE");
+        setCapacity("2");
+        setMessage(`Room ${result.room.roomNumber} created.`);
+      }
       router.refresh();
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to create room."
+        err instanceof Error ? err.message : actionError
       );
     } finally {
       setSaving(false);
@@ -90,9 +107,11 @@ export default function RoomForm({ hotelId }: { hotelId: number }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add Room</CardTitle>
+        <CardTitle>{room ? "Edit Room" : "Add Room"}</CardTitle>
         <CardDescription>
-          Add a physical room to this hotel. Specify the room type and maximum passenger capacity.
+          {room
+            ? "Capacity must cover the passengers already assigned to this room on every stay."
+            : "Add a physical room to this hotel. Specify the room type and maximum passenger capacity."}
         </CardDescription>
       </CardHeader>
 
@@ -111,6 +130,7 @@ export default function RoomForm({ hotelId }: { hotelId: number }) {
               <Input
                 id="room-number"
                 name="roomNumber"
+                defaultValue={room?.roomNumber ?? ""}
                 required
                 maxLength={50}
                 placeholder="Example: 101, 204B, Cottage 3"
@@ -159,6 +179,7 @@ export default function RoomForm({ hotelId }: { hotelId: number }) {
               <Textarea
                 id="room-description"
                 name="description"
+                defaultValue={room?.description ?? ""}
                 maxLength={1000}
                 placeholder="Bed sizes, attached balcony, view, or extra bed options"
               />
@@ -166,7 +187,7 @@ export default function RoomForm({ hotelId }: { hotelId: number }) {
 
             <div className="sm:col-span-3">
               <Button type="submit" disabled={saving}>
-                {saving ? "Saving…" : "Add room"}
+                {saving ? "Saving…" : room ? "Save room" : "Add room"}
               </Button>
             </div>
           </fieldset>

@@ -1,8 +1,9 @@
 import { checkAdminApi } from "@/lib/admin-auth";
-import { stayOutsideSchedule } from "@/lib/departure-editor";
+import { lockHotel, stayDateConflict, stopBelongsToTour } from "@/lib/accommodation-editor";
+import { parseStay } from "@/lib/accommodation-input";
+import { localDepartureDay } from "@/lib/departure-schedule";
 import { lockDeparture } from "@/lib/reservation-inventory";
 import { isDatabaseId } from "@/lib/tour-editor";
-import { Temporal } from "temporal-polyfill";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -36,32 +37,18 @@ export async function GET(_request: Request, { params }: Props) {
       );
     }
 
-    const [stays, hotels, rooms, assignments] = await Promise.all([
-      db.orm.public.HotelStay.where({ departureId }).all(),
-      db.orm.public.Hotel.all(),
-      db.orm.public.Room.all(),
-      db.orm.public.RoomAssignment.all(),
+    const [stays, days] = await Promise.all([
+      db.orm.public.HotelStay.where({ departureId })
+        .include("hotel", (hotel) => hotel.select("name", "location", "phone")
+          .include("rooms", (rooms) => rooms.count()))
+        .include("roomAssignments", (assignments) => assignments.count())
+        .all(),
+      db.orm.public.Itinerary.where({ tourId: departure.tourId }).select("dayNumber")
+        .include("destinations", (stops) => stops.select("id", "name")
+          .orderBy([(stop) => stop.displayOrder.asc(), (stop) => stop.id.asc()]))
+        .orderBy((day) => day.dayNumber.asc())
+        .all(),
     ]);
-
-    const hotelMap = new Map(hotels.map((h) => [h.id, h]));
-
-    // Count rooms per hotel
-    const roomCountByHotel = new Map<number, number>();
-    for (const r of rooms) {
-      roomCountByHotel.set(
-        r.hotelId,
-        (roomCountByHotel.get(r.hotelId) ?? 0) + 1
-      );
-    }
-
-    // Count assignments per stay
-    const assignmentCountByStay = new Map<number, number>();
-    for (const a of assignments) {
-      assignmentCountByStay.set(
-        a.hotelStayId,
-        (assignmentCountByStay.get(a.hotelStayId) ?? 0) + 1
-      );
-    }
 
     stays.sort((a, b) => {
       const aTime = a.checkInDate.epochNanoseconds;
@@ -72,24 +59,28 @@ export async function GET(_request: Request, { params }: Props) {
     });
 
     const enrichedStays = stays.map((stay) => {
-      const hotel = hotelMap.get(stay.hotelId);
+      const { hotel } = stay;
       return {
         id: stay.id,
         departureId: stay.departureId,
         hotelId: stay.hotelId,
         destinationId: stay.destinationId,
+        updatedAt: stay.updatedAt,
+        checkInDay: localDepartureDay(stay.checkInDate).toString(),
+        checkOutDay: localDepartureDay(stay.checkOutDate).toString(),
         checkInDate: stay.checkInDate.toString(),
         checkOutDate: stay.checkOutDate.toString(),
         hotelName: hotel?.name ?? "Unknown Hotel",
         hotelLocation: hotel?.location ?? "Unknown Location",
         hotelPhone: hotel?.phone ?? null,
-        roomCount: roomCountByHotel.get(stay.hotelId) ?? 0,
-        assignmentCount: assignmentCountByStay.get(stay.id) ?? 0,
+        roomCount: hotel?.rooms ?? 0,
+        assignmentCount: stay.roomAssignments,
       };
     });
 
+    const stops = days.flatMap((day) => day.destinations.map((stop) => ({ ...stop, dayNumber: day.dayNumber })));
     return Response.json(
-      { success: true, stays: enrichedStays },
+      { success: true, stays: enrichedStays, stops },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
@@ -124,74 +115,30 @@ export async function POST(request: Request, { params }: Props) {
     return badRequest("Invalid JSON.");
   }
 
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return badRequest("Hotel stay details are required.");
-  }
-
-  const hotelId = Number(body.hotelId);
-  if (!isDatabaseId(hotelId)) {
-    return badRequest("Select a valid hotel.");
-  }
-
-  const checkInStr = String(body.checkInDate ?? "").trim();
-  const checkOutStr = String(body.checkOutDate ?? "").trim();
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(checkInStr)) {
-    return badRequest("Provide a valid check-in date (YYYY-MM-DD).");
-  }
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(checkOutStr)) {
-    return badRequest("Provide a valid check-out date (YYYY-MM-DD).");
-  }
-
-  let checkInInstant: Temporal.Instant;
-  let checkOutInstant: Temporal.Instant;
-
-  try {
-    checkInInstant = Temporal.Instant.from(`${checkInStr}T12:00:00+06:00`);
-    checkOutInstant = Temporal.Instant.from(`${checkOutStr}T12:00:00+06:00`);
-  } catch {
-    return badRequest("Invalid date values.");
-  }
-
-  if (checkOutInstant.epochNanoseconds <= checkInInstant.epochNanoseconds) {
-    return badRequest("Check-out date must be after check-in date.");
-  }
-
-  const destinationId =
-    body.destinationId != null && Number.isSafeInteger(Number(body.destinationId))
-      ? Number(body.destinationId)
-      : null;
+  const input = parseStay(body);
+  if (!input.stay) return badRequest(input.error);
 
   try {
     const { db } = await import("@/prisma/db");
 
     return await db.transaction(async (tx) => {
-      if (!(await lockDeparture(tx, departureId))) {
+      if (!await lockDeparture(tx, departureId)) {
         return Response.json({ success: false, error: "Departure not found." }, { status: 404 });
       }
-      const [departure, hotel] = await Promise.all([
-        tx.orm.public.Departure.where({ id: departureId }).first(),
-        tx.orm.public.Hotel.where({ id: hotelId }).first(),
-      ]);
-
+      const departure = await tx.orm.public.Departure.where({ id: departureId }).first();
       if (!departure) return Response.json({ success: false, error: "Departure not found." }, { status: 404 });
-      if (!hotel || !hotel.isActive) return badRequest("Selected hotel is inactive or does not exist.");
 
-      const dates = { checkInDate: checkInInstant, checkOutDate: checkOutInstant };
-      if (stayOutsideSchedule(departure, dates)) {
-        return Response.json({ success: false, error: "The hotel stay must fall within the departure's travel dates." }, { status: 409 });
+      const { hotelId, destinationId, ...dates } = input.stay;
+      if (destinationId != null && !await stopBelongsToTour(tx, departure.tourId, destinationId)) {
+        return badRequest("The selected itinerary stop does not belong to this tour.");
       }
-      const conflict = await tx.orm.public.HotelStay.where({ departureId, hotelId })
-        .where((stay) => stay.checkInDate.lt(checkOutInstant))
-        .where((stay) => stay.checkOutDate.gt(checkInInstant))
-        .select("id")
-        .first();
-      if (conflict) {
-        return Response.json({ success: false, error: "This hotel already has a stay on this departure during the selected dates." }, { status: 409 });
-      }
+      const hotel = await lockHotel(tx, hotelId);
+      if (!hotel?.isActive) return badRequest("Selected hotel is inactive or does not exist.");
 
-      const stay = await tx.orm.public.HotelStay.create({ departureId, hotelId, destinationId, ...dates });
+      const conflict = await stayDateConflict(tx, departure, hotelId, dates);
+      if (conflict) return Response.json({ success: false, error: conflict }, { status: 409 });
+
+      const stay = await tx.orm.public.HotelStay.create({ departureId, hotelId, destinationId: destinationId ?? null, ...dates });
       return Response.json({ success: true, stay }, { status: 201 });
     });
   } catch (error) {
