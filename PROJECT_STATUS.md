@@ -24,7 +24,8 @@ owner approved applying the room allotment migration to the shared database,
 where Prisma verified the resulting schema. The feature branch adds customer
 sign-in and signed-in checkout. The customer account migration is applied to the
 shared database. The owner verified live Google sign-in on localhost in
-Microsoft Edge. Staff can release unpaid seat holds
+Microsoft Edge and completed a signed-in checkout and staff confirmation
+rehearsal on isolated PostgreSQL. Staff can release unpaid seat holds
 after the reservation release migration. Checkout can hold seats and rooms
 together for departures where staff enable lodging holds. Both tools work with
 guest booking.
@@ -386,6 +387,10 @@ instructions.
   the admin session stayed active. With migration 8 applied to the shared
   database, the owner signed in with Google on localhost in Microsoft Edge
   and saw their Google email on the bookings page.
+- For the live rehearsal, the owner used Google sign-in to reserve a seat
+  on a zero-fare test trip and GitHub sign-in to confirm the booking as staff.
+  The bookings page showed the confirmed status. A read-only check of isolated
+  PostgreSQL verified the customer ownership link and staff confirmation audit.
 - Disposable PostgreSQL verified migration 9, audit idempotency, payment and
   assignment guards, and the race between release and staff confirmation.
   Chrome verified releasing a hold and reusing the seat with Google OAuth
@@ -464,8 +469,6 @@ configure only an isolated localhost test server to run those checks.
 
 ### 5. Complete checkout and verify a release
 
-- Rehearse a signed-in customer booking with the operator using live Google
-  sign-in.
 - Decide deposit, payment verification, refund, and cancellation rules. Handle
   late payments through review and capacity revalidation. Run a full booking
   rehearsal with the operator before opening the live guest flow.
