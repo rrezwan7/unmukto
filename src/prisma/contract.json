@@ -76,6 +76,10 @@
       "model": "Payment",
       "namespace": "public"
     },
+    "ReservationRelease": {
+      "model": "ReservationRelease",
+      "namespace": "public"
+    },
     "Room": {
       "model": "Room",
       "namespace": "public"
@@ -1010,6 +1014,22 @@
                 },
                 "to": {
                   "model": "Payment",
+                  "namespace": "public"
+                }
+              },
+              "release": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "bookingId"
+                  ]
+                },
+                "to": {
+                  "model": "ReservationRelease",
                   "namespace": "public"
                 }
               },
@@ -2787,6 +2807,74 @@
               },
               "namespaceId": "public",
               "table": "Payment"
+            }
+          },
+          "ReservationRelease": {
+            "fields": {
+              "adminGithubId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "bookingId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "reason": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "releasedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "booking": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "bookingId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Booking",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "adminGithubId": {
+                  "column": "adminGithubId"
+                },
+                "bookingId": {
+                  "column": "bookingId"
+                },
+                "reason": {
+                  "column": "reason"
+                },
+                "releasedAt": {
+                  "column": "releasedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ReservationRelease"
             }
           },
           "Room": {
@@ -5870,6 +5958,59 @@
                 }
               ]
             },
+            "ReservationRelease": {
+              "columns": {
+                "adminGithubId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "bookingId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "reason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "releasedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "bookingId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ReservationRelease"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Booking"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "bookingId"
+                ]
+              },
+              "uniques": []
+            },
             "Room": {
               "checks": [
                 {
@@ -6891,7 +7032,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5dff49b4929b91f943de2423466f22d947393fce55871fdf6b4a8cfa46200a77"
+    "storageHash": "e31033e7a2af52ac7a7fc4fec6df0b7f348118911c5e3d070044154db9494395"
   },
   "execution": {
     "executionHash": "35e359fb8fabe2fe9c9082dc2572cb2a97a094966e5a1046c0c2f21a9ba78cc8",

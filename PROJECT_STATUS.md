@@ -23,7 +23,9 @@ overlapping-departure capacity checks passed on disposable PostgreSQL. The
 owner approved applying the room allotment migration to the shared database,
 where Prisma verified the resulting schema. The feature branch adds customer
 sign-in and signed-in checkout. Enable it after applying the customer account
-migration and configuring Google OAuth.
+migration and configuring Google OAuth. Staff can release unpaid seat holds
+after the reservation release migration. This works with guest booking while
+customer sign-in setup is pending.
 
 ## Implemented
 
@@ -207,6 +209,12 @@ departure allocation/availability and passenger seat assignment before this sess
   Duplicate confirmation keeps the existing result. A manual payment reference
   can be recorded once per payment method. Expired holds are sent to staff
   review. The original quoted fare and passenger eligibility are preserved.
+- Staff can release an active unpaid hold from **Reservations** after verifying
+  that no money was received and entering a reason. Releasing sets the
+  reservation to **Cancelled** and frees its seats immediately. The record
+  keeps the quote, passengers, reason, staff GitHub ID, and time of release.
+  Recorded payments or assignments block release. A repeat release keeps the
+  original audit record.
 - The existing bus seat and hotel room assignment tools are on the departure
   detail page under the allocated vehicle and **Hotel Stays → Manage Room
   Assignment**. The assignment APIs accept confirmed bookings and older
@@ -267,6 +275,7 @@ Migration packages on disk:
 6. `20261121T2205_itinerary_stop_order`
 7. `20261122T0950_room_allotments`
 8. `20261122T1014_customer_accounts`
+9. `20261122T1047_reservation_releases`
 
 The stop-order column defaults to zero, so existing stops keep their previous
 ID-based order until staff save an itinerary. Migration 7 adds allotments and
@@ -274,8 +283,11 @@ an index for room occupancy checks. It preserves existing assignments and
 passed `db migrate` and `db verify` on isolated PostgreSQL. After the owner
 approved applying it to the shared database on 2026-11-22 (Asia/Dhaka), Prisma
 verified that the marker and live schema match migration 7. Migration 8
-adds separate customer account and booking ownership tables. The shared
-database remains at migration 7 pending approval.
+adds separate customer account and booking ownership tables. Migration 9 adds
+the release audit. The shared database remains at migration 7 pending approval.
+Applying both migrations supports hold release even with Google OAuth
+unconfigured. Until migration 9 is applied, Reservations continues to show
+the existing review and confirmation controls.
 Use a disposable PostgreSQL instance for automated mutation and concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
 instructions.
 
@@ -350,6 +362,11 @@ instructions.
   private booking history, staff confirmation, and customer sign-out while
   the admin session stayed active. Live Google OAuth requires environment
   credentials.
+- Disposable PostgreSQL verified migration 9, audit idempotency, payment and
+  assignment guards, and the race between release and staff confirmation.
+  Chrome verified releasing a hold and reusing the seat with Google OAuth
+  disabled. The earlier shared-schema version still rendered reservations and
+  manual confirmation before the audit migration.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle
@@ -376,9 +393,9 @@ configure only an isolated localhost test server to run those checks.
   every stay. Establish a deposit policy before supporting partial payment.
 - Expiry is derived from `holdExpiresAt` and the record remains available for
   review. A replacement hold must check current capacity again.
-- Add cancellation with staff audit details and a refund workflow when the
-  payment policy is agreed. Test the confirmation and cancellation race when
-  that transition is available.
+- Staff release of unpaid pending holds is implemented with an audit record.
+  A confirmed or paid reservation still requires a cancellation and refund
+  workflow once the payment policy is agreed.
 
 ### 3. Connect confirmed guests to bus and hotel assignment
 

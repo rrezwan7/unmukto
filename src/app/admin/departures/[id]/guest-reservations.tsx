@@ -5,6 +5,9 @@ import { localDepartureDay } from "@/lib/departure-schedule";
 import { passengerNeedsSeat } from "@/lib/reservation-inventory";
 import { confirmGuestBooking } from "./confirm-guest-booking";
 import ManualConfirmationForm from "./manual-confirmation-form";
+import { reservationReleaseAvailable } from "@/lib/reservation-release";
+import { releaseReservation } from "./release-reservation";
+import ReservationReleaseForm from "./reservation-release-form";
 
 const filters = [
   { value: "all", label: "All" },
@@ -163,6 +166,19 @@ function RoomAssignmentsByStay({ progress }: { progress: AssignmentProgress["roo
   );
 }
 
+function ReleaseRecord({ release }: { release: { reason: string; adminGithubId: string; releasedAt: string } | undefined }) {
+  if (!release) return null;
+  const time = Temporal.Instant.from(release.releasedAt);
+  return (
+    <dl className="mt-4 space-y-1 rounded-md border p-3">
+      <dt className="font-semibold">Unpaid hold released</dt>
+      <dd><time dateTime={release.releasedAt}>{deadlineFormat.format(time.epochMilliseconds)}</time> (Bangladesh time)</dd>
+      <dd>GitHub admin ID {release.adminGithubId}</dd>
+      <dd className="wrap-anywhere whitespace-pre-wrap">{release.reason}</dd>
+    </dl>
+  );
+}
+
 export default async function GuestReservations({
   departureId,
   requestedStatus,
@@ -176,7 +192,15 @@ export default async function GuestReservations({
   const pageNumber = typeof requestedPage === "string" ? Number(requestedPage) : 1;
   const page = Number.isSafeInteger(pageNumber) && pageNumber >= 1 && pageNumber <= 1_000_000
     ? pageNumber : 1;
-  const { bookings, hasNextPage } = await loadReservations(departureId, status, page);
+  const [{ bookings, hasNextPage }, canRelease] = await Promise.all([
+    loadReservations(departureId, status, page),
+    reservationReleaseAvailable(),
+  ]);
+  const cancelledIds = bookings.filter((booking) => booking.status === "CANCELLED").map((booking) => booking.id);
+  const releases = canRelease && cancelledIds.length
+    ? await db.orm.public.ReservationRelease.where((release) => release.bookingId.in(cancelledIds)).all()
+    : [];
+  const releaseByBooking = new Map(releases.map((release) => [release.bookingId, release]));
   const href = (filter: typeof status, pageNumber = 1) =>
     `/admin/departures/${departureId}?guestStatus=${filter}&guestPage=${pageNumber}#guest-reservations`;
   const assignmentHref = (bookingId: number, section: string) =>
@@ -227,7 +251,7 @@ export default async function GuestReservations({
                       <dt className="text-muted-foreground">Quoted total / paid</dt>
                       <dd>৳{booking.totalAmount} / ৳{booking.paidAmount}</dd>
                     </div>
-                    {booking.reviewStatus !== "CONFIRMED" && booking.holdExpiresAt && (
+                    {(booking.reviewStatus === "PENDING" || booking.reviewStatus === "EXPIRED") && booking.holdExpiresAt && (
                       <div>
                         <dt className="text-muted-foreground">Hold deadline (Bangladesh time)</dt>
                         <dd><time dateTime={booking.holdExpiresAt.toString()}>{deadlineFormat.format(booking.holdExpiresAt.epochMilliseconds)}</time></dd>
@@ -259,6 +283,10 @@ export default async function GuestReservations({
                     hasRoomRequest={booking.roomOption !== null}
                   />
                 )}
+                {canRelease && booking.reviewStatus === "PENDING" && booking.holdExpiresAt && /^0+(?:\.0+)?$/.test(booking.paidAmount) && (
+                  <ReservationReleaseForm release={releaseReservation.bind(null, departureId, booking.id)} />
+                )}
+                <ReleaseRecord release={releaseByBooking.get(booking.id)} />
                 {booking.progress && (
                   <div className="mt-4 space-y-3">
                     <RoomAssignmentsByStay progress={booking.progress.roomProgress} />

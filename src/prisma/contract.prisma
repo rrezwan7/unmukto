@@ -382,6 +382,7 @@ model Booking {
   departure    Departure @relation(fields: [departureId], references: [id])
   customer     User?     @relation("CustomerBookings", fields: [customerId], references: [id])
   accountBooking CustomerBooking?
+  release      ReservationRelease?
   guide        User?     @relation("AssignedGuide", fields: [guideId], references: [id])
   roomOption   DepartureRoomOption? @relation(fields: [roomOptionId], references: [id])
 
@@ -394,6 +395,15 @@ model Booking {
   @@index([departureId])
   @@index([customerId])
   @@index([roomOptionId])
+}
+
+model ReservationRelease {
+  bookingId     Int               @id
+  adminGithubId String
+  reason        String
+  releasedAt    TimestamptzString @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
 }
 
 model Passenger {

@@ -100,6 +100,9 @@ export async function POST(request: Request) {
         if (existing.status === "CONFIRMED") {
           return Response.json({ bookingNumber: existing.bookingNumber, status: "CONFIRMED" });
         }
+        if (existing.status === "CANCELLED") {
+          return fail("এই সংরক্ষণটি বাতিল হয়েছে। নতুন করে ভাড়া হিসাব করুন।", 409);
+        }
         if (existing.status !== "PENDING" || !existing.holdExpiresAt ||
             existing.holdExpiresAt.epochMilliseconds <= Date.now()) {
           return fail("এই আসন সংরক্ষণের মেয়াদ শেষ হয়েছে। নতুন করে ভাড়া হিসাব করুন।", 409);

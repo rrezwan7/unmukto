@@ -1,0 +1,83 @@
+[
+  {
+    "id": "table.ReservationRelease",
+    "label": "Create table \"ReservationRelease\"",
+    "summary": "Creates table \"ReservationRelease\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ReservationRelease"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ReservationRelease\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ReservationRelease\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ReservationRelease\"",
+        "sql": "CREATE TABLE \"public\".\"ReservationRelease\" (\n  \"adminGithubId\" text NOT NULL,\n  \"bookingId\" int4 NOT NULL,\n  \"reason\" text NOT NULL,\n  \"releasedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"bookingId\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ReservationRelease\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ReservationRelease\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ReservationRelease.ReservationRelease_bookingId_fkey",
+    "label": "Add foreign key \"ReservationRelease_bookingId_fkey\" on \"ReservationRelease\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ReservationRelease_bookingId_fkey",
+        "table": "ReservationRelease"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ReservationRelease_bookingId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ReservationRelease_bookingId_fkey",
+          "public",
+          "\"public\".\"ReservationRelease\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ReservationRelease_bookingId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ReservationRelease\"\nADD CONSTRAINT \"ReservationRelease_bookingId_fkey\"\nFOREIGN KEY (\"bookingId\")\nREFERENCES \"public\".\"Booking\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ReservationRelease_bookingId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ReservationRelease_bookingId_fkey",
+          "public",
+          "\"public\".\"ReservationRelease\""
+        ]
+      }
+    ]
+  }
+]

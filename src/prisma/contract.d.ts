@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'5dff49b4929b91f943de2423466f22d947393fce55871fdf6b4a8cfa46200a77'>;
+  StorageHashBase<'e31033e7a2af52ac7a7fc4fec6df0b7f348118911c5e3d070044154db9494395'>;
 export type ExecutionHash =
   ExecutionHashBase<'35e359fb8fabe2fe9c9082dc2572cb2a97a094966e5a1046c0c2f21a9ba78cc8'>;
 export type ProfileHash =
@@ -442,6 +442,12 @@ export type FieldOutputTypes = {
       readonly transactionId: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly ReservationRelease: {
+      readonly adminGithubId: CodecTypes['pg/text@1']['output'];
+      readonly bookingId: CodecTypes['pg/int4@1']['output'];
+      readonly reason: CodecTypes['pg/text@1']['output'];
+      readonly releasedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly Room: {
       readonly capacity: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -720,6 +726,12 @@ export type FieldInputTypes = {
       readonly status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REFUNDED';
       readonly transactionId: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly ReservationRelease: {
+      readonly adminGithubId: CodecTypes['pg/text@1']['input'];
+      readonly bookingId: CodecTypes['pg/int4@1']['input'];
+      readonly reason: CodecTypes['pg/text@1']['input'];
+      readonly releasedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly Room: {
       readonly capacity: CodecTypes['pg/int4@1']['input'];
@@ -1000,6 +1012,12 @@ export type StorageColumnTypes = {
       readonly transactionId: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly ReservationRelease: {
+      readonly adminGithubId: CodecTypes['pg/text@1']['output'];
+      readonly bookingId: CodecTypes['pg/int4@1']['output'];
+      readonly reason: CodecTypes['pg/text@1']['output'];
+      readonly releasedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly Room: {
       readonly capacity: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1279,6 +1297,12 @@ export type StorageColumnInputTypes = {
       readonly transactionId: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly ReservationRelease: {
+      readonly adminGithubId: CodecTypes['pg/text@1']['input'];
+      readonly bookingId: CodecTypes['pg/int4@1']['input'];
+      readonly reason: CodecTypes['pg/text@1']['input'];
+      readonly releasedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly Room: {
       readonly capacity: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -1445,6 +1469,7 @@ export namespace Models {
     guide: public_User | null;
     passengers: public_Passenger[];
     payments: public_Payment[];
+    release: public_ReservationRelease | null;
     roomOption: public_DepartureRoomOption | null;
     readonly [RelationKeys]?:
       | 'accountBooking'
@@ -1453,6 +1478,7 @@ export namespace Models {
       | 'guide'
       | 'passengers'
       | 'payments'
+      | 'release'
       | 'roomOption';
   };
   export type public_BookingSettings = {
@@ -1629,6 +1655,14 @@ export namespace Models {
     booking: public_Booking;
     readonly [RelationKeys]?: 'booking';
   };
+  export type public_ReservationRelease = {
+    adminGithubId: CodecTypes['pg/text@1']['output'];
+    bookingId: CodecTypes['pg/int4@1']['output'];
+    reason: CodecTypes['pg/text@1']['output'];
+    releasedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    booking: public_Booking;
+    readonly [RelationKeys]?: 'booking';
+  };
   export type public_Room = {
     capacity: CodecTypes['pg/int4@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1767,6 +1801,7 @@ export declare const models: {
     Itinerary: Models.public_Itinerary;
     Passenger: Models.public_Passenger;
     Payment: Models.public_Payment;
+    ReservationRelease: Models.public_ReservationRelease;
     Room: Models.public_Room;
     RoomAllotment: Models.public_RoomAllotment;
     RoomAssignment: Models.public_RoomAssignment;
@@ -3309,6 +3344,48 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly ReservationRelease: {
+              columns: {
+                readonly adminGithubId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly bookingId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly reason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly releasedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['bookingId'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ReservationRelease';
+                    readonly columns: readonly ['bookingId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Booking';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly Room: {
               columns: {
                 readonly capacity: {
@@ -4105,6 +4182,10 @@ type ContractBase = Omit<
     readonly Itinerary: { readonly namespace: 'public' & NamespaceId; readonly model: 'Itinerary' };
     readonly Passenger: { readonly namespace: 'public' & NamespaceId; readonly model: 'Passenger' };
     readonly Payment: { readonly namespace: 'public' & NamespaceId; readonly model: 'Payment' };
+    readonly ReservationRelease: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ReservationRelease';
+    };
     readonly Room: { readonly namespace: 'public' & NamespaceId; readonly model: 'Room' };
     readonly RoomAllotment: {
       readonly namespace: 'public' & NamespaceId;
@@ -4593,6 +4674,18 @@ type ContractBase = Omit<
                   readonly model: 'Payment';
                 };
                 readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['bookingId'];
+                };
+              };
+              readonly release: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ReservationRelease';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['bookingId'];
@@ -5731,6 +5824,53 @@ type ContractBase = Omit<
                 readonly status: { readonly column: 'status' };
                 readonly transactionId: { readonly column: 'transactionId' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly ReservationRelease: {
+            readonly fields: {
+              readonly adminGithubId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly bookingId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly reason: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly releasedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly booking: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Booking';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['bookingId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ReservationRelease';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly adminGithubId: { readonly column: 'adminGithubId' };
+                readonly bookingId: { readonly column: 'bookingId' };
+                readonly reason: { readonly column: 'reason' };
+                readonly releasedAt: { readonly column: 'releasedAt' };
               };
             };
           };
