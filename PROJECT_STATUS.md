@@ -20,8 +20,8 @@ passed browser checks on a disposable database. Hotel, room, and scheduled
 stay editing passed the same verification. Confirmed guest reservations now show
 bus seat and hotel room assignment progress. Staff room allotments and
 overlapping-departure capacity checks passed on disposable PostgreSQL. The
-room allotment migration awaits approval on the shared database before this
-checkpoint can be deployed.
+owner approved applying the room allotment migration to the shared database,
+where Prisma verified the resulting schema.
 
 ## Implemented
 
@@ -246,13 +246,12 @@ Migration packages on disk:
 6. `20261121T2205_itinerary_stop_order`
 7. `20261122T0950_room_allotments`
 
-Prisma `db verify` confirmed that the shared database marker and actual schema
-match the contract after migration 6. The stop-order column defaults to zero,
-so existing stops keep their previous ID-based order until staff save an
-itinerary. Migration 7 adds allotments and an index for room occupancy checks.
-It preserves existing assignments and passed `db migrate` and `db verify` on
-isolated PostgreSQL. The shared database remains at migration 6. Apply migration
-7 there only with the owner's approval, before deploying this checkpoint.
+The stop-order column defaults to zero, so existing stops keep their previous
+ID-based order until staff save an itinerary. Migration 7 adds allotments and
+an index for room occupancy checks. It preserves existing assignments and
+passed `db migrate` and `db verify` on isolated PostgreSQL. After the owner
+approved applying it to the shared database on 2026-11-22 (Asia/Dhaka), Prisma
+verified that the marker and live schema match migration 7.
 Use a disposable PostgreSQL instance for automated mutation and concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
 instructions.
 
@@ -317,6 +316,9 @@ instructions.
   shared places, exclusive rooms, same-day reuse, legacy conflicts, room and
   stay edit guards, and concurrent claims on the last capacity. Headless Chrome
   verified saving and releasing shared places and releasing an exclusive room.
+- After fixing duplicate hotel form keys, Chrome loaded both forms without the
+  duplicate-key warning. The authenticated hotel-stays endpoint returned a
+  scheduled stay against disposable PostgreSQL.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle

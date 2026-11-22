@@ -115,9 +115,9 @@ export default async function HotelDetailPage({ params }: Props) {
         </p>
       </header>
 
-      <HotelForm key={hotelId} hotel={hotel} />
+      <HotelForm key={`hotel-${hotelId}`} hotel={hotel} />
 
-      <RoomForm key={hotelId} hotelId={hotelId} />
+      <RoomForm key={`room-${hotelId}`} hotelId={hotelId} />
 
       <Card>
         <CardHeader>
