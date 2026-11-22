@@ -47,6 +47,13 @@ export function PublicHeader({ activePath }: { activePath?: string }) {
           আমাদের কথা
         </Link>
         <Link
+          href="/account/bookings"
+          aria-current={activePath === "/account/bookings" ? "page" : undefined}
+          className="transition-colors hover:text-[#a66521]"
+        >
+          আমার বুকিং
+        </Link>
+        <Link
           href="/tours"
           className={`flex items-center gap-2 rounded-full border border-[#cad2c4] px-4 py-2 transition-all hover:border-[#193d32] hover:bg-[#193d32] hover:text-white ${
             activePath === "/tours"

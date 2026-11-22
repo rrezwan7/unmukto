@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { Temporal } from "temporal-polyfill";
+import { getCustomerSession } from "@/customer-auth";
 import { isSameOrigin } from "@/lib/auth-policy";
 import { guestBookingIsEnabled } from "@/lib/booking-settings";
 import { bookingIdIsValid, getDepartureBookingQuote } from "@/lib/departure-booking-quote";
@@ -40,9 +41,10 @@ export async function POST(request: Request) {
     return fail("বুকিংয়ের তথ্য দিন।", 400);
   }
 
-  const { departureId, roomOptionId, reservationKey, quoteVersion, contactName, contactPhone, contactEmail, passengers } =
+  const { departureId, roomOptionId, reservationKey, quoteVersion, contactName, contactPhone, contactEmail, passengers, mode } =
     input as Record<string, unknown>;
   if (
+    (mode !== undefined && mode !== "customer") ||
     !bookingIdIsValid(departureId) || !bookingIdIsValid(roomOptionId) ||
     !validKey(reservationKey) || typeof quoteVersion !== "string" || !/^[a-f0-9]{64}$/.test(quoteVersion) ||
     !Array.isArray(passengers) || passengers.length === 0 || passengers.length > maxTravelers
@@ -70,15 +72,26 @@ export async function POST(request: Request) {
   }
   if (!counts.adults) return fail("কমপক্ষে একজন প্রাপ্তবয়স্ক যাত্রী যোগ করুন।", 400);
 
-  const fingerprint = createHash("sha256").update(JSON.stringify([
-    departureId, roomOptionId, quoteVersion, name, phone, email, travelers,
-  ])).digest("hex");
-
   try {
+    const customer = mode === "customer" ? await getCustomerSession() : null;
+    if (mode === "customer" && !customer) {
+      return fail("আসন সংরক্ষণ করতে আবার সাইন ইন করুন।", 401);
+    }
+
+    const hash = createHash("sha256");
+    // Keep existing guest fingerprints valid while scoping signed-in retries to the account.
+    if (customer) hash.update(`customer:${customer.customerAccountId}:`);
+    const fingerprint = hash.update(JSON.stringify([
+      departureId, roomOptionId, quoteVersion, name, phone, email, travelers,
+    ])).digest("hex");
+
     return await db.transaction(async (tx) => {
       // Serialize availability checks and inserts for the same departure.
       if (!(await lockDeparture(tx, departureId))) return fail("এই যাত্রাটি পাওয়া যায়নি।", 404);
 
+      if (customer && !await tx.orm.public.CustomerAccount.where({ id: customer.customerAccountId }).select("id").first()) {
+        return fail("গ্রাহক অ্যাকাউন্ট পাওয়া যায়নি। আবার সাইন ইন করুন।", 401);
+      }
       const existing = await tx.orm.public.Booking.where({ reservationKey }).first();
       if (existing) {
         if (existing.reservationFingerprint !== fingerprint) {
@@ -94,7 +107,7 @@ export async function POST(request: Request) {
         return Response.json({ bookingNumber: existing.bookingNumber, holdExpiresAt: existing.holdExpiresAt.toString() });
       }
 
-      if (!(await guestBookingIsEnabled(tx))) {
+      if (!customer && !(await guestBookingIsEnabled(tx))) {
         return fail("এই মুহূর্তে অতিথি হিসেবে বুকিং বন্ধ আছে।", 403);
       }
 
@@ -137,6 +150,13 @@ export async function POST(request: Request) {
           updatedAt: createdAt.toString(),
         }))
       ).build());
+
+      if (customer) {
+        await tx.orm.public.CustomerBooking.create({
+          bookingId: booking.id,
+          customerAccountId: customer.customerAccountId,
+        });
+      }
 
       return Response.json({
         bookingNumber: booking.bookingNumber,

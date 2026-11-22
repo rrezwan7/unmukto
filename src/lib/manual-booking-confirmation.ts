@@ -35,11 +35,11 @@ export async function confirmGuestBookingManually({
       `.returnsRow({ id: "pg/int4@1", active: "pg/bool@1" }).build());
       const booking = await tx.orm.public.Booking.where({ id: bookingId, departureId }).first();
       if (!booking?.reservationKey || booking.customerId !== null) {
-        return { error: "Guest booking not found on this departure." };
+        return { error: "Reservation not found on this departure." };
       }
       if (booking.status === "CONFIRMED") return { confirmed: true };
       if (booking.status !== "PENDING" || !booking.holdExpiresAt) {
-        return { error: "Only a pending guest reservation can be confirmed." };
+        return { error: "Only a pending reservation can be confirmed." };
       }
       if (!lockedBooking?.active) {
         return { error: "The hold has expired. Review availability before arranging another reservation." };

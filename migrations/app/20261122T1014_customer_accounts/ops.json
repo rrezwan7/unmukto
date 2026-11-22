@@ -1,0 +1,245 @@
+[
+  {
+    "id": "table.CustomerAccount",
+    "label": "Create table \"CustomerAccount\"",
+    "summary": "Creates table \"CustomerAccount\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "CustomerAccount"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"CustomerAccount\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"CustomerAccount\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"CustomerAccount\"",
+        "sql": "CREATE TABLE \"public\".\"CustomerAccount\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"googleSubject\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"CustomerAccount\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"CustomerAccount\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.CustomerBooking",
+    "label": "Create table \"CustomerBooking\"",
+    "summary": "Creates table \"CustomerBooking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "CustomerBooking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"CustomerBooking\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"CustomerBooking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"CustomerBooking\"",
+        "sql": "CREATE TABLE \"public\".\"CustomerBooking\" (\n  \"bookingId\" int4 NOT NULL,\n  \"customerAccountId\" int4 NOT NULL,\n  PRIMARY KEY (\"bookingId\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"CustomerBooking\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"CustomerBooking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.CustomerAccount.CustomerAccount_googleSubject_key",
+    "label": "Add unique constraint on \"CustomerAccount\" (googleSubject)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "CustomerAccount_googleSubject_key",
+        "table": "CustomerAccount"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"CustomerAccount_googleSubject_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "CustomerAccount_googleSubject_key",
+          "public",
+          "\"public\".\"CustomerAccount\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"CustomerAccount_googleSubject_key\"",
+        "sql": "ALTER TABLE \"public\".\"CustomerAccount\" ADD CONSTRAINT \"CustomerAccount_googleSubject_key\" UNIQUE (\"googleSubject\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"CustomerAccount_googleSubject_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "CustomerAccount_googleSubject_key",
+          "public",
+          "\"public\".\"CustomerAccount\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.CustomerBooking.CustomerBooking_customerAccountId_idx_24c06369",
+    "label": "Create index \"CustomerBooking_customerAccountId_idx_24c06369\" on \"CustomerBooking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "CustomerBooking_customerAccountId_idx_24c06369",
+        "table": "CustomerBooking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"CustomerBooking_customerAccountId_idx_24c06369\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"CustomerBooking_customerAccountId_idx_24c06369\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"CustomerBooking_customerAccountId_idx_24c06369\"",
+        "sql": "CREATE INDEX \"CustomerBooking_customerAccountId_idx_24c06369\" ON \"public\".\"CustomerBooking\" (\"customerAccountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"CustomerBooking_customerAccountId_idx_24c06369\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"CustomerBooking_customerAccountId_idx_24c06369\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.CustomerBooking.CustomerBooking_bookingId_fkey",
+    "label": "Add foreign key \"CustomerBooking_bookingId_fkey\" on \"CustomerBooking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "CustomerBooking_bookingId_fkey",
+        "table": "CustomerBooking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"CustomerBooking_bookingId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "CustomerBooking_bookingId_fkey",
+          "public",
+          "\"public\".\"CustomerBooking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"CustomerBooking_bookingId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"CustomerBooking\"\nADD CONSTRAINT \"CustomerBooking_bookingId_fkey\"\nFOREIGN KEY (\"bookingId\")\nREFERENCES \"public\".\"Booking\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"CustomerBooking_bookingId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "CustomerBooking_bookingId_fkey",
+          "public",
+          "\"public\".\"CustomerBooking\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.CustomerBooking.CustomerBooking_customerAccountId_fkey",
+    "label": "Add foreign key \"CustomerBooking_customerAccountId_fkey\" on \"CustomerBooking\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "CustomerBooking_customerAccountId_fkey",
+        "table": "CustomerBooking"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"CustomerBooking_customerAccountId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "CustomerBooking_customerAccountId_fkey",
+          "public",
+          "\"public\".\"CustomerBooking\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"CustomerBooking_customerAccountId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"CustomerBooking\"\nADD CONSTRAINT \"CustomerBooking_customerAccountId_fkey\"\nFOREIGN KEY (\"customerAccountId\")\nREFERENCES \"public\".\"CustomerAccount\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"CustomerBooking_customerAccountId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "CustomerBooking_customerAccountId_fkey",
+          "public",
+          "\"public\".\"CustomerBooking\""
+        ]
+      }
+    ]
+  }
+]

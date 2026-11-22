@@ -13,6 +13,7 @@ import {
   Bus,
   Bed,
 } from "lucide-react";
+import { getCustomerSession, isCustomerAuthConfigured } from "@/customer-auth";
 import { getPublicTourBySlug } from "@/lib/catalog";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
@@ -26,6 +27,7 @@ const bengali = Noto_Sans_Bengali({
 
 type Props = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ reserve?: string | string[] }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -58,7 +60,7 @@ const roomTypeTitles: Record<string, string> = {
   PRIVATE: "প্রাইভেট / ফ্যামিলি রুম (Private Room)",
 };
 
-export default async function TourDetailPage({ params }: Props) {
+export default async function TourDetailPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const data = await getPublicTourBySlug(slug);
 
@@ -67,6 +69,9 @@ export default async function TourDetailPage({ params }: Props) {
   }
 
   const { tour, itineraries, departures } = data;
+  const [session, { reserve }] = await Promise.all([getCustomerSession(), searchParams]);
+  const customer = session ? { name: session.user?.name, email: session.user?.email } : undefined;
+  const customerSignIn = isCustomerAuthConfigured();
   const openDepartures = departures.filter((d) => d.bookingOpen);
 
   return (
@@ -291,7 +296,8 @@ export default async function TourDetailPage({ params }: Props) {
                     {departures.map((dep) => (
                       <div
                         key={dep.id}
-                        className="rounded-xl border border-[#cad2c4] bg-[#f7f7ee]/50 p-4 transition-all hover:border-[#193d32]/40"
+                        id={`departure-${dep.id}`}
+                        className="scroll-mt-4 rounded-xl border border-[#cad2c4] bg-[#f7f7ee]/50 p-4 transition-all hover:border-[#193d32]/40"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -342,6 +348,9 @@ export default async function TourDetailPage({ params }: Props) {
                         {dep.bookingOpen && dep.pricing && dep.roomOptions.length > 0 && (
                           <BookingQuoteForm
                             departureId={dep.id}
+                            customer={customer}
+                            openInitially={Boolean(customer) && reserve === String(dep.id)}
+                            signInHref={customerSignIn ? `/account/sign-in?next=${encodeURIComponent(`/tours/${slug}#departure-${dep.id}`)}` : undefined}
                             rooms={dep.roomOptions.map((room) => ({
                               id: room.id,
                               label: roomTypeTitles[room.roomType],

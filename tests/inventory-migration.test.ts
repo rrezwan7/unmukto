@@ -76,6 +76,11 @@ test("assignment migration preserves data and enforces departure/stay scope", op
     await assert.rejects(db.exec(allotment(1, 1, 1)), /duplicate key/i);
     await assert.rejects(db.exec(allotment(2, 3, 0)), /check constraint/i);
     await assert.rejects(db.exec(allotment(999, 1, 1)), /foreign key/i);
+    await db.exec(`INSERT INTO "CustomerAccount" (id,"googleSubject",email,"updatedAt") VALUES
+      (1,'customer-one','same@example.test',NOW()), (2,'customer-two','same@example.test',NOW())`);
+    await db.exec(`INSERT INTO "CustomerBooking" ("bookingId","customerAccountId") VALUES (1,1)`);
+    await assert.rejects(db.exec(`INSERT INTO "CustomerBooking" ("bookingId","customerAccountId") VALUES (1,2)`), /duplicate key/i);
+    await assert.rejects(db.exec(`INSERT INTO "CustomerBooking" ("bookingId","customerAccountId") VALUES (2,999)`), /foreign key/i);
     // One physical seat may be reused on another departure.
     await db.exec(`INSERT INTO "SeatAssignment" ("passengerId","departureId","vehicleId","seatId","updatedAt") VALUES (3,2,1,1,NOW());`);
     await assert.rejects(db.exec(`INSERT INTO "SeatAssignment" ("passengerId","departureId","vehicleId","seatId","updatedAt") VALUES (2,1,1,1,NOW());`), /duplicate key/i);

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import type { PassengerCounts } from "@/lib/booking-quote";
 
@@ -16,16 +17,18 @@ const deadlineFormat = new Intl.DateTimeFormat("bn-BD", {
 });
 const inputClass = "mt-1 w-full rounded-lg border border-[#cad2c4] bg-white px-2 py-2 text-base text-[#193d32]";
 
-export function GuestReservationForm({
+export function ReservationForm({
   departureId,
   roomOptionId,
   quoteVersion,
   counts,
+  customer,
 }: {
   departureId: number;
   roomOptionId: number;
   quoteVersion: string;
   counts: PassengerCounts;
+  customer?: { name?: string | null; email?: string | null };
 }) {
   const reservationKey = useRef<string | null>(null);
   const [result, setResult] = useState<ReservationResponse | null>(null);
@@ -48,6 +51,7 @@ export function GuestReservationForm({
             <p>রুমের অনুরোধটি বুকিংয়ের সঙ্গে জমা হয়েছে। চূড়ান্ত বুকিংয়ের জন্য নিশ্চিতকরণ প্রয়োজন।</p>
           </>
         )}
+        {customer && <Link className="inline-block underline underline-offset-4" href="/account/bookings">আমার বুকিং দেখুন</Link>}
       </div>
     );
   }
@@ -74,6 +78,7 @@ export function GuestReservationForm({
           roomOptionId,
           quoteVersion,
           reservationKey: reservationKey.current,
+          mode: customer ? "customer" : undefined,
           contactName: form.get("contactName"),
           contactPhone: form.get("contactPhone"),
           contactEmail: form.get("contactEmail"),
@@ -94,11 +99,13 @@ export function GuestReservationForm({
   return (
     <form onSubmit={reserve} className="mt-4 border-t border-[#cad2c4] pt-3">
       <fieldset disabled={pending} className="space-y-3">
-        <legend className="font-semibold">অতিথি হিসেবে আসন সংরক্ষণ</legend>
+        <legend className="font-semibold">
+          {customer ? "অ্যাকাউন্ট থেকে আসন সংরক্ষণ" : "অতিথি হিসেবে আসন সংরক্ষণ"}
+        </legend>
         <p className="text-[#526558]">আসন ১৫ মিনিটের জন্য ধরে রাখা হবে। রুমের অনুরোধও জমা হবে।</p>
         <label className="block">
           যোগাযোগের নাম
-          <input name="contactName" autoComplete="name" maxLength={100} required className={inputClass} />
+          <input name="contactName" defaultValue={customer?.name ?? ""} autoComplete="name" maxLength={100} required className={inputClass} />
         </label>
         <label className="block">
           ফোন নম্বর
@@ -106,7 +113,7 @@ export function GuestReservationForm({
         </label>
         <label className="block">
           ইমেইল (ঐচ্ছিক)
-          <input name="contactEmail" type="email" autoComplete="email" maxLength={254} className={inputClass} />
+          <input name="contactEmail" defaultValue={customer?.email ?? ""} type="email" autoComplete="email" maxLength={254} className={inputClass} />
         </label>
         {groups.flatMap(({ type, label, count }) => Array.from({ length: count }, (_, index) => (
           <label key={`${type}-${index}`} className="block">

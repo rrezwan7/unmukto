@@ -68,6 +68,27 @@ model User {
   updatedAt        temporal.updatedAtString()
 }
 
+model CustomerAccount {
+  id            Int               @id @default(autoincrement())
+  googleSubject String            @unique
+  email         String
+  name          String?
+  bookings      CustomerBooking[]
+
+  createdAt     TimestamptzString @default(now())
+  updatedAt     temporal.updatedAtString()
+}
+
+model CustomerBooking {
+  bookingId         Int             @id
+  customerAccountId Int
+
+  booking           Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id])
+
+  @@index([customerAccountId])
+}
+
 model Tour {
   id          Int                        @id @default(autoincrement())
   title       String
@@ -360,6 +381,7 @@ model Booking {
 
   departure    Departure @relation(fields: [departureId], references: [id])
   customer     User?     @relation("CustomerBookings", fields: [customerId], references: [id])
+  accountBooking CustomerBooking?
   guide        User?     @relation("AssignedGuide", fields: [guideId], references: [id])
   roomOption   DepartureRoomOption? @relation(fields: [roomOptionId], references: [id])
 

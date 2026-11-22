@@ -21,7 +21,9 @@ stay editing passed the same verification. Confirmed guest reservations now show
 bus seat and hotel room assignment progress. Staff room allotments and
 overlapping-departure capacity checks passed on disposable PostgreSQL. The
 owner approved applying the room allotment migration to the shared database,
-where Prisma verified the resulting schema.
+where Prisma verified the resulting schema. The feature branch adds customer
+sign-in and signed-in checkout. Enable it after applying the customer account
+migration and configuring Google OAuth.
 
 ## Implemented
 
@@ -182,14 +184,14 @@ departure allocation/availability and passenger seat assignment before this sess
   departure, passenger counts, and room option. The quote includes a version
   for detecting fare changes at submission.
 - **Admin → Booking Settings → Allow guest booking** is off by default. Fare
-  quotes remain available when guest booking is off. Customer accounts and
-  customer sign-in are still pending.
+  quotes remain available when guest booking is off. Signed-in customers can
+  submit reservations while guest booking is off.
 - When enabled, `POST /api/reservations` saves contact details, passengers,
   pricing snapshots, a booking reference, and a 15-minute seat hold in one
   transaction. The departure row lock serializes last-seat requests, and the
   reservation key makes retries idempotent.
 - Availability checks exclude expired holds as soon as their deadline passes.
-  **Admin → Departures → Open a departure → Guest reservations** shows
+  **Admin → Departures → Open a departure → Reservations** shows
   contact details, passenger names and types, the requested room, payment
   amounts, and hold deadlines. Staff can filter pending, confirmed, expired,
   and cancelled reservations. **Allow guest booking** controls who can
@@ -223,6 +225,25 @@ departure allocation/availability and passenger seat assignment before this sess
   lodging holds, gateway payment verification, and automatic confirmation
   remain future work.
 
+## Customer sign-in and booking history
+
+- Customers sign in with Google. A verified Google subject identifies the
+  customer account. Customer sessions and booking ownership are separate from
+  the GitHub admin session and existing legacy user records.
+- From a tour, signed-in customers can request the same 15-minute seat hold
+  even when guest booking is disabled. **My bookings** lists only that
+  customer's reservations and shows pending, expired, and confirmed status.
+- **Admin → Departures → Reservations** includes guest and signed-in bookings.
+  The same fare snapshots, capacity checks, and manual payment and lodging
+  verification apply to both.
+- Before enabling sign-in, apply migration 8 to the target database. Set
+  `AUTH_CUSTOMER_SECRET` to a separate random secret and configure
+  `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`. Use the environment's canonical
+  origin for `AUTH_URL` (for example, `http://localhost:3000` for local
+  development). Register that origin plus
+  `/api/customer-auth/callback/google` as the redirect URI in Google Cloud.
+  Localhost and Vercel each need their own registered callback origin.
+
 ## Stack and database
 
 Next.js 16.3.8, React 19.2.8, TypeScript 5, Tailwind CSS 4, shadcn/Base UI,
@@ -245,13 +266,16 @@ Migration packages on disk:
 5. `20261121T2144_manual_booking_confirmation`
 6. `20261121T2205_itinerary_stop_order`
 7. `20261122T0950_room_allotments`
+8. `20261122T1014_customer_accounts`
 
 The stop-order column defaults to zero, so existing stops keep their previous
 ID-based order until staff save an itinerary. Migration 7 adds allotments and
 an index for room occupancy checks. It preserves existing assignments and
 passed `db migrate` and `db verify` on isolated PostgreSQL. After the owner
 approved applying it to the shared database on 2026-11-22 (Asia/Dhaka), Prisma
-verified that the marker and live schema match migration 7.
+verified that the marker and live schema match migration 7. Migration 8
+adds separate customer account and booking ownership tables. The shared
+database remains at migration 7 pending approval.
 Use a disposable PostgreSQL instance for automated mutation and concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
 instructions.
 
@@ -269,7 +293,7 @@ instructions.
 
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
-- `npm test`: 19 passed with an isolated PostgreSQL server.
+- `npm test`: 22 passed with an isolated PostgreSQL server.
 - `npm run build -- --webpack`: passed. Turbopack could not bind its worker
   port in the local tool environment.
 - `git diff --check`: passed.
@@ -319,6 +343,13 @@ instructions.
 - After fixing duplicate hotel form keys, Chrome loaded both forms without the
   duplicate-key warning. The authenticated hotel-stays endpoint returned a
   scheduled stay against disposable PostgreSQL.
+- Disposable PostgreSQL verified migration 8. Tests using a mock OAuth provider
+  verified Google account provisioning, customer and admin session isolation,
+  rejection of unverified email, booking ownership, and concurrent claims on
+  the last seat. Chrome verified signed-in checkout with guest booking off,
+  private booking history, staff confirmation, and customer sign-out while
+  the admin session stayed active. Live Google OAuth requires environment
+  credentials.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle
@@ -353,7 +384,7 @@ configure only an isolated localhost test server to run those checks.
 
 - **Assign bus seats** and **Assign hotel rooms** now link from confirmed
   bookings to the existing departure tools with that booking selected.
-  Guest Reservations shows seat counts and room assignment progress by stay
+  Reservations shows seat counts and room assignment progress by stay
   for each confirmed booking.
 - Reuse the seat and room assignment APIs. Filter buses to the departure's
   allocated vehicles and seats to its enabled layout entries. Respect seat
@@ -387,8 +418,9 @@ configure only an isolated localhost test server to run those checks.
 
 ### 5. Complete checkout and verify a release
 
-- Add customer accounts and the signed-in booking path for when guest booking
-  is disabled. Keep customer identity separate from admin authorization.
+- Customer accounts and signed-in booking with guests disabled are implemented.
+  Configure live Google OAuth after applying the approved migration, then
+  rehearse a customer booking with the operator.
 - Decide deposit, payment verification, refund, and cancellation rules. Handle
   late payments through review and capacity revalidation. Run a full booking
   rehearsal with the operator before opening the live guest flow.

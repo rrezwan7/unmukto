@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'fe60a6c70c033c5a9b8e15f2f57ef5366accdef77962c5d7ba2243f95660c928'>;
+  StorageHashBase<'5dff49b4929b91f943de2423466f22d947393fce55871fdf6b4a8cfa46200a77'>;
 export type ExecutionHash =
-  ExecutionHashBase<'f71f92c61ca849d8eb188773cdf186a4990bcbd40ceaf5e21f3aa18b4592f02d'>;
+  ExecutionHashBase<'35e359fb8fabe2fe9c9082dc2572cb2a97a094966e5a1046c0c2f21a9ba78cc8'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -317,6 +317,18 @@ export type FieldOutputTypes = {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
     };
+    readonly CustomerAccount: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly email: CodecTypes['pg/text@1']['output'];
+      readonly googleSubject: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly CustomerBooking: {
+      readonly bookingId: CodecTypes['pg/int4@1']['output'];
+      readonly customerAccountId: CodecTypes['pg/int4@1']['output'];
+    };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -583,6 +595,18 @@ export type FieldInputTypes = {
     readonly BookingSettings: {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly CustomerAccount: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly email: CodecTypes['pg/text@1']['input'];
+      readonly googleSubject: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly CustomerBooking: {
+      readonly bookingId: CodecTypes['pg/int4@1']['input'];
+      readonly customerAccountId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['input'];
@@ -851,6 +875,18 @@ export type StorageColumnTypes = {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
     };
+    readonly CustomerAccount: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly email: CodecTypes['pg/text@1']['output'];
+      readonly googleSubject: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly CustomerBooking: {
+      readonly bookingId: CodecTypes['pg/int4@1']['output'];
+      readonly customerAccountId: CodecTypes['pg/int4@1']['output'];
+    };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1117,6 +1153,18 @@ export type StorageColumnInputTypes = {
     readonly BookingSettings: {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly CustomerAccount: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly email: CodecTypes['pg/text@1']['input'];
+      readonly googleSubject: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly CustomerBooking: {
+      readonly bookingId: CodecTypes['pg/int4@1']['input'];
+      readonly customerAccountId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Departure: {
       readonly bookingOpen: CodecTypes['pg/bool@1']['input'];
@@ -1391,6 +1439,7 @@ export namespace Models {
     status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REFUNDED';
     totalAmount: CodecTypes['pg/numeric@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    accountBooking: public_CustomerBooking | null;
     customer: public_User | null;
     departure: public_Departure;
     guide: public_User | null;
@@ -1398,12 +1447,35 @@ export namespace Models {
     payments: public_Payment[];
     roomOption: public_DepartureRoomOption | null;
     readonly [RelationKeys]?:
-      'customer' | 'departure' | 'guide' | 'passengers' | 'payments' | 'roomOption';
+      | 'accountBooking'
+      | 'customer'
+      | 'departure'
+      | 'guide'
+      | 'passengers'
+      | 'payments'
+      | 'roomOption';
   };
   export type public_BookingSettings = {
     guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
     readonly [RelationKeys]?: never;
+  };
+  export type public_CustomerAccount = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    email: CodecTypes['pg/text@1']['output'];
+    googleSubject: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    name: CodecTypes['pg/text@1']['output'] | null;
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    bookings: public_CustomerBooking[];
+    readonly [RelationKeys]?: 'bookings';
+  };
+  export type public_CustomerBooking = {
+    bookingId: CodecTypes['pg/int4@1']['output'];
+    customerAccountId: CodecTypes['pg/int4@1']['output'];
+    booking: public_Booking;
+    customerAccount: public_CustomerAccount;
+    readonly [RelationKeys]?: 'booking' | 'customerAccount';
   };
   export type public_Departure = {
     bookingOpen: CodecTypes['pg/bool@1']['output'];
@@ -1683,6 +1755,8 @@ export declare const models: {
     BlogTag: Models.public_BlogTag;
     Booking: Models.public_Booking;
     BookingSettings: Models.public_BookingSettings;
+    CustomerAccount: Models.public_CustomerAccount;
+    CustomerBooking: Models.public_CustomerBooking;
     Departure: Models.public_Departure;
     DeparturePricing: Models.public_DeparturePricing;
     DepartureRoomOption: Models.public_DepartureRoomOption;
@@ -2269,6 +2343,99 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [];
               foreignKeys: readonly [];
+            };
+            readonly CustomerAccount: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly email: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly googleSubject: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['googleSubject'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly CustomerBooking: {
+              columns: {
+                readonly bookingId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly customerAccountId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['bookingId'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'CustomerBooking_customerAccountId_idx_24c06369';
+                  readonly prefix: 'CustomerBooking_customerAccountId_idx';
+                  readonly columns: readonly ['customerAccountId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'CustomerBooking';
+                    readonly columns: readonly ['bookingId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Booking';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'CustomerBooking';
+                    readonly columns: readonly ['customerAccountId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'CustomerAccount';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly Departure: {
               columns: {
@@ -3908,6 +4075,14 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'BookingSettings';
     };
+    readonly CustomerAccount: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'CustomerAccount';
+    };
+    readonly CustomerBooking: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'CustomerBooking';
+    };
     readonly Departure: { readonly namespace: 'public' & NamespaceId; readonly model: 'Departure' };
     readonly DeparturePricing: {
       readonly namespace: 'public' & NamespaceId;
@@ -4359,6 +4534,18 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly accountBooking: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'CustomerBooking';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['bookingId'];
+                };
+              };
               readonly customer: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
@@ -4474,6 +4661,111 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly guestBookingEnabled: { readonly column: 'guestBookingEnabled' };
                 readonly id: { readonly column: 'id' };
+              };
+            };
+          };
+          readonly CustomerAccount: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly email: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly googleSubject: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly name: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly bookings: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'CustomerBooking';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['customerAccountId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'CustomerAccount';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly email: { readonly column: 'email' };
+                readonly googleSubject: { readonly column: 'googleSubject' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly CustomerBooking: {
+            readonly fields: {
+              readonly bookingId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly customerAccountId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly booking: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Booking';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['bookingId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly customerAccount: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'CustomerAccount';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['customerAccountId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'CustomerBooking';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly bookingId: { readonly column: 'bookingId' };
+                readonly customerAccountId: { readonly column: 'customerAccountId' };
               };
             };
           };
@@ -6320,6 +6612,15 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'BlogTag';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'CustomerAccount';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

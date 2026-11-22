@@ -10,6 +10,8 @@ let base: string;
 let serverOutput = "";
 const secret = randomBytes(32).toString("hex");
 const cookieName = "authjs.session-token";
+const customerSecret = randomBytes(32).toString("hex");
+const customerCookieName = "unmukto.customer.session";
 const readWritePaths = [
   "/api/tours", "/api/departures", "/api/departures/1/pricing",
   "/api/vehicles", "/api/departures/1/vehicles",
@@ -43,11 +45,12 @@ before(async () => {
   assert(address && typeof address !== "string");
   const port = address.port;
   await new Promise<void>((resolve) => listener.close(() => resolve()));
-  base = `http://127.0.0.1:${port}`;
+  base = `http://localhost:${port}`;
   const env: NodeJS.ProcessEnv = {
     ...process.env, AUTH_SECRET: secret, AUTH_URL: base,
     AUTH_GITHUB_ID: "test-client", AUTH_GITHUB_SECRET: "test-secret",
-    AUTH_TRUST_HOST: "true", ADMIN_GITHUB_IDS: "123"
+    AUTH_TRUST_HOST: "true", ADMIN_GITHUB_IDS: "123",
+    AUTH_CUSTOMER_SECRET: customerSecret, AUTH_GOOGLE_ID: "customer-client", AUTH_GOOGLE_SECRET: "customer-secret",
   };
   // Denied requests must work even without the booking database configured.
   delete env.DATABASE_URL;
@@ -129,4 +132,30 @@ test("admin pages redirect anonymous users and allow an authorized session", asy
   const body = await response.text();
   assert.match(body, /Create Tour/);
   assert.doesNotMatch(body, /NEXT_REDIRECT/);
+});
+
+test("customer and admin sessions are isolated", async () => {
+  const customerToken = await encode({
+    secret: customerSecret, salt: customerCookieName, maxAge: 3600,
+    token: { name: "Test customer", email: "customer@example.test", customerAccountId: 1 },
+  });
+  const customerCookie = `${customerCookieName}=${customerToken}`;
+  const admin = await sessionCookie("123");
+
+  const customerSession = await fetch(`${base}/api/customer-auth/session`, { headers: { cookie: customerCookie } });
+  assert.equal(customerSession.status, 200);
+  assert.equal((await customerSession.json()).customerAccountId, 1);
+
+  const customerProviders = await fetch(`${base}/api/customer-auth/providers`);
+  const customerProviderData = await customerProviders.json();
+  assert.deepEqual(Object.keys(customerProviderData), ["google"]);
+  assert.equal(customerProviderData.google.callbackUrl, `${base}/api/customer-auth/callback/google`);
+
+  const adminProviders = await fetch(`${base}/api/auth/providers`);
+  assert.deepEqual(Object.keys(await adminProviders.json()), ["github"]);
+
+  const noCustomerSession = await fetch(`${base}/api/customer-auth/session`, { headers: { cookie: admin } });
+  assert.equal(await noCustomerSession.json(), null);
+  const noAdminAccess = await fetch(`${base}/api/tours`, { headers: { cookie: customerCookie } });
+  assert.equal(noAdminAccess.status, 401);
 });

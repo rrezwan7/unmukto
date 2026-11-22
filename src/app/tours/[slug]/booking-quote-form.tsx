@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { BookingQuote, PassengerCounts } from "@/lib/booking-quote";
-import { GuestReservationForm } from "./guest-reservation-form";
+import { ReservationForm } from "./reservation-form";
 
 type QuoteResponse = { quote: BookingQuote; quoteVersion: string; guestBookingEnabled: boolean } | { error: string };
 type SubmittedParty = PassengerCounts & { roomOptionId: number };
@@ -25,9 +26,15 @@ function money(amount: string) {
 export function BookingQuoteForm({
   departureId,
   rooms,
+  customer,
+  signInHref,
+  openInitially = false,
 }: {
   departureId: number;
   rooms: { id: number; label: string }[];
+  customer?: { name?: string | null; email?: string | null };
+  signInHref?: string;
+  openInitially?: boolean;
 }) {
   const [result, setResult] = useState<(QuoteResponse & { party: SubmittedParty }) | { error: string } | null>(null);
   const [pending, setPending] = useState(false);
@@ -64,7 +71,7 @@ export function BookingQuoteForm({
   const quote = quoted?.quote;
 
   return (
-    <details className="mt-4 border-t border-[#cad2c4] pt-3">
+    <details open={openInitially || undefined} className="mt-4 border-t border-[#cad2c4] pt-3">
       <summary className="cursor-pointer text-sm font-semibold text-[#193d32]">
         দলের ভাড়া হিসাব করুন
       </summary>
@@ -101,15 +108,22 @@ export function BookingQuoteForm({
               <div className="flex justify-between gap-2 border-t border-[#cad2c4] pt-1.5 font-bold"><dt>মোট ভাড়া</dt><dd>{money(quote.total)}</dd></div>
               <div className="flex justify-between gap-2"><dt>প্রয়োজনীয় আসন</dt><dd>{banglaNumber.format(quote.seatsRequired)}টি</dd></div>
             </dl>
-            {quoted.guestBookingEnabled ? (
-              <GuestReservationForm
+            {(customer || quoted.guestBookingEnabled) && (
+              <ReservationForm
                 departureId={departureId}
                 roomOptionId={quoted.party.roomOptionId}
                 quoteVersion={quoted.quoteVersion}
                 counts={quoted.party}
+                customer={customer}
               />
-            ) : (
+            )}
+            {!customer && !quoted.guestBookingEnabled && (
               <p className="mt-2 text-[#526558]">এই মুহূর্তে অতিথি হিসেবে আসন সংরক্ষণ বন্ধ আছে।</p>
+            )}
+            {!customer && signInHref && (
+              <Link className="mt-2 inline-block font-semibold underline underline-offset-4" href={signInHref}>
+                আসন সংরক্ষণের জন্য সাইন ইন করুন
+              </Link>
             )}
           </div>
         )}

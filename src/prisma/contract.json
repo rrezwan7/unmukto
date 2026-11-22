@@ -28,6 +28,14 @@
       "model": "BookingSettings",
       "namespace": "public"
     },
+    "CustomerAccount": {
+      "model": "CustomerAccount",
+      "namespace": "public"
+    },
+    "CustomerBooking": {
+      "model": "CustomerBooking",
+      "namespace": "public"
+    },
     "Departure": {
       "model": "Departure",
       "namespace": "public"
@@ -911,6 +919,22 @@
               }
             },
             "relations": {
+              "accountBooking": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "bookingId"
+                  ]
+                },
+                "to": {
+                  "model": "CustomerBooking",
+                  "namespace": "public"
+                }
+              },
               "customer": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -1117,6 +1141,157 @@
               },
               "namespaceId": "public",
               "table": "BookingSettings"
+            }
+          },
+          "CustomerAccount": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "googleSubject": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "bookings": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "customerAccountId"
+                  ]
+                },
+                "to": {
+                  "model": "CustomerBooking",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "googleSubject": {
+                  "column": "googleSubject"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "CustomerAccount"
+            }
+          },
+          "CustomerBooking": {
+            "fields": {
+              "bookingId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "customerAccountId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "booking": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "bookingId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Booking",
+                  "namespace": "public"
+                }
+              },
+              "customerAccount": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "customerAccountId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "CustomerAccount",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "bookingId": {
+                  "column": "bookingId"
+                },
+                "customerAccountId": {
+                  "column": "customerAccountId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "CustomerBooking"
             }
           },
           "Departure": {
@@ -4464,6 +4639,127 @@
               },
               "uniques": []
             },
+            "CustomerAccount": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "googleSubject": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "googleSubject"
+                  ]
+                }
+              ]
+            },
+            "CustomerBooking": {
+              "columns": {
+                "bookingId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "customerAccountId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "bookingId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "CustomerBooking"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Booking"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "customerAccountId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "CustomerBooking"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "CustomerAccount"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "customerAccountId"
+                  ],
+                  "name": "CustomerBooking_customerAccountId_idx_24c06369",
+                  "prefix": "CustomerBooking_customerAccountId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "bookingId"
+                ]
+              },
+              "uniques": []
+            },
             "Departure": {
               "columns": {
                 "bookingOpen": {
@@ -6595,10 +6891,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "fe60a6c70c033c5a9b8e15f2f57ef5366accdef77962c5d7ba2243f95660c928"
+    "storageHash": "5dff49b4929b91f943de2423466f22d947393fce55871fdf6b4a8cfa46200a77"
   },
   "execution": {
-    "executionHash": "f71f92c61ca849d8eb188773cdf186a4990bcbd40ceaf5e21f3aa18b4592f02d",
+    "executionHash": "35e359fb8fabe2fe9c9082dc2572cb2a97a094966e5a1046c0c2f21a9ba78cc8",
     "mutations": {
       "defaults": [
         {
@@ -6642,6 +6938,21 @@
           },
           "ref": {
             "entry": "BlogTag",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "CustomerAccount",
             "field": "updatedAt",
             "namespace": "public"
           }

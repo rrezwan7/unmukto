@@ -184,8 +184,8 @@ export default async function GuestReservations({
 
   return (
     <section id="guest-reservations" className="my-6 scroll-mt-4 rounded-lg border p-6" aria-labelledby="guest-reservations-heading">
-      <h2 id="guest-reservations-heading" className="text-lg font-semibold">Guest reservations</h2>
-      <nav aria-label="Filter guest reservations" className="mt-3 flex flex-wrap gap-1.5">
+      <h2 id="guest-reservations-heading" className="text-lg font-semibold">Reservations</h2>
+      <nav aria-label="Filter reservations" className="mt-3 flex flex-wrap gap-1.5">
         {filters.map(({ value, label }) => (
           <Link
             key={value}
@@ -201,7 +201,7 @@ export default async function GuestReservations({
       </nav>
 
       {bookings.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">No guest reservations in this view.</p>
+        <p className="mt-4 text-sm text-muted-foreground">No reservations in this view.</p>
       ) : (
         <ul className="mt-4 divide-y">
           {bookings.map((booking) => (
@@ -275,7 +275,7 @@ export default async function GuestReservations({
       )}
 
       {(page > 1 || hasNextPage) && (
-        <nav className="mt-3 flex flex-wrap items-center gap-4 text-sm" aria-label="Guest reservation pages">
+        <nav className="mt-3 flex flex-wrap items-center gap-4 text-sm" aria-label="Reservation pages">
           {page > 1 && <Link className="underline" href={href(status, page - 1)}>Previous</Link>}
           <span>Page {page}</span>
           {hasNextPage && page < 1_000_000 && <Link className="underline" href={href(status, page + 1)}>Next</Link>}
