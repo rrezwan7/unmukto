@@ -1,5 +1,6 @@
 import { checkAdminApi } from "@/lib/admin-auth";
 import { lockHotel, stayDateConflict, stopBelongsToTour } from "@/lib/accommodation-editor";
+import { activeLodgingExists } from "@/lib/booking-room-holds";
 import { parseStay } from "@/lib/accommodation-input";
 import { localDepartureDay } from "@/lib/departure-schedule";
 import { lockDeparture } from "@/lib/reservation-inventory";
@@ -129,6 +130,10 @@ export async function POST(request: Request, { params }: Props) {
       }
       const departure = await tx.orm.public.Departure.where({ id: departureId }).first();
       if (!departure) return Response.json({ success: false, error: "Departure not found." }, { status: 404 });
+
+      if (await activeLodgingExists(tx, departureId)) {
+        return Response.json({ success: false, error: "A stay cannot be added while this departure has active or confirmed checkout lodging." }, { status: 409 });
+      }
 
       const { hotelId, destinationId, ...dates } = input.stay;
       if (destinationId != null && !await stopBelongsToTour(tx, departure.tourId, destinationId)) {

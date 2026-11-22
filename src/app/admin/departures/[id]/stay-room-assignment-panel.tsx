@@ -23,6 +23,7 @@ type Room = {
   roomType: string;
   capacity: number;
   occupied: number;
+  held: number;
   isFull: boolean;
   availableSlots: number;
   allotted: number;
@@ -237,6 +238,7 @@ export default function StayRoomAssignmentPanel({
               >
                 <span>Room {r.roomNumber} ({r.roomType}): </span>
                 <strong>{r.occupied}/{r.capacity}</strong>
+                {r.held > 0 && ` · ${r.held} held at checkout`}
                 {r.allotted > 0 && (r.exclusive ? " · Room allotted" : ` · ${r.allotted} ${r.allotted === 1 ? "place" : "places"} allotted`)}
                 {r.overbooked ? " · Overlapping stays exceed capacity" : ` · ${r.availableSlots} ${r.availableSlots === 1 ? "place" : "places"} left`}
               </div>

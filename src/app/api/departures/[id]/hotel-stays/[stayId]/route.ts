@@ -1,5 +1,6 @@
 import { checkAdminApi } from "@/lib/admin-auth";
 import { lockHotel, stayDateConflict, stopBelongsToTour } from "@/lib/accommodation-editor";
+import { activeLodgingExists } from "@/lib/booking-room-holds";
 import { parseStay } from "@/lib/accommodation-input";
 import { localDepartureDay } from "@/lib/departure-schedule";
 import { lockDeparture, lockHotelStay } from "@/lib/reservation-inventory";
@@ -55,6 +56,9 @@ export async function PATCH(request: Request, { params }: Props) {
         return fail("The selected itinerary stop does not belong to this tour.");
       }
       if (hotelChanged || checkInChanged || checkOutChanged) {
+        if (await activeLodgingExists(tx, departureId, stayId)) {
+          return fail("The hotel and dates are locked by active or confirmed checkout lodging.", 409);
+        }
         if (await RoomAssignment.where({ hotelStayId: stayId }).select("id").first()) {
           return fail("The hotel and dates are locked while this stay has room assignments.", 409);
         }
@@ -127,6 +131,9 @@ export async function DELETE(request: Request, { params }: Props) {
           { success: false, error: "Release this stay's room allotments before removing it." },
           { status: 409 }
         );
+      }
+      if (await activeLodgingExists(tx, departureId, stayId)) {
+        return Response.json({ success: false, error: "This stay has active or confirmed checkout lodging." }, { status: 409 });
       }
       await tx.orm.public.HotelStay.where({ id: stayId }).delete();
       return Response.json({ success: true });

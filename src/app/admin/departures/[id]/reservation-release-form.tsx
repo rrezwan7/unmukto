@@ -29,7 +29,7 @@ export default function ReservationReleaseForm({ release }: {
               checked={verified} onChange={(event) => setVerified(event.target.checked)} />
             I verified that no payment was received.
           </label>
-          <p className="text-muted-foreground">Released seats become available to other bookings.</p>
+          <p className="text-muted-foreground">Released seats and any rooms held at checkout become available to other bookings.</p>
           <Button type="submit" variant="destructive">{pending ? "Releasing…" : "Release hold"}</Button>
         </fieldset>
         {result && "error" in result && <p role="alert" className="mt-2 text-destructive">{result.error}</p>}

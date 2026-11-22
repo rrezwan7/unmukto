@@ -183,10 +183,12 @@ export default async function GuestReservations({
   departureId,
   requestedStatus,
   requestedPage,
+  lodgingAvailable,
 }: {
   departureId: number;
   requestedStatus?: string | string[];
   requestedPage?: string | string[];
+  lodgingAvailable: boolean;
 }) {
   const status = filters.find(({ value }) => value === requestedStatus)?.value ?? "all";
   const pageNumber = typeof requestedPage === "string" ? Number(requestedPage) : 1;
@@ -201,6 +203,11 @@ export default async function GuestReservations({
     ? await db.orm.public.ReservationRelease.where((release) => release.bookingId.in(cancelledIds)).all()
     : [];
   const releaseByBooking = new Map(releases.map((release) => [release.bookingId, release]));
+  const pendingIds = bookings.filter((booking) => booking.reviewStatus === "PENDING").map((booking) => booking.id);
+  const heldRooms = lodgingAvailable && pendingIds.length > 0
+    ? await db.orm.public.BookingRoomHold.where((hold) => hold.bookingId.in(pendingIds)).select("bookingId").all()
+    : [];
+  const bookingsWithHeldRooms = new Set(heldRooms.map((hold) => hold.bookingId));
   const href = (filter: typeof status, pageNumber = 1) =>
     `/admin/departures/${departureId}?guestStatus=${filter}&guestPage=${pageNumber}#guest-reservations`;
   const assignmentHref = (bookingId: number, section: string) =>
@@ -246,6 +253,7 @@ export default async function GuestReservations({
                     <div>
                       <dt className="text-muted-foreground">Requested room</dt>
                       <dd>{booking.roomOption ? roomLabels[booking.roomOption.roomType] : "None recorded"}</dd>
+                      {bookingsWithHeldRooms.has(booking.id) && <dd>Rooms held at checkout for every stay</dd>}
                     </div>
                     <div>
                       <dt className="text-muted-foreground">Quoted total / paid</dt>

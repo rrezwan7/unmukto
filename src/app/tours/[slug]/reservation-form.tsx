@@ -5,7 +5,7 @@ import { useRef, useState, type FormEvent } from "react";
 import type { PassengerCounts } from "@/lib/booking-quote";
 
 type ReservationResponse =
-  | { bookingNumber: string; holdExpiresAt: string }
+  | { bookingNumber: string; holdExpiresAt: string; lodgingHeld?: boolean }
   | { bookingNumber: string; status: "CONFIRMED" }
   | { error: string };
 
@@ -22,12 +22,14 @@ export function ReservationForm({
   roomOptionId,
   quoteVersion,
   counts,
+  lodgingHoldsEnabled,
   customer,
 }: {
   departureId: number;
   roomOptionId: number;
   quoteVersion: string;
   counts: PassengerCounts;
+  lodgingHoldsEnabled: boolean;
   customer?: { name?: string | null; email?: string | null };
 }) {
   const reservationKey = useRef<string | null>(null);
@@ -41,14 +43,17 @@ export function ReservationForm({
 
   if (result && "bookingNumber" in result) {
     const confirmed = "status" in result;
+    const lodgingHeld = "lodgingHeld" in result && result.lodgingHeld;
     return (
       <div role="status" className="mt-4 space-y-2 rounded-lg border border-[#cad2c4] bg-white p-3">
-        <p className="font-semibold">{confirmed ? "বুকিং নিশ্চিত হয়েছে" : "আসন সাময়িকভাবে সংরক্ষিত হয়েছে"}</p>
+        <p className="font-semibold">{confirmed ? "বুকিং নিশ্চিত হয়েছে" : lodgingHeld ? "আসন ও রুম সাময়িকভাবে সংরক্ষিত হয়েছে" : "আসন সাময়িকভাবে সংরক্ষিত হয়েছে"}</p>
         <p>বুকিং নম্বর <strong className="break-all">{result.bookingNumber}</strong></p>
         {!confirmed && (
           <>
             <p>সংরক্ষণের মেয়াদ {deadlineFormat.format(new Date(result.holdExpiresAt))} পর্যন্ত (বাংলাদেশ সময়)।</p>
-            <p>রুমের অনুরোধটি বুকিংয়ের সঙ্গে জমা হয়েছে। চূড়ান্ত বুকিংয়ের জন্য নিশ্চিতকরণ প্রয়োজন।</p>
+            <p>{lodgingHeld
+              ? "সব নির্ধারিত হোটেলে আপনার দলের জন্য রুম ধরা হয়েছে। চূড়ান্ত বুকিংয়ের জন্য নিশ্চিতকরণ প্রয়োজন।"
+              : "রুমের অনুরোধটি বুকিংয়ের সঙ্গে জমা হয়েছে। চূড়ান্ত বুকিংয়ের জন্য নিশ্চিতকরণ প্রয়োজন।"}</p>
           </>
         )}
         {customer && <Link className="inline-block underline underline-offset-4" href="/account/bookings">আমার বুকিং দেখুন</Link>}
@@ -79,6 +84,7 @@ export function ReservationForm({
           quoteVersion,
           reservationKey: reservationKey.current,
           mode: customer ? "customer" : undefined,
+          lodgingHoldsEnabled,
           contactName: form.get("contactName"),
           contactPhone: form.get("contactPhone"),
           contactEmail: form.get("contactEmail"),
@@ -102,7 +108,9 @@ export function ReservationForm({
         <legend className="font-semibold">
           {customer ? "অ্যাকাউন্ট থেকে আসন সংরক্ষণ" : "অতিথি হিসেবে আসন সংরক্ষণ"}
         </legend>
-        <p className="text-[#526558]">আসন ১৫ মিনিটের জন্য ধরে রাখা হবে। রুমের অনুরোধও জমা হবে।</p>
+        <p className="text-[#526558]">{lodgingHoldsEnabled
+          ? "খালি থাকলে আসন ও সব নির্ধারিত হোটেলের রুম ১৫ মিনিটের জন্য ধরে রাখা হবে।"
+          : "আসন ১৫ মিনিটের জন্য ধরে রাখা হবে। রুমের অনুরোধও জমা হবে।"}</p>
         <label className="block">
           যোগাযোগের নাম
           <input name="contactName" defaultValue={customer?.name ?? ""} autoComplete="name" maxLength={100} required className={inputClass} />

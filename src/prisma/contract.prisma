@@ -158,6 +158,7 @@ model Departure {
   roomOptions     DepartureRoomOption[]
   hotelStays      HotelStay[]
   bookings        Booking[]
+  lodgingSettings DepartureLodgingSettings?
 
   createdAt       TimestamptzString          @default(now())
   updatedAt       temporal.updatedAtString()
@@ -311,6 +312,7 @@ model Room {
 
   assignments RoomAssignment[]
   allotments  RoomAllotment[]
+  bookingHolds BookingRoomHold[]
 
   createdAt   TimestamptzString          @default(now())
   updatedAt   temporal.updatedAtString()
@@ -332,6 +334,7 @@ model HotelStay {
 
   roomAssignments RoomAssignment[]
   roomAllotments  RoomAllotment[]
+  bookingHolds    BookingRoomHold[]
 
   createdAt       TimestamptzString          @default(now())
   updatedAt       temporal.updatedAtString()
@@ -388,6 +391,7 @@ model Booking {
 
   passengers   Passenger[]
   payments     Payment[]
+  roomHolds    BookingRoomHold[]
 
   createdAt    TimestamptzString @default(now())
   updatedAt    TimestamptzString @default(now())
@@ -482,6 +486,28 @@ model RoomAllotment {
   @@unique([hotelStayId, roomId])
   @@index([roomId])
   @@check(expression: "places BETWEEN 1 AND 20", name: "RoomAllotment_places_range")
+}
+
+model DepartureLodgingSettings {
+  departureId Int       @id
+  holdsEnabled Boolean  @default(false)
+  departure   Departure @relation(fields: [departureId], references: [id], onDelete: Cascade)
+}
+
+model BookingRoomHold {
+  id          Int       @id @default(autoincrement())
+  bookingId   Int
+  hotelStayId Int
+  roomId      Int
+  places      Int
+
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  hotelStay   HotelStay @relation(fields: [hotelStayId], references: [id], onDelete: Cascade)
+  room        Room      @relation(fields: [roomId], references: [id])
+
+  @@unique([bookingId, hotelStayId, roomId])
+  @@index([roomId])
+  @@check(expression: "places BETWEEN 1 AND 20", name: "BookingRoomHold_places_range")
 }
 
 model Payment {

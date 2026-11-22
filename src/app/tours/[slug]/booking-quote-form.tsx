@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import type { BookingQuote, PassengerCounts } from "@/lib/booking-quote";
 import { ReservationForm } from "./reservation-form";
 
-type QuoteResponse = { quote: BookingQuote; quoteVersion: string; guestBookingEnabled: boolean } | { error: string };
+type QuoteResponse = { quote: BookingQuote; quoteVersion: string; guestBookingEnabled: boolean; lodgingHoldsEnabled?: boolean } | { error: string };
 type SubmittedParty = PassengerCounts & { roomOptionId: number };
 
 const banglaNumber = new Intl.NumberFormat("bn-BD");
@@ -114,6 +114,7 @@ export function BookingQuoteForm({
                 roomOptionId={quoted.party.roomOptionId}
                 quoteVersion={quoted.quoteVersion}
                 counts={quoted.party}
+                lodgingHoldsEnabled={quoted.lodgingHoldsEnabled ?? false}
                 customer={customer}
               />
             )}

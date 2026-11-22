@@ -84,6 +84,10 @@ test("assignment migration preserves data and enforces departure/stay scope", op
     await db.exec(`INSERT INTO "ReservationRelease" ("bookingId","adminGithubId",reason) VALUES (1,'123','Staff release')`);
     await assert.rejects(db.exec(`INSERT INTO "ReservationRelease" ("bookingId","adminGithubId",reason) VALUES (1,'456','Duplicate release')`), /duplicate key/i);
     await assert.rejects(db.exec(`INSERT INTO "ReservationRelease" ("bookingId","adminGithubId",reason) VALUES (999,'123','Unknown booking')`), /foreign key/i);
+    await db.exec(`INSERT INTO "DepartureLodgingSettings" ("departureId","holdsEnabled") VALUES (1,true)`);
+    await db.exec(`INSERT INTO "BookingRoomHold" ("bookingId","hotelStayId","roomId",places) VALUES (1,1,1,2)`);
+    await assert.rejects(db.exec(`INSERT INTO "BookingRoomHold" ("bookingId","hotelStayId","roomId",places) VALUES (1,1,1,1)`), /duplicate key/i);
+    await assert.rejects(db.exec(`INSERT INTO "BookingRoomHold" ("bookingId","hotelStayId","roomId",places) VALUES (1,2,3,0)`), /check constraint/i);
     // One physical seat may be reused on another departure.
     await db.exec(`INSERT INTO "SeatAssignment" ("passengerId","departureId","vehicleId","seatId","updatedAt") VALUES (3,2,1,1,NOW());`);
     await assert.rejects(db.exec(`INSERT INTO "SeatAssignment" ("passengerId","departureId","vehicleId","seatId","updatedAt") VALUES (2,1,1,1,NOW());`), /duplicate key/i);

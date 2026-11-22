@@ -9,6 +9,8 @@ import { bookingIdIsValid } from "@/lib/departure-booking-quote";
 import { departureHasHistory } from "@/lib/departure-editor";
 import { scheduleFields } from "@/lib/departure-schedule";
 import DepartureSettingsForm from "./departure-settings-form";
+import LodgingHoldSettings from "./lodging-hold-settings";
+import { checkoutLodgingSetting } from "@/lib/booking-room-holds";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -45,10 +47,11 @@ export default async function DepartureDetailsPage({ params, searchParams }: Pro
     );
   }
 
-  const [tour, pricing, hasHistory, { guestStatus, guestPage, assignmentBooking }] = await Promise.all([
+  const [tour, pricing, hasHistory, lodging, { guestStatus, guestPage, assignmentBooking }] = await Promise.all([
     db.orm.public.Tour.where({ id: departure.tourId }).first(),
     db.orm.public.DeparturePricing.where({ departureId }).first(),
     departureHasHistory(departureId),
+    checkoutLodgingSetting(departureId),
     searchParams,
   ]);
   const parsedBookingId = typeof assignmentBooking === "string" ? Number(assignmentBooking) : 0;
@@ -76,7 +79,9 @@ export default async function DepartureDetailsPage({ params, searchParams }: Pro
       <DepartureSettingsForm id={departureId} initialSchedule={scheduleFields(departure)} initialUpdatedAt={departure.updatedAt}
         initialVisible={departure.customerVisible} initialOpen={departure.bookingOpen} hasHistory={hasHistory} />
 
-      <GuestReservations departureId={departureId} requestedStatus={guestStatus} requestedPage={guestPage} />
+      {lodging.available && <LodgingHoldSettings key={`lodging-${departureId}`} departureId={departureId} initialEnabled={lodging.enabled} />}
+
+      <GuestReservations lodgingAvailable={lodging.available} departureId={departureId} requestedStatus={guestStatus} requestedPage={guestPage} />
 
       <PricingForm
         key={departureId}

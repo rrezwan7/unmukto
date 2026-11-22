@@ -1,4 +1,5 @@
 import { bookingIdIsValid, getDepartureBookingQuote } from "@/lib/departure-booking-quote";
+import { checkoutLodgingSetting } from "@/lib/booking-room-holds";
 import { guestBookingIsEnabled } from "@/lib/booking-settings";
 
 function countIsValid(value: unknown): value is number {
@@ -27,10 +28,12 @@ export async function POST(request: Request) {
     if (result.error !== undefined) {
       return Response.json({ error: result.error }, { status: result.status });
     }
+    const lodging = await checkoutLodgingSetting(departureId);
     return Response.json({
       quote: result.quote,
       quoteVersion: result.quoteVersion,
       guestBookingEnabled: await guestBookingIsEnabled(),
+      lodgingHoldsEnabled: lodging.enabled,
     });
   } catch (error) {
     console.error("BOOKING QUOTE ERROR:", error);

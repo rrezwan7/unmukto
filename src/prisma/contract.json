@@ -24,6 +24,10 @@
       "model": "Booking",
       "namespace": "public"
     },
+    "BookingRoomHold": {
+      "model": "BookingRoomHold",
+      "namespace": "public"
+    },
     "BookingSettings": {
       "model": "BookingSettings",
       "namespace": "public"
@@ -38,6 +42,10 @@
     },
     "Departure": {
       "model": "Departure",
+      "namespace": "public"
+    },
+    "DepartureLodgingSettings": {
+      "model": "DepartureLodgingSettings",
       "namespace": "public"
     },
     "DeparturePricing": {
@@ -1033,6 +1041,21 @@
                   "namespace": "public"
                 }
               },
+              "roomHolds": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "bookingId"
+                  ]
+                },
+                "to": {
+                  "model": "BookingRoomHold",
+                  "namespace": "public"
+                }
+              },
               "roomOption": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -1130,6 +1153,116 @@
               },
               "namespaceId": "public",
               "table": "Booking"
+            }
+          },
+          "BookingRoomHold": {
+            "fields": {
+              "bookingId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "hotelStayId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "places": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "roomId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "booking": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "bookingId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Booking",
+                  "namespace": "public"
+                }
+              },
+              "hotelStay": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "hotelStayId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "HotelStay",
+                  "namespace": "public"
+                }
+              },
+              "room": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "roomId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Room",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "bookingId": {
+                  "column": "bookingId"
+                },
+                "hotelStayId": {
+                  "column": "hotelStayId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "places": {
+                  "column": "places"
+                },
+                "roomId": {
+                  "column": "roomId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "BookingRoomHold"
             }
           },
           "BookingSettings": {
@@ -1418,6 +1551,22 @@
                   "namespace": "public"
                 }
               },
+              "lodgingSettings": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "departureId"
+                  ]
+                },
+                "to": {
+                  "model": "DepartureLodgingSettings",
+                  "namespace": "public"
+                }
+              },
               "pricing": {
                 "cardinality": "1:1",
                 "nullable": true,
@@ -1516,6 +1665,54 @@
               },
               "namespaceId": "public",
               "table": "Departure"
+            }
+          },
+          "DepartureLodgingSettings": {
+            "fields": {
+              "departureId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "holdsEnabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "departure": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "departureId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Departure",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "departureId": {
+                  "column": "departureId"
+                },
+                "holdsEnabled": {
+                  "column": "holdsEnabled"
+                }
+              },
+              "namespaceId": "public",
+              "table": "DepartureLodgingSettings"
             }
           },
           "DeparturePricing": {
@@ -2251,6 +2448,21 @@
               }
             },
             "relations": {
+              "bookingHolds": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "hotelStayId"
+                  ]
+                },
+                "to": {
+                  "model": "BookingRoomHold",
+                  "namespace": "public"
+                }
+              },
               "departure": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -2970,6 +3182,21 @@
                 },
                 "to": {
                   "model": "RoomAssignment",
+                  "namespace": "public"
+                }
+              },
+              "bookingHolds": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "roomId"
+                  ]
+                },
+                "to": {
+                  "model": "BookingRoomHold",
                   "namespace": "public"
                 }
               },
@@ -4701,6 +4928,138 @@
                 }
               ]
             },
+            "BookingRoomHold": {
+              "checks": [
+                {
+                  "expression": "places BETWEEN 1 AND 20",
+                  "name": "BookingRoomHold_places_range_55d67ee1",
+                  "prefix": "BookingRoomHold_places_range"
+                }
+              ],
+              "columns": {
+                "bookingId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "hotelStayId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "places": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "roomId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "bookingId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingRoomHold"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Booking"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "hotelStayId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingRoomHold"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "HotelStay"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "roomId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "BookingRoomHold"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Room"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "bookingId"
+                  ],
+                  "name": "BookingRoomHold_bookingId_idx_17848f4a",
+                  "prefix": "BookingRoomHold_bookingId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "hotelStayId"
+                  ],
+                  "name": "BookingRoomHold_hotelStayId_idx_05988de1",
+                  "prefix": "BookingRoomHold_hotelStayId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "roomId"
+                  ],
+                  "name": "BookingRoomHold_roomId_idx_fe51d647",
+                  "prefix": "BookingRoomHold_roomId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "bookingId",
+                    "hotelStayId",
+                    "roomId"
+                  ]
+                }
+              ]
+            },
             "BookingSettings": {
               "columns": {
                 "guestBookingEnabled": {
@@ -4949,6 +5308,50 @@
               "primaryKey": {
                 "columns": [
                   "id"
+                ]
+              },
+              "uniques": []
+            },
+            "DepartureLodgingSettings": {
+              "columns": {
+                "departureId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "holdsEnabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "departureId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "DepartureLodgingSettings"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Departure"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "departureId"
                 ]
               },
               "uniques": []
@@ -7032,7 +7435,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e31033e7a2af52ac7a7fc4fec6df0b7f348118911c5e3d070044154db9494395"
+    "storageHash": "d63a13a97806a73b0d952fc1812e338017cfb9d9972199ea665cedd6980b2698"
   },
   "execution": {
     "executionHash": "35e359fb8fabe2fe9c9082dc2572cb2a97a094966e5a1046c0c2f21a9ba78cc8",

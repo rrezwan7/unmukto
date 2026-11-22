@@ -24,8 +24,9 @@ owner approved applying the room allotment migration to the shared database,
 where Prisma verified the resulting schema. The feature branch adds customer
 sign-in and signed-in checkout. Enable it after applying the customer account
 migration and configuring Google OAuth. Staff can release unpaid seat holds
-after the reservation release migration. This works with guest booking while
-customer sign-in setup is pending.
+after the reservation release migration. Checkout can hold seats and rooms
+together for departures where staff enable lodging holds. Both tools work with
+guest booking while customer sign-in setup is pending.
 
 ## Implemented
 
@@ -168,8 +169,8 @@ departure allocation/availability and passenger seat assignment before this sess
   allotments** to reserve shared places or a whole private or couple room for a
   stay. Capacity is measured per Bangladesh calendar night. Another stay may
   check in on the previous stay's checkout day.
-- A shared room uses the larger of its allotment and assigned passenger count
-  for each stay. A private or couple room uses one whole room on each night,
+- A shared room uses the larger of its allotment and the sum of assigned
+  passengers and active checkout holds for each stay. A private or couple room uses one whole room on each night,
   and new assignments within that room are limited to a single booking.
   Assignments also use available inventory when there is no explicit allotment.
 - Assignment history stays intact. Releasing an allotment leaves assigned
@@ -178,7 +179,7 @@ departure allocation/availability and passenger seat assignment before this sess
 - Allotment changes, assignments, and room edits lock the same physical room
   before they validate capacity. Room edits cannot reduce capacity below
   reservations and assignments, or switch between shared and exclusive while
-  commitments exist. Guest booking still uses manual lodging verification.
+  commitments exist. Staff still verify payment and lodging before confirming.
 
 ## Guest reservations and seat holds (Phase 5)
 
@@ -228,10 +229,29 @@ departure allocation/availability and passenger seat assignment before this sess
   changing the stay list refreshes the summary.
   Room assignment edits and stay removal now lock the stay before
   checking occupancy or existing assignments.
-- The booking records one requested room option. Staff coordinate its
-  availability, then reserve and assign physical rooms by stay. Customer-facing
-  lodging holds, gateway payment verification, and automatic confirmation
-  remain future work.
+- The booking records one requested room option. Where checkout lodging holds
+  are disabled, staff coordinate availability and assign rooms manually.
+  Gateway payment verification and automatic confirmation remain future work.
+
+## Checkout lodging holds
+
+- Open **Admin → Departures → Checkout lodging holds** to enable room holds
+  for a departure. Every scheduled stay needs allotments for its published
+  room types. Resolve pending manual lodging requests and finish room
+  assignments for existing confirmed bookings before enabling.
+- Checkout reserves bus seats and lodging in one transaction. The entire
+  group must fit at every stay. Shared guests may be split across allotted
+  rooms. Private and couple bookings take one allotted room at each stay.
+  Infants count for lodging even when they do not need bus seats.
+- A room hold uses the same 15-minute deadline as the seat hold. Expiry or
+  staff release returns both to inventory. Staff confirmation converts the
+  held places into passenger room assignments in the same transaction as
+  confirming the booking. Staff still verify payment and lodging.
+- The room availability panel distinguishes held places from assigned places.
+  Active checkout holds protect room type, capacity and allotments. Active
+  or confirmed checkout lodging protects the scheduled stays. Turning off
+  lodging holds changes new reservations while existing holds keep their
+  deadline.
 
 ## Customer sign-in and booking history
 
@@ -276,6 +296,7 @@ Migration packages on disk:
 7. `20261122T0950_room_allotments`
 8. `20261122T1014_customer_accounts`
 9. `20261122T1047_reservation_releases`
+10. `20261122T1109_checkout_lodging_holds`
 
 The stop-order column defaults to zero, so existing stops keep their previous
 ID-based order until staff save an itinerary. Migration 7 adds allotments and
@@ -284,10 +305,10 @@ passed `db migrate` and `db verify` on isolated PostgreSQL. After the owner
 approved applying it to the shared database on 2026-11-22 (Asia/Dhaka), Prisma
 verified that the marker and live schema match migration 7. Migration 8
 adds separate customer account and booking ownership tables. Migration 9 adds
-the release audit. The shared database remains at migration 7 pending approval.
-Applying both migrations supports hold release even with Google OAuth
-unconfigured. Until migration 9 is applied, Reservations continues to show
-the existing review and confirmation controls.
+the release audit. Migration 10 adds opt-in settings and room holds. The
+shared database remains at migration 7 pending approval. The existing manual
+booking and room inventory workflows continue before the new migrations.
+Hold release and checkout lodging can be enabled with Google OAuth unconfigured.
 Use a disposable PostgreSQL instance for automated mutation and concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
 instructions.
 
@@ -305,7 +326,7 @@ instructions.
 
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
-- `npm test`: 22 passed with an isolated PostgreSQL server.
+- `npm test`: 23 passed with an isolated PostgreSQL server.
 - `npm run build -- --webpack`: passed. Turbopack could not bind its worker
   port in the local tool environment.
 - `git diff --check`: passed.
@@ -367,6 +388,11 @@ instructions.
   Chrome verified releasing a hold and reusing the seat with Google OAuth
   disabled. The earlier shared-schema version still rendered reservations and
   manual confirmation before the audit migration.
+- Disposable PostgreSQL verified migration 10, multi-stay holds, shared-room
+  splits, private-room exclusivity, concurrent guest requests, expiry and
+  inventory guards. Chrome verified holding rooms with guest checkout,
+  converting them to assignments on confirmation, and releasing them with an
+  unpaid hold. Reservations and inventory still load on migration 7.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle
@@ -408,8 +434,8 @@ configure only an isolated localhost test server to run those checks.
   eligibility from the booking snapshot. Keep each room assignment scoped to
   one hotel stay so the same guest can have a room at every stop.
 - Staff can set by-stay allotments. Shared and exclusive room availability
-  accounts for overlapping departures and existing assignments. Guest checkout
-  still requires lodging holds before it can offer guaranteed rooms.
+  accounts for overlapping departures and existing assignments. Checkout can
+  reserve the allotted rooms for every stay alongside transport seats.
 - Acceptance checks cover a new guest from quote through confirmation and
   assignments, independent assignments at two hotels, an infant excluded
   from bus seating, concurrent attempts for the last seat or room place, and

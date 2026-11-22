@@ -52,5 +52,5 @@ export async function getDepartureBookingQuote(
     pricing.adultFare, pricing.childFare, pricing.childFeeEnabled, room.surcharge, quote.total,
   ])).digest("hex");
 
-  return { quote, quoteVersion, pricing };
+  return { quote, quoteVersion, pricing, roomType: room.roomType };
 }

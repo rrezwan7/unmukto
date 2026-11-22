@@ -51,7 +51,10 @@ export async function PUT(request: Request, { params }: Props) {
         return fail("The allotment must cover all passengers already assigned to this room. Release it to keep only the assigned places reserved.", 409);
       }
 
-      const requested = roomUnits(inventory.exclusive, places, inventory.assigned);
+      if (inventory.held > 0 && (places === 0 || (!inventory.exclusive && places < inventory.assigned + inventory.held))) {
+        return fail("The allotment must cover active checkout holds and assigned guests.", 409);
+      }
+      const requested = roomUnits(inventory.exclusive, places, inventory.assigned + inventory.held);
       if (places > inventory.allotted && requested > inventory.available) {
         return fail("This room has insufficient capacity on at least one night because of overlapping stays.", 409);
       }

@@ -1,6 +1,7 @@
 import "server-only";
 import { Temporal } from "temporal-polyfill";
 import { db } from "@/prisma/db";
+import { bookingRoomHolds, lockHeldRooms } from "@/lib/booking-room-holds";
 import { committedSeatCounts, lockDeparture, transportSeatCapacity } from "@/lib/reservation-inventory";
 
 const paymentMethods = ["BKASH", "NAGAD", "ROCKET", "DBBL", "CASH", "BANK_TRANSFER", "OTHER"] as const;
@@ -81,6 +82,32 @@ export async function confirmGuestBookingManually({
         return { error: "The departure no longer has enough configured seats. Review its capacity before confirming." };
       }
 
+      const roomHolds = await bookingRoomHolds(bookingId, tx);
+      const roomAssignments: { passengerId: number; hotelStayId: number; roomId: number }[] = [];
+      if (roomHolds.length > 0) {
+        await lockHeldRooms(tx, departureId, bookingId);
+        const passengers = await tx.orm.public.Passenger.where({ bookingId }).select("id")
+          .orderBy((passenger) => passenger.id.asc()).all();
+        const stays = await tx.orm.public.HotelStay.where({ departureId }).select("id").all();
+        const coveredStayIds = new Set(roomHolds.map((hold) => hold.hotelStayId));
+        if (!passengers.length || !stays.length || coveredStayIds.size !== stays.length) {
+          return { error: "The lodging hold is incomplete. Review the scheduled stays before confirming." };
+        }
+        for (const stay of stays) {
+          const held = roomHolds.filter((hold) => hold.hotelStayId === stay.id);
+          if (held.reduce((total, room) => total + room.places, 0) !== passengers.length) {
+            return { error: "The lodging hold does not cover all passengers at every stay." };
+          }
+          let start = 0;
+          for (const { roomId, places } of held) {
+            for (const passenger of passengers.slice(start, start + places)) {
+              roomAssignments.push({ passengerId: passenger.id, hotelStayId: stay.id, roomId });
+            }
+            start += places;
+          }
+        }
+      }
+
       const [confirmation] = await tx.query(db.raw.sql`
         WITH confirmation_time AS (SELECT clock_timestamp() AS "at")
         UPDATE "Booking" b
@@ -96,6 +123,10 @@ export async function confirmGuestBookingManually({
         RETURNING b."confirmedAt"
       `.returnsRow({ confirmedAt: "pg/timestamptz-date@1" }).build());
       if (!confirmation) return { error: "The hold has expired or the departure has passed. Review availability before arranging another reservation." };
+
+      if (roomAssignments.length > 0) {
+        await tx.orm.public.RoomAssignment.createAll(roomAssignments);
+      }
 
       if (paymentRequired && method && paymentKey) {
         const verifiedAt = Temporal.Instant.fromEpochMilliseconds(confirmation.confirmedAt.getTime()).toString();

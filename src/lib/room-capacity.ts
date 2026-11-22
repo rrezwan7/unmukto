@@ -4,6 +4,7 @@ export type RoomCommitment = RoomNights & {
   stayId: number;
   allotted: number;
   assigned: number;
+  held?: number;
 };
 
 export function roomUnits(exclusive: boolean, allotted: number, assigned: number) {
@@ -23,7 +24,7 @@ export function peakRoomUsage(
     const checkOut = window && window.checkOut < commitment.checkOut ? window.checkOut : commitment.checkOut;
     if (checkIn >= checkOut) continue;
 
-    const units = roomUnits(exclusive, commitment.allotted, commitment.assigned);
+    const units = roomUnits(exclusive, commitment.allotted, commitment.assigned + (commitment.held ?? 0));
     changes.set(checkIn, (changes.get(checkIn) ?? 0) + units);
     changes.set(checkOut, (changes.get(checkOut) ?? 0) - units);
   }
@@ -48,7 +49,8 @@ export function roomAvailability(
   const others = commitments.filter((commitment) => commitment.stayId !== stay.id);
   const allotted = current?.allotted ?? 0;
   const assigned = current?.assigned ?? 0;
-  const committed = roomUnits(exclusive, allotted, assigned);
+  const held = current?.held ?? 0;
+  const committed = roomUnits(exclusive, allotted, assigned + held);
   const otherUse = peakRoomUsage(others, exclusive, stay);
   const available = Math.max(0, (exclusive ? 1 : room.capacity) - otherUse);
   const overbooked = committed > available;
@@ -58,8 +60,9 @@ export function roomAvailability(
     exclusive,
     allotted,
     assigned,
+    held,
     available,
     overbooked,
-    availableSlots: overbooked ? 0 : Math.max(0, occupantLimit - assigned),
+    availableSlots: overbooked || (exclusive && held > 0) ? 0 : Math.max(0, occupantLimit - assigned - held),
   };
 }

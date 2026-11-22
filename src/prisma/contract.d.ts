@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e31033e7a2af52ac7a7fc4fec6df0b7f348118911c5e3d070044154db9494395'>;
+  StorageHashBase<'d63a13a97806a73b0d952fc1812e338017cfb9d9972199ea665cedd6980b2698'>;
 export type ExecutionHash =
   ExecutionHashBase<'35e359fb8fabe2fe9c9082dc2572cb2a97a094966e5a1046c0c2f21a9ba78cc8'>;
 export type ProfileHash =
@@ -313,6 +313,13 @@ export type FieldOutputTypes = {
       readonly totalAmount: CodecTypes['pg/numeric@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly BookingRoomHold: {
+      readonly bookingId: CodecTypes['pg/int4@1']['output'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly places: CodecTypes['pg/int4@1']['output'];
+      readonly roomId: CodecTypes['pg/int4@1']['output'];
+    };
     readonly BookingSettings: {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
@@ -340,6 +347,10 @@ export type FieldOutputTypes = {
       readonly returnTime: CodecTypes['pg/text@1']['output'] | null;
       readonly tourId: CodecTypes['pg/int4@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly DepartureLodgingSettings: {
+      readonly departureId: CodecTypes['pg/int4@1']['output'];
+      readonly holdsEnabled: CodecTypes['pg/bool@1']['output'];
     };
     readonly DeparturePricing: {
       readonly adultFare: CodecTypes['pg/numeric@1']['output'];
@@ -598,6 +609,13 @@ export type FieldInputTypes = {
       readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly BookingRoomHold: {
+      readonly bookingId: CodecTypes['pg/int4@1']['input'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly places: CodecTypes['pg/int4@1']['input'];
+      readonly roomId: CodecTypes['pg/int4@1']['input'];
+    };
     readonly BookingSettings: {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
@@ -625,6 +643,10 @@ export type FieldInputTypes = {
       readonly returnTime: CodecTypes['pg/text@1']['input'] | null;
       readonly tourId: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly DepartureLodgingSettings: {
+      readonly departureId: CodecTypes['pg/int4@1']['input'];
+      readonly holdsEnabled: CodecTypes['pg/bool@1']['input'];
     };
     readonly DeparturePricing: {
       readonly adultFare: CodecTypes['pg/numeric@1']['input'];
@@ -883,6 +905,13 @@ export type StorageColumnTypes = {
       readonly totalAmount: CodecTypes['pg/numeric@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly BookingRoomHold: {
+      readonly bookingId: CodecTypes['pg/int4@1']['output'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly places: CodecTypes['pg/int4@1']['output'];
+      readonly roomId: CodecTypes['pg/int4@1']['output'];
+    };
     readonly BookingSettings: {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
@@ -910,6 +939,10 @@ export type StorageColumnTypes = {
       readonly returnTime: CodecTypes['pg/text@1']['output'] | null;
       readonly tourId: CodecTypes['pg/int4@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
+    readonly DepartureLodgingSettings: {
+      readonly departureId: CodecTypes['pg/int4@1']['output'];
+      readonly holdsEnabled: CodecTypes['pg/bool@1']['output'];
     };
     readonly DeparturePricing: {
       readonly adultFare: CodecTypes['pg/numeric@1']['output'];
@@ -1168,6 +1201,13 @@ export type StorageColumnInputTypes = {
       readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly BookingRoomHold: {
+      readonly bookingId: CodecTypes['pg/int4@1']['input'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly places: CodecTypes['pg/int4@1']['input'];
+      readonly roomId: CodecTypes['pg/int4@1']['input'];
+    };
     readonly BookingSettings: {
       readonly guestBookingEnabled: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
@@ -1195,6 +1235,10 @@ export type StorageColumnInputTypes = {
       readonly returnTime: CodecTypes['pg/text@1']['input'] | null;
       readonly tourId: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly DepartureLodgingSettings: {
+      readonly departureId: CodecTypes['pg/int4@1']['input'];
+      readonly holdsEnabled: CodecTypes['pg/bool@1']['input'];
     };
     readonly DeparturePricing: {
       readonly adultFare: CodecTypes['pg/numeric@1']['input'];
@@ -1470,6 +1514,7 @@ export namespace Models {
     passengers: public_Passenger[];
     payments: public_Payment[];
     release: public_ReservationRelease | null;
+    roomHolds: public_BookingRoomHold[];
     roomOption: public_DepartureRoomOption | null;
     readonly [RelationKeys]?:
       | 'accountBooking'
@@ -1479,7 +1524,19 @@ export namespace Models {
       | 'passengers'
       | 'payments'
       | 'release'
+      | 'roomHolds'
       | 'roomOption';
+  };
+  export type public_BookingRoomHold = {
+    bookingId: CodecTypes['pg/int4@1']['output'];
+    hotelStayId: CodecTypes['pg/int4@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    places: CodecTypes['pg/int4@1']['output'];
+    roomId: CodecTypes['pg/int4@1']['output'];
+    booking: public_Booking;
+    hotelStay: public_HotelStay;
+    room: public_Room;
+    readonly [RelationKeys]?: 'booking' | 'hotelStay' | 'room';
   };
   export type public_BookingSettings = {
     guestBookingEnabled: CodecTypes['pg/bool@1']['output'];
@@ -1516,12 +1573,25 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     bookings: public_Booking[];
     hotelStays: public_HotelStay[];
+    lodgingSettings: public_DepartureLodgingSettings | null;
     pricing: public_DeparturePricing | null;
     roomOptions: public_DepartureRoomOption[];
     tour: public_Tour;
     vehicles: public_DepartureVehicle[];
     readonly [RelationKeys]?:
-      'bookings' | 'hotelStays' | 'pricing' | 'roomOptions' | 'tour' | 'vehicles';
+      | 'bookings'
+      | 'hotelStays'
+      | 'lodgingSettings'
+      | 'pricing'
+      | 'roomOptions'
+      | 'tour'
+      | 'vehicles';
+  };
+  export type public_DepartureLodgingSettings = {
+    departureId: CodecTypes['pg/int4@1']['output'];
+    holdsEnabled: CodecTypes['pg/bool@1']['output'];
+    departure: public_Departure;
+    readonly [RelationKeys]?: 'departure';
   };
   export type public_DeparturePricing = {
     adultFare: CodecTypes['pg/numeric@1']['output'];
@@ -1602,13 +1672,14 @@ export namespace Models {
     hotelId: CodecTypes['pg/int4@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    bookingHolds: public_BookingRoomHold[];
     departure: public_Departure;
     destination: public_Destination | null;
     hotel: public_Hotel;
     roomAllotments: public_RoomAllotment[];
     roomAssignments: public_RoomAssignment[];
     readonly [RelationKeys]?:
-      'departure' | 'destination' | 'hotel' | 'roomAllotments' | 'roomAssignments';
+      'bookingHolds' | 'departure' | 'destination' | 'hotel' | 'roomAllotments' | 'roomAssignments';
   };
   export type public_Itinerary = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1674,8 +1745,9 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     allotments: public_RoomAllotment[];
     assignments: public_RoomAssignment[];
+    bookingHolds: public_BookingRoomHold[];
     hotel: public_Hotel;
-    readonly [RelationKeys]?: 'allotments' | 'assignments' | 'hotel';
+    readonly [RelationKeys]?: 'allotments' | 'assignments' | 'bookingHolds' | 'hotel';
   };
   export type public_RoomAllotment = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1788,10 +1860,12 @@ export declare const models: {
     BlogPostTag: Models.public_BlogPostTag;
     BlogTag: Models.public_BlogTag;
     Booking: Models.public_Booking;
+    BookingRoomHold: Models.public_BookingRoomHold;
     BookingSettings: Models.public_BookingSettings;
     CustomerAccount: Models.public_CustomerAccount;
     CustomerBooking: Models.public_CustomerBooking;
     Departure: Models.public_Departure;
+    DepartureLodgingSettings: Models.public_DepartureLodgingSettings;
     DeparturePricing: Models.public_DeparturePricing;
     DepartureRoomOption: Models.public_DepartureRoomOption;
     DepartureVehicle: Models.public_DepartureVehicle;
@@ -2357,6 +2431,101 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly BookingRoomHold: {
+              columns: {
+                readonly bookingId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly hotelStayId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly places: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly roomId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['bookingId', 'hotelStayId', 'roomId'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'BookingRoomHold_bookingId_idx_17848f4a';
+                  readonly prefix: 'BookingRoomHold_bookingId_idx';
+                  readonly columns: readonly ['bookingId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'BookingRoomHold_hotelStayId_idx_05988de1';
+                  readonly prefix: 'BookingRoomHold_hotelStayId_idx';
+                  readonly columns: readonly ['hotelStayId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'BookingRoomHold_roomId_idx_fe51d647';
+                  readonly prefix: 'BookingRoomHold_roomId_idx';
+                  readonly columns: readonly ['roomId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'BookingRoomHold';
+                    readonly columns: readonly ['bookingId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Booking';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'BookingRoomHold';
+                    readonly columns: readonly ['hotelStayId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'HotelStay';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'BookingRoomHold';
+                    readonly columns: readonly ['roomId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Room';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly BookingSettings: {
               columns: {
                 readonly guestBookingEnabled: {
@@ -2558,6 +2727,41 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Tour';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly DepartureLodgingSettings: {
+              columns: {
+                readonly departureId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly holdsEnabled: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['departureId'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'DepartureLodgingSettings';
+                    readonly columns: readonly ['departureId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Departure';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -4148,6 +4352,10 @@ type ContractBase = Omit<
     };
     readonly BlogTag: { readonly namespace: 'public' & NamespaceId; readonly model: 'BlogTag' };
     readonly Booking: { readonly namespace: 'public' & NamespaceId; readonly model: 'Booking' };
+    readonly BookingRoomHold: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BookingRoomHold';
+    };
     readonly BookingSettings: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'BookingSettings';
@@ -4161,6 +4369,10 @@ type ContractBase = Omit<
       readonly model: 'CustomerBooking';
     };
     readonly Departure: { readonly namespace: 'public' & NamespaceId; readonly model: 'Departure' };
+    readonly DepartureLodgingSettings: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'DepartureLodgingSettings';
+    };
     readonly DeparturePricing: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'DeparturePricing';
@@ -4691,6 +4903,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['bookingId'];
                 };
               };
+              readonly roomHolds: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BookingRoomHold';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['bookingId'];
+                };
+              };
               readonly roomOption: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -4733,6 +4956,76 @@ type ContractBase = Omit<
                 readonly status: { readonly column: 'status' };
                 readonly totalAmount: { readonly column: 'totalAmount' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly BookingRoomHold: {
+            readonly fields: {
+              readonly bookingId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly hotelStayId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly places: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly roomId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly booking: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Booking';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['bookingId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly hotelStay: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'HotelStay';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['hotelStayId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly room: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Room' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['roomId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'BookingRoomHold';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly bookingId: { readonly column: 'bookingId' };
+                readonly hotelStayId: { readonly column: 'hotelStayId' };
+                readonly id: { readonly column: 'id' };
+                readonly places: { readonly column: 'places' };
+                readonly roomId: { readonly column: 'roomId' };
               };
             };
           };
@@ -4940,6 +5233,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['departureId'];
                 };
               };
+              readonly lodgingSettings: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'DepartureLodgingSettings';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['departureId'];
+                };
+              };
               readonly pricing: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -4998,6 +5303,40 @@ type ContractBase = Omit<
                 readonly returnTime: { readonly column: 'returnTime' };
                 readonly tourId: { readonly column: 'tourId' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly DepartureLodgingSettings: {
+            readonly fields: {
+              readonly departureId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly holdsEnabled: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+            };
+            readonly relations: {
+              readonly departure: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Departure';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['departureId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'DepartureLodgingSettings';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly departureId: { readonly column: 'departureId' };
+                readonly holdsEnabled: { readonly column: 'holdsEnabled' };
               };
             };
           };
@@ -5476,6 +5815,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly bookingHolds: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BookingRoomHold';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['hotelStayId'];
+                };
+              };
               readonly departure: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5931,6 +6281,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'RoomAssignment';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['roomId'];
+                };
+              };
+              readonly bookingHolds: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BookingRoomHold';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {

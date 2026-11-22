@@ -13,7 +13,7 @@ test("shared allotments use the busiest night and count occupants within their a
   ];
   assert.equal(peakRoomUsage(commitments, false), 4);
   assert.deepEqual(roomAvailability(shared, stay, commitments), {
-    exclusive: false, allotted: 1, assigned: 1, available: 1, overbooked: false, availableSlots: 0,
+    exclusive: false, allotted: 1, assigned: 1, held: 0, available: 1, overbooked: false, availableSlots: 0,
   });
 });
 
@@ -33,4 +33,10 @@ test("pre-existing overbooking remains visible and offers no new places", () => 
   assert.equal(inventory.assigned, 2);
   assert.equal(inventory.overbooked, true);
   assert.equal(inventory.availableSlots, 0);
+});
+
+test("pending lodging holds use shared places and keep exclusive rooms unavailable to manual assignments", () => {
+  const commitments = [{ ...stay, stayId: stay.id, allotted: 4, assigned: 1, held: 2 }];
+  assert.equal(roomAvailability(shared, stay, commitments).availableSlots, 1);
+  assert.equal(roomAvailability({ roomType: "PRIVATE", capacity: 4 }, stay, commitments).availableSlots, 0);
 });

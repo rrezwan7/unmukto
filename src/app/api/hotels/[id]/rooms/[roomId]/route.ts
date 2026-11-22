@@ -43,14 +43,17 @@ export async function PATCH(request: Request, { params }: Props) {
       }
       const shared = current.roomType === "SHARED";
       const changingCapacityModel = shared !== (input.room.roomType === "SHARED");
-      if (capacity < current.capacity || changingCapacityModel) {
+      if (capacity < current.capacity || input.room.roomType !== current.roomType) {
         const commitments = (await roomCommitments(hotelId, roomId, tx)).get(roomId) ?? [];
         if (changingCapacityModel && commitments.length > 0) {
           return fail("A room with allotments or assignments cannot switch between shared and exclusive.", 409);
         }
-        const occupied = commitments.find((commitment) => commitment.assigned > capacity);
+        if (input.room.roomType !== current.roomType && commitments.some((commitment) => (commitment.held ?? 0) > 0)) {
+          return fail("A room cannot change type while checkout holds are active.", 409);
+        }
+        const occupied = commitments.find((commitment) => commitment.assigned + (commitment.held ?? 0) > capacity);
         if (occupied) {
-          return fail(`Stay #${occupied.stayId} already has more passengers assigned to this room than the proposed capacity.`, 409);
+          return fail(`Stay #${occupied.stayId} already has more guests held or assigned to this room than the proposed capacity.`, 409);
         }
         if (shared && peakRoomUsage(commitments, false) > capacity) {
           return fail("The proposed capacity is below the places reserved or assigned across overlapping stays.", 409);

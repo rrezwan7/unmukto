@@ -28,6 +28,7 @@ const routes = [
   { path: "/api/hotels/1/rooms/1", method: "PATCH" },
   { path: "/api/departures/1/hotel-stays/1", method: "PATCH" },
   { path: "/api/departures/1/hotel-stays/1/room-allotments", method: "PUT" },
+  { path: "/api/departures/1/lodging-holds", method: "PUT" },
 ];
 
 async function sessionCookie(id: string, maxAge = 3600) {

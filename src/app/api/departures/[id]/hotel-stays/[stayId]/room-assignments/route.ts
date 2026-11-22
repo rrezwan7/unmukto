@@ -93,6 +93,7 @@ export async function GET(_request: Request, { params }: Props) {
         capacity: room.capacity,
         description: room.description,
         occupied: inventory.assigned,
+        held: inventory.held,
         allotted: inventory.allotted,
         availableForAllotment: inventory.available,
         availableSlots: inventory.availableSlots,
@@ -254,7 +255,9 @@ export async function POST(request: Request, { params }: Props) {
       if (inventory.availableSlots === 0) {
         return fail(inventory.assigned >= room.capacity
           ? `Room ${room.roomNumber} is full (capacity: ${room.capacity} occupants).`
-          : `Room ${room.roomNumber} has insufficient capacity on at least one night because of overlapping stays.`, 409);
+          : inventory.held > 0
+            ? `Room ${room.roomNumber} has no space beyond its active checkout holds.`
+            : `Room ${room.roomNumber} has insufficient capacity on at least one night because of overlapping stays.`, 409);
       }
 
       let assignment;

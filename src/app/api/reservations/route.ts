@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { Temporal } from "temporal-polyfill";
 import { getCustomerSession } from "@/customer-auth";
 import { isSameOrigin } from "@/lib/auth-policy";
+import { bookingRoomHolds, checkoutLodgingSetting, planCheckoutRoomHolds } from "@/lib/booking-room-holds";
 import { guestBookingIsEnabled } from "@/lib/booking-settings";
 import { bookingIdIsValid, getDepartureBookingQuote } from "@/lib/departure-booking-quote";
 import { lockDeparture } from "@/lib/reservation-inventory";
@@ -41,10 +42,11 @@ export async function POST(request: Request) {
     return fail("বুকিংয়ের তথ্য দিন।", 400);
   }
 
-  const { departureId, roomOptionId, reservationKey, quoteVersion, contactName, contactPhone, contactEmail, passengers, mode } =
+  const { departureId, roomOptionId, reservationKey, quoteVersion, contactName, contactPhone, contactEmail, passengers, mode, lodgingHoldsEnabled } =
     input as Record<string, unknown>;
   if (
     (mode !== undefined && mode !== "customer") ||
+    (lodgingHoldsEnabled !== undefined && typeof lodgingHoldsEnabled !== "boolean") ||
     !bookingIdIsValid(departureId) || !bookingIdIsValid(roomOptionId) ||
     !validKey(reservationKey) || typeof quoteVersion !== "string" || !/^[a-f0-9]{64}$/.test(quoteVersion) ||
     !Array.isArray(passengers) || passengers.length === 0 || passengers.length > maxTravelers
@@ -107,7 +109,11 @@ export async function POST(request: Request) {
             existing.holdExpiresAt.epochMilliseconds <= Date.now()) {
           return fail("এই আসন সংরক্ষণের মেয়াদ শেষ হয়েছে। নতুন করে ভাড়া হিসাব করুন।", 409);
         }
-        return Response.json({ bookingNumber: existing.bookingNumber, holdExpiresAt: existing.holdExpiresAt.toString() });
+        return Response.json({
+          bookingNumber: existing.bookingNumber,
+          holdExpiresAt: existing.holdExpiresAt.toString(),
+          lodgingHeld: (await bookingRoomHolds(existing.id, tx)).length > 0,
+        });
       }
 
       if (!customer && !(await guestBookingIsEnabled(tx))) {
@@ -118,6 +124,17 @@ export async function POST(request: Request) {
       if (result.error !== undefined) return fail(result.error, result.status);
       if (quoteVersion !== result.quoteVersion) {
         return fail("ভাড়া পরিবর্তন হয়েছে। নতুন হিসাব দেখে আবার চেষ্টা করুন।", 409);
+      }
+
+      const lodging = await checkoutLodgingSetting(departureId, tx);
+      if (typeof lodgingHoldsEnabled === "boolean" && lodging.enabled !== lodgingHoldsEnabled) {
+        return fail("রুম সংরক্ষণের নিয়ম পরিবর্তন হয়েছে। আবার ভাড়া হিসাব করুন।", 409);
+      }
+      const roomHolds = lodging.enabled
+        ? await planCheckoutRoomHolds(tx, departureId, result.roomType, travelers.length)
+        : [];
+      if (!roomHolds) {
+        return fail("সব নির্ধারিত হোটেলে আপনার দলের জন্য এই ধরনের রুম খালি নেই। অন্য রুম বা যাত্রা বেছে নিন।", 409);
       }
 
       const [clock] = await tx.query(db.raw.sql`
@@ -154,6 +171,10 @@ export async function POST(request: Request) {
         }))
       ).build());
 
+      if (roomHolds.length > 0) {
+        await tx.orm.public.BookingRoomHold.createAll(roomHolds.map((hold) => ({ ...hold, bookingId: booking.id })));
+      }
+
       if (customer) {
         await tx.orm.public.CustomerBooking.create({
           bookingId: booking.id,
@@ -164,6 +185,7 @@ export async function POST(request: Request) {
       return Response.json({
         bookingNumber: booking.bookingNumber,
         holdExpiresAt: holdExpiresAt.toString(),
+        lodgingHeld: roomHolds.length > 0,
       }, { status: 201 });
     });
   } catch (error) {
