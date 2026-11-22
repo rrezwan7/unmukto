@@ -22,11 +22,12 @@ bus seat and hotel room assignment progress. Staff room allotments and
 overlapping-departure capacity checks passed on disposable PostgreSQL. The
 owner approved applying the room allotment migration to the shared database,
 where Prisma verified the resulting schema. The feature branch adds customer
-sign-in and signed-in checkout. Enable it after applying the customer account
-migration and configuring Google OAuth. Staff can release unpaid seat holds
+sign-in and signed-in checkout. The customer account migration is applied to the
+shared database. The owner verified live Google sign-in on localhost in
+Microsoft Edge. Staff can release unpaid seat holds
 after the reservation release migration. Checkout can hold seats and rooms
 together for departures where staff enable lodging holds. Both tools work with
-guest booking while customer sign-in setup is pending.
+guest booking.
 
 ## Implemented
 
@@ -304,10 +305,11 @@ an index for room occupancy checks. It preserves existing assignments and
 passed `db migrate` and `db verify` on isolated PostgreSQL. After the owner
 approved applying it to the shared database on 2026-11-22 (Asia/Dhaka), Prisma
 verified that the marker and live schema match migration 7. Migration 8
-adds separate customer account and booking ownership tables. Migration 9 adds
-the release audit. Migration 10 adds opt-in settings and room holds. The
-shared database remains at migration 7 pending approval. The existing manual
-booking and room inventory workflows continue before the new migrations.
+adds separate customer account and booking ownership tables. The owner approved
+applying it to the shared database, and Prisma advanced the shared database to
+migration 8. Migration 9 adds the release audit. Migration 10 adds opt-in settings
+and room holds. Both remain pending approval on the shared database. The existing
+manual booking and room inventory workflows continue before the new migrations.
 Hold release and checkout lodging can be enabled with Google OAuth unconfigured.
 Use a disposable PostgreSQL instance for automated mutation and concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
 instructions.
@@ -381,8 +383,9 @@ instructions.
   rejection of unverified email, booking ownership, and concurrent claims on
   the last seat. Chrome verified signed-in checkout with guest booking off,
   private booking history, staff confirmation, and customer sign-out while
-  the admin session stayed active. Live Google OAuth requires environment
-  credentials.
+  the admin session stayed active. With migration 8 applied to the shared
+  database, the owner signed in with Google on localhost in Microsoft Edge
+  and saw their Google email on the bookings page.
 - Disposable PostgreSQL verified migration 9, audit idempotency, payment and
   assignment guards, and the race between release and staff confirmation.
   Chrome verified releasing a hold and reusing the seat with Google OAuth
@@ -461,9 +464,8 @@ configure only an isolated localhost test server to run those checks.
 
 ### 5. Complete checkout and verify a release
 
-- Customer accounts and signed-in booking with guests disabled are implemented.
-  Configure live Google OAuth after applying the approved migration, then
-  rehearse a customer booking with the operator.
+- Rehearse a signed-in customer booking with the operator using live Google
+  sign-in.
 - Decide deposit, payment verification, refund, and cancellation rules. Handle
   late payments through review and capacity revalidation. Run a full booking
   rehearsal with the operator before opening the live guest flow.
