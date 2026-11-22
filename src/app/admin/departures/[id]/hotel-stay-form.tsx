@@ -16,6 +16,7 @@ export type EditableStay = {
   checkInDay: string;
   checkOutDay: string;
   assignmentCount: number;
+  allotmentCount: number;
   updatedAt: string;
 };
 
@@ -36,7 +37,8 @@ export default function HotelStayForm({
   const [expectedUpdatedAt] = useState(stay?.updatedAt);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const locked = Boolean(stay?.assignmentCount);
+  const hasAssignments = Boolean(stay?.assignmentCount);
+  const locked = hasAssignments || Boolean(stay?.allotmentCount);
   const prefix = stay ? `edit-stay-${stay.id}` : "new-stay";
   const choices = hotels.filter((hotel) => hotel.isActive || hotel.id === stay?.hotelId);
   const hasLinkedStop = Boolean(stay?.destinationId && !stops.some((stop) => stop.id === stay.destinationId));
@@ -80,7 +82,11 @@ export default function HotelStayForm({
 
   return (
     <form onSubmit={save} onChange={() => setError("")} aria-busy={saving}>
-      {locked && <p className="mb-3 text-sm text-muted-foreground">Room assignments lock the hotel and dates.</p>}
+      {locked && (
+        <p className="mb-3 text-sm text-muted-foreground">
+          {hasAssignments ? "Room assignments lock the hotel and dates." : "Release room allotments before changing the hotel or dates."}
+        </p>
+      )}
       <fieldset disabled={saving} className="grid gap-4 sm:grid-cols-4">
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor={`${prefix}-hotel`}>Partner Hotel</Label>

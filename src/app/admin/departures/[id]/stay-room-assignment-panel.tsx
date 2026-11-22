@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import RoomAllotmentForm from "./room-allotment-form";
 import { Button } from "@/components/ui/button";
 import {
   NativeSelect,
@@ -24,6 +25,11 @@ type Room = {
   occupied: number;
   isFull: boolean;
   availableSlots: number;
+  allotted: number;
+  availableForAllotment: number;
+  overbooked: boolean;
+  exclusive: boolean;
+  bookingIds: number[];
 };
 
 type Passenger = {
@@ -113,6 +119,12 @@ export default function StayRoomAssignmentPanel({
     setError("");
   }
 
+  function roomInventoryChanged(message: string) {
+    setMessage(message);
+    setRevision((revision) => revision + 1);
+    onAssignmentChange?.();
+  }
+
   async function handleAssign(passengerId: number) {
     const roomId = selectedRoomByPassenger[passengerId];
     if (!roomId) {
@@ -136,9 +148,7 @@ export default function StayRoomAssignmentPanel({
         }
       ).then(readResponse);
 
-      setMessage("Room assigned successfully.");
-      setRevision((r) => r + 1);
-      onAssignmentChange?.();
+      roomInventoryChanged("Room assigned successfully.");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Unable to assign room."
@@ -162,9 +172,7 @@ export default function StayRoomAssignmentPanel({
         }
       ).then(readResponse);
 
-      setMessage("Passenger unassigned from room.");
-      setRevision((r) => r + 1);
-      onAssignmentChange?.();
+      roomInventoryChanged("Passenger unassigned from room.");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Unable to unassign passenger."
@@ -196,7 +204,13 @@ export default function StayRoomAssignmentPanel({
     <div className="mt-4 space-y-4 rounded-md border p-4">
       {/* Rooms occupancy snapshot */}
       <div>
-        <h4 className="mb-2 text-sm font-semibold">Rooms Status in Hotel</h4>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h4 className="text-sm font-semibold">Room availability for this stay</h4>
+          <Button type="button" variant="outline" size="sm" disabled={pendingPassengerId !== null} onClick={() => {
+            clearFeedback();
+            setRevision((revision) => revision + 1);
+          }}>Refresh rooms</Button>
+        </div>
         {rooms.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No rooms configured for this hotel.{" "}
@@ -223,12 +237,21 @@ export default function StayRoomAssignmentPanel({
               >
                 <span>Room {r.roomNumber} ({r.roomType}): </span>
                 <strong>{r.occupied}/{r.capacity}</strong>
-                {r.isFull ? " (Full)" : ` (${r.availableSlots} left)`}
+                {r.allotted > 0 && (r.exclusive ? " · Room allotted" : ` · ${r.allotted} ${r.allotted === 1 ? "place" : "places"} allotted`)}
+                {r.overbooked ? " · Overlapping stays exceed capacity" : ` · ${r.availableSlots} ${r.availableSlots === 1 ? "place" : "places"} left`}
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {rooms.length > 0 && (
+        <RoomAllotmentForm departureId={departureId} stayId={stayId} rooms={rooms}
+          onSaved={() => {
+            clearFeedback();
+            roomInventoryChanged("Room allotment saved.");
+          }} />
+      )}
 
       {/* Passenger Assignment Table */}
       <div>
@@ -306,7 +329,9 @@ export default function StayRoomAssignmentPanel({
                         </NativeSelectOption>
                         {rooms.map((room) => {
                           const isCurrent = passenger.assignment?.roomId === room.id;
-                          const disabled = !isCurrent && room.isFull;
+                          const takenByAnotherBooking = room.exclusive && room.bookingIds.some((id) => id !== passenger.bookingId);
+                          const disabled = !isCurrent && (room.isFull || takenByAnotherBooking);
+                          const reason = takenByAnotherBooking ? " · In use by another booking" : " · Unavailable";
 
                           return (
                             <NativeSelectOption
@@ -315,7 +340,7 @@ export default function StayRoomAssignmentPanel({
                               disabled={disabled}
                             >
                               Room {room.roomNumber} ({room.roomType}) [{room.occupied}/{room.capacity}]
-                              {disabled ? " - FULL" : ""}
+                              {disabled ? reason : ""}
                             </NativeSelectOption>
                           );
                         })}

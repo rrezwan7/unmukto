@@ -31,7 +31,7 @@ export async function PATCH(request: Request, { params }: Props) {
     return await db.transaction(async (tx) => {
       if (!await lockDeparture(tx, departureId)) return fail("Departure not found.", 404);
       if (!await lockHotelStay(tx, departureId, stayId)) return fail("Hotel stay not found on this departure.", 404);
-      const { Departure, HotelStay, RoomAssignment } = tx.orm.public;
+      const { Departure, HotelStay, RoomAssignment, RoomAllotment } = tx.orm.public;
       const departure = await Departure.where({ id: departureId }).first();
       const current = await HotelStay.where({ id: stayId }).first();
       if (!departure || !current) return fail("Hotel stay not found on this departure.", 404);
@@ -57,6 +57,9 @@ export async function PATCH(request: Request, { params }: Props) {
       if (hotelChanged || checkInChanged || checkOutChanged) {
         if (await RoomAssignment.where({ hotelStayId: stayId }).select("id").first()) {
           return fail("The hotel and dates are locked while this stay has room assignments.", 409);
+        }
+        if (await RoomAllotment.where({ hotelStayId: stayId }).select("id").first()) {
+          return fail("Release this stay's room allotments before changing its hotel or dates.", 409);
         }
         if (hotelChanged && !(await lockHotel(tx, hotelId))?.isActive) {
           return fail("Selected hotel is inactive or does not exist.");
@@ -119,6 +122,12 @@ export async function DELETE(request: Request, { params }: Props) {
         );
       }
 
+      if (await tx.orm.public.RoomAllotment.where({ hotelStayId: stayId }).select("id").first()) {
+        return Response.json(
+          { success: false, error: "Release this stay's room allotments before removing it." },
+          { status: 409 }
+        );
+      }
       await tx.orm.public.HotelStay.where({ id: stayId }).delete();
       return Response.json({ success: true });
     });

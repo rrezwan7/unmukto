@@ -1,6 +1,8 @@
 import { checkAdminApi } from "@/lib/admin-auth";
-import { lockHotel, lockRoom, roomNumberExists, roomOverCapacity } from "@/lib/accommodation-editor";
+import { lockHotel, lockRoom, roomNumberExists } from "@/lib/accommodation-editor";
 import { parseRoom } from "@/lib/accommodation-input";
+import { peakRoomUsage } from "@/lib/room-capacity";
+import { roomCommitments } from "@/lib/room-inventory";
 import { isDatabaseId, isRecord } from "@/lib/tour-editor";
 
 type Props = { params: Promise<{ id: string; roomId: string }> };
@@ -39,10 +41,19 @@ export async function PATCH(request: Request, { params }: Props) {
       if (renaming && await roomNumberExists(tx, hotelId, roomNumber, roomId)) {
         return fail(`Room ${roomNumber} already exists in this hotel.`, 409);
       }
-      if (capacity < current.capacity) {
-        const conflict = await roomOverCapacity(tx, roomId, capacity);
-        if (conflict) {
-          return fail(`Stay #${conflict.hotelStayId} already has more passengers assigned to this room than the proposed capacity.`, 409);
+      const shared = current.roomType === "SHARED";
+      const changingCapacityModel = shared !== (input.room.roomType === "SHARED");
+      if (capacity < current.capacity || changingCapacityModel) {
+        const commitments = (await roomCommitments(hotelId, roomId, tx)).get(roomId) ?? [];
+        if (changingCapacityModel && commitments.length > 0) {
+          return fail("A room with allotments or assignments cannot switch between shared and exclusive.", 409);
+        }
+        const occupied = commitments.find((commitment) => commitment.assigned > capacity);
+        if (occupied) {
+          return fail(`Stay #${occupied.stayId} already has more passengers assigned to this room than the proposed capacity.`, 409);
+        }
+        if (shared && peakRoomUsage(commitments, false) > capacity) {
+          return fail("The proposed capacity is below the places reserved or assigned across overlapping stays.", 409);
         }
       }
 

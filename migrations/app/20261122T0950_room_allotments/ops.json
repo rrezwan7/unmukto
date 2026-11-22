@@ -1,0 +1,284 @@
+[
+  {
+    "id": "table.RoomAllotment",
+    "label": "Create table \"RoomAllotment\"",
+    "summary": "Creates table \"RoomAllotment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "RoomAllotment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"RoomAllotment\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"RoomAllotment\"",
+        "sql": "CREATE TABLE \"public\".\"RoomAllotment\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"hotelStayId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"places\" int4 NOT NULL,\n  \"roomId\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"RoomAllotment_places_range_55d67ee1\" CHECK (places BETWEEN 1 AND 20)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"RoomAllotment\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.RoomAllotment.RoomAllotment_hotelStayId_roomId_key",
+    "label": "Add unique constraint on \"RoomAllotment\" (hotelStayId, roomId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "RoomAllotment_hotelStayId_roomId_key",
+        "table": "RoomAllotment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"RoomAllotment_hotelStayId_roomId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAllotment_hotelStayId_roomId_key",
+          "public",
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"RoomAllotment_hotelStayId_roomId_key\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAllotment\" ADD CONSTRAINT \"RoomAllotment_hotelStayId_roomId_key\" UNIQUE (\"hotelStayId\", \"roomId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"RoomAllotment_hotelStayId_roomId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAllotment_hotelStayId_roomId_key",
+          "public",
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.RoomAllotment.RoomAllotment_hotelStayId_idx_05988de1",
+    "label": "Create index \"RoomAllotment_hotelStayId_idx_05988de1\" on \"RoomAllotment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "RoomAllotment_hotelStayId_idx_05988de1",
+        "table": "RoomAllotment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"RoomAllotment_hotelStayId_idx_05988de1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAllotment_hotelStayId_idx_05988de1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"RoomAllotment_hotelStayId_idx_05988de1\"",
+        "sql": "CREATE INDEX \"RoomAllotment_hotelStayId_idx_05988de1\" ON \"public\".\"RoomAllotment\" (\"hotelStayId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"RoomAllotment_hotelStayId_idx_05988de1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAllotment_hotelStayId_idx_05988de1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.RoomAllotment.RoomAllotment_roomId_idx_fe51d647",
+    "label": "Create index \"RoomAllotment_roomId_idx_fe51d647\" on \"RoomAllotment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "RoomAllotment_roomId_idx_fe51d647",
+        "table": "RoomAllotment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"RoomAllotment_roomId_idx_fe51d647\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAllotment_roomId_idx_fe51d647\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"RoomAllotment_roomId_idx_fe51d647\"",
+        "sql": "CREATE INDEX \"RoomAllotment_roomId_idx_fe51d647\" ON \"public\".\"RoomAllotment\" (\"roomId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"RoomAllotment_roomId_idx_fe51d647\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAllotment_roomId_idx_fe51d647\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.RoomAssignment.RoomAssignment_roomId_hotelStayId_idx_fd7c6d81",
+    "label": "Create index \"RoomAssignment_roomId_hotelStayId_idx_fd7c6d81\" on \"RoomAssignment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "RoomAssignment_roomId_hotelStayId_idx_fd7c6d81",
+        "table": "RoomAssignment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"RoomAssignment_roomId_hotelStayId_idx_fd7c6d81\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_roomId_hotelStayId_idx_fd7c6d81\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"RoomAssignment_roomId_hotelStayId_idx_fd7c6d81\"",
+        "sql": "CREATE INDEX \"RoomAssignment_roomId_hotelStayId_idx_fd7c6d81\" ON \"public\".\"RoomAssignment\" (\"roomId\", \"hotelStayId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"RoomAssignment_roomId_hotelStayId_idx_fd7c6d81\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"RoomAssignment_roomId_hotelStayId_idx_fd7c6d81\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.RoomAllotment.RoomAllotment_hotelStayId_fkey",
+    "label": "Add foreign key \"RoomAllotment_hotelStayId_fkey\" on \"RoomAllotment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "RoomAllotment_hotelStayId_fkey",
+        "table": "RoomAllotment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"RoomAllotment_hotelStayId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAllotment_hotelStayId_fkey",
+          "public",
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"RoomAllotment_hotelStayId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAllotment\"\nADD CONSTRAINT \"RoomAllotment_hotelStayId_fkey\"\nFOREIGN KEY (\"hotelStayId\")\nREFERENCES \"public\".\"HotelStay\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"RoomAllotment_hotelStayId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAllotment_hotelStayId_fkey",
+          "public",
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.RoomAllotment.RoomAllotment_roomId_fkey",
+    "label": "Add foreign key \"RoomAllotment_roomId_fkey\" on \"RoomAllotment\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "RoomAllotment_roomId_fkey",
+        "table": "RoomAllotment"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"RoomAllotment_roomId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAllotment_roomId_fkey",
+          "public",
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"RoomAllotment_roomId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"RoomAllotment\"\nADD CONSTRAINT \"RoomAllotment_roomId_fkey\"\nFOREIGN KEY (\"roomId\")\nREFERENCES \"public\".\"Room\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"RoomAllotment_roomId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "RoomAllotment_roomId_fkey",
+          "public",
+          "\"public\".\"RoomAllotment\""
+        ]
+      }
+    ]
+  }
+]

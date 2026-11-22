@@ -18,10 +18,10 @@ confirmation, bus seat assignment, and hotel room assignment successfully on
 localhost. Vehicle and seat editing and guarded departure vehicle removal have
 passed browser checks on a disposable database. Hotel, room, and scheduled
 stay editing passed the same verification. Confirmed guest reservations now show
-bus seat and hotel room assignment progress. The tour, itinerary, and departure
-editors are ready for the owner's walkthrough. Admin editing and assignment
-progress use the existing database schema. Vercel deployment can be handled
-separately.
+bus seat and hotel room assignment progress. Staff room allotments and
+overlapping-departure capacity checks passed on disposable PostgreSQL. The
+room allotment migration awaits approval on the shared database before this
+checkpoint can be deployed.
 
 ## Implemented
 
@@ -121,8 +121,8 @@ departure allocation/availability and passenger seat assignment before this sess
   blank return time, the vehicle is considered in use through the return
   date, or through the departure date if the return date is blank.
 - Hotel stays must fit within the known travel dates. Creating a second
-  overlapping stay for the same hotel on one departure is blocked.
-  Across-departure room inventory remains part of the allotment work.
+  overlapping stay for the same hotel on one departure is blocked. Room
+  availability accounts for other departures that share the hotel.
 
 ## Vehicle and seat layout editing
 
@@ -154,10 +154,27 @@ departure allocation/availability and passenger seat assignment before this sess
   check-in and check-out dates, or optional itinerary stop. Dates use the
   Bangladesh calendar and must fit within the trip. A hotel's stays on the
   same departure may meet at checkout and must otherwise be disjoint.
-- Existing room assignments lock a stay's hotel and dates. Staff can still
-  link the stay to a stop on the departure's itinerary, manage assignments,
-  or remove the stay after unassigning its passengers. Physical room
-  allotments across departures are still pending.
+- Room assignments and allotments lock a stay's hotel and dates. Staff can
+  still link the stay to a stop on the departure's itinerary. Removing a stay
+  requires releasing its allotments and unassigning its passengers.
+
+## Room allotments across departures
+
+- Open **Admin → Departures → Scheduled Stays → Manage Room Assignment → Room
+  allotments** to reserve shared places or a whole private or couple room for a
+  stay. Capacity is measured per Bangladesh calendar night. Another stay may
+  check in on the previous stay's checkout day.
+- A shared room uses the larger of its allotment and assigned passenger count
+  for each stay. A private or couple room uses one whole room on each night,
+  and new assignments within that room are limited to a single booking.
+  Assignments also use available inventory when there is no explicit allotment.
+- Assignment history stays intact. Releasing an allotment leaves assigned
+  places committed. If legacy assignments overlap beyond capacity, the room
+  panel marks the conflict and blocks new assignments until it is resolved.
+- Allotment changes, assignments, and room edits lock the same physical room
+  before they validate capacity. Room edits cannot reduce capacity below
+  reservations and assignments, or switch between shared and exclusive while
+  commitments exist. Guest booking still uses manual lodging verification.
 
 ## Guest reservations and seat holds (Phase 5)
 
@@ -202,8 +219,9 @@ departure allocation/availability and passenger seat assignment before this sess
   Room assignment edits and stay removal now lock the stay before
   checking occupancy or existing assignments.
 - The booking records one requested room option. Staff coordinate its
-  availability, then assign physical rooms by stay. Automated room allotments,
-  gateway payment verification, and automatic confirmation remain future work.
+  availability, then reserve and assign physical rooms by stay. Customer-facing
+  lodging holds, gateway payment verification, and automatic confirmation
+  remain future work.
 
 ## Stack and database
 
@@ -226,12 +244,16 @@ Migration packages on disk:
 4. `20261121T1722_guest_reservation_holds`
 5. `20261121T2144_manual_booking_confirmation`
 6. `20261121T2205_itinerary_stop_order`
+7. `20261122T0950_room_allotments`
 
 Prisma `db verify` confirmed that the shared database marker and actual schema
 match the contract after migration 6. The stop-order column defaults to zero,
 so existing stops keep their previous ID-based order until staff save an
-itinerary. Use a disposable PostgreSQL instance for automated mutation and
-concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
+itinerary. Migration 7 adds allotments and an index for room occupancy checks.
+It preserves existing assignments and passed `db migrate` and `db verify` on
+isolated PostgreSQL. The shared database remains at migration 6. Apply migration
+7 there only with the owner's approval, before deploying this checkpoint.
+Use a disposable PostgreSQL instance for automated mutation and concurrency tests. See `docs/INVENTORY_MODEL.md` for isolated local runner
 instructions.
 
 ## Business rules to preserve
@@ -248,7 +270,7 @@ instructions.
 
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
-- `npm test`: 16 passed with an isolated PostgreSQL server.
+- `npm test`: 19 passed with an isolated PostgreSQL server.
 - `npm run build -- --webpack`: passed. Turbopack could not bind its worker
   port in the local tool environment.
 - `git diff --check`: passed.
@@ -291,10 +313,15 @@ instructions.
   each hotel stay. It also verified booking-specific links, pending and empty
   states, and live count changes after assigning a bus seat, assigning a room,
   and removing a room assignment on disposable PostgreSQL.
+- Authenticated allotment checks on disposable PostgreSQL verified overlapping
+  shared places, exclusive rooms, same-day reuse, legacy conflicts, room and
+  stay edit guards, and concurrent claims on the last capacity. Headless Chrome
+  verified saving and releasing shared places and releasing an exclusive room.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle
-removal, hotel, room, and stay edits, room assignments, and page protection.
+removal, hotel, room, and stay edits, room allotments and assignments, and page
+protection.
 Stop any running `next dev` server before tests: the HTTP suite starts its own.
 Two native PostgreSQL migration tests may skip without `TEST_DATABASE_URL`;
 configure only an isolated localhost test server to run those checks.
@@ -330,10 +357,9 @@ configure only an isolated localhost test server to run those checks.
   allocated vehicles and seats to its enabled layout entries. Respect seat
   eligibility from the booking snapshot. Keep each room assignment scoped to
   one hotel stay so the same guest can have a room at every stop.
-- Changes within one hotel stay are serialized before the capacity check.
-  Define by-stay room allotments and account for overlap between departures before
-  offering guaranteed lodging. Shared rooms consume places and exclusive
-  rooms consume a room. Preserve existing assignment data during the change.
+- Staff can set by-stay allotments. Shared and exclusive room availability
+  accounts for overlapping departures and existing assignments. Guest checkout
+  still requires lodging holds before it can offer guaranteed rooms.
 - Acceptance checks cover a new guest from quote through confirmation and
   assignments, independent assignments at two hotels, an infant excluded
   from bus seating, concurrent attempts for the last seat or room place, and

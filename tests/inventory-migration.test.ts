@@ -69,6 +69,13 @@ test("assignment migration preserves data and enforces departure/stay scope", op
     await migrate(url);
     assert.equal((await db.query<{ departureId: number }>(`SELECT "departureId" FROM "SeatAssignment" WHERE id=1`)).rows[0].departureId, 1);
     assert.equal((await db.query<{ totalAmount: string }>(`SELECT "totalAmount" FROM "Booking" WHERE id=1`)).rows[0].totalAmount, "1000");
+    assert.equal((await db.query<{ roomId: number }>(`SELECT "roomId" FROM "RoomAssignment" WHERE id=1`)).rows[0].roomId, 1);
+    const allotment = (stayId: number, roomId: number, places: number) =>
+      `INSERT INTO "RoomAllotment" ("hotelStayId","roomId",places,"updatedAt") VALUES (${stayId},${roomId},${places},NOW())`;
+    await db.exec(allotment(1, 1, 2));
+    await assert.rejects(db.exec(allotment(1, 1, 1)), /duplicate key/i);
+    await assert.rejects(db.exec(allotment(2, 3, 0)), /check constraint/i);
+    await assert.rejects(db.exec(allotment(999, 1, 1)), /foreign key/i);
     // One physical seat may be reused on another departure.
     await db.exec(`INSERT INTO "SeatAssignment" ("passengerId","departureId","vehicleId","seatId","updatedAt") VALUES (3,2,1,1,NOW());`);
     await assert.rejects(db.exec(`INSERT INTO "SeatAssignment" ("passengerId","departureId","vehicleId","seatId","updatedAt") VALUES (2,1,1,1,NOW());`), /duplicate key/i);

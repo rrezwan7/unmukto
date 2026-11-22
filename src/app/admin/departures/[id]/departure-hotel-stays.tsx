@@ -207,7 +207,7 @@ export default function DepartureHotelStays({
                           </span>
                           {stop && <span className="block">Day {stop.dayNumber} · {stop.name}</span>}
                           <span className="block font-medium text-foreground">
-                            {stay.assignmentCount} assigned · {stay.roomCount} physical rooms
+                            {stay.assignmentCount} assigned · {stay.allotmentCount} allotted · {stay.roomCount} physical rooms
                           </span>
                         </div>
                       </div>

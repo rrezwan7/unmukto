@@ -1,5 +1,7 @@
 import { lockRoom } from "@/lib/accommodation-editor";
 import { checkAdminApi } from "@/lib/admin-auth";
+import { roomAvailability } from "@/lib/room-capacity";
+import { roomCommitments, stayNights } from "@/lib/room-inventory";
 import { canAssignPassenger, holdIsActive, lockHotelStay } from "@/lib/reservation-inventory";
 
 type Props = {
@@ -40,11 +42,13 @@ export async function GET(_request: Request, { params }: Props) {
       );
     }
 
-    const [hotel, rooms, bookings, assignments] = await Promise.all([
+    const [hotel, rooms, bookings, assignments, commitments] = await Promise.all([
       db.orm.public.Hotel.where({ id: stay.hotelId }).first(),
       db.orm.public.Room.where({ hotelId: stay.hotelId }).all(),
       db.orm.public.Booking.where({ departureId }).all(),
-      db.orm.public.RoomAssignment.where({ hotelStayId: stayId }).all(),
+      db.orm.public.RoomAssignment.where({ hotelStayId: stayId })
+        .include("passenger", (passenger) => passenger.select("bookingId")).all(),
+      roomCommitments(stay.hotelId),
     ]);
 
     rooms.sort((a, b) =>
@@ -71,26 +75,31 @@ export async function GET(_request: Request, { params }: Props) {
       assignments.map((a) => [a.passengerId, a])
     );
 
-    // Calculate room occupancy
-    const passengerCountByRoom = new Map<number, number>();
-    for (const a of assignments) {
-      passengerCountByRoom.set(
-        a.roomId,
-        (passengerCountByRoom.get(a.roomId) ?? 0) + 1
-      );
+    const bookingIdsByRoom = new Map<number, Set<number>>();
+    for (const assignment of assignments) {
+      if (!assignment.passenger) continue;
+      const bookingIds = bookingIdsByRoom.get(assignment.roomId) ?? new Set<number>();
+      bookingIds.add(assignment.passenger.bookingId);
+      bookingIdsByRoom.set(assignment.roomId, bookingIds);
     }
 
+    const nights = stayNights(stay);
     const enrichedRooms = rooms.map((room) => {
-      const occupied = passengerCountByRoom.get(room.id) ?? 0;
+      const inventory = roomAvailability(room, nights, commitments.get(room.id) ?? []);
       return {
         id: room.id,
         roomNumber: room.roomNumber,
         roomType: room.roomType,
         capacity: room.capacity,
         description: room.description,
-        occupied,
-        isFull: occupied >= room.capacity,
-        availableSlots: Math.max(0, room.capacity - occupied),
+        occupied: inventory.assigned,
+        allotted: inventory.allotted,
+        availableForAllotment: inventory.available,
+        availableSlots: inventory.availableSlots,
+        isFull: inventory.availableSlots === 0,
+        overbooked: inventory.overbooked,
+        exclusive: inventory.exclusive,
+        bookingIds: [...(bookingIdsByRoom.get(room.id) ?? [])],
       };
     });
 
@@ -213,9 +222,9 @@ export async function POST(request: Request, { params }: Props) {
         return fail("Room does not belong to this stay's hotel.", 409);
       }
 
-      // Check current occupancy in this room for this stay
       const currentRoomAssignments = await tx.orm.public.RoomAssignment
         .where({ hotelStayId: stayId })
+        .include("passenger", (passenger) => passenger.select("bookingId"))
         .all();
 
       const occupantsInTargetRoom = currentRoomAssignments.filter(
@@ -234,12 +243,18 @@ export async function POST(request: Request, { params }: Props) {
         });
       }
 
-      // If switching rooms or new assignment, check target room capacity
-      if (occupantsInTargetRoom.length >= room.capacity) {
-        return fail(
-          `Room ${room.roomNumber} is full (capacity: ${room.capacity} occupants).`,
-          409
-        );
+      const scheduledStay = await tx.orm.public.HotelStay.where({ id: stayId }).first();
+      if (!scheduledStay) return fail("Hotel stay not found for this departure.", 404);
+      const commitments = await roomCommitments(stay.hotelId, roomId, tx);
+      const inventory = roomAvailability(room, stayNights(scheduledStay), commitments.get(roomId) ?? []);
+      if (inventory.exclusive &&
+          occupantsInTargetRoom.some((assignment) => assignment.passenger?.bookingId !== booking.id)) {
+        return fail("This exclusive room is already in use by another booking on this stay.", 409);
+      }
+      if (inventory.availableSlots === 0) {
+        return fail(inventory.assigned >= room.capacity
+          ? `Room ${room.roomNumber} is full (capacity: ${room.capacity} occupants).`
+          : `Room ${room.roomNumber} has insufficient capacity on at least one night because of overlapping stays.`, 409);
       }
 
       let assignment;

@@ -72,6 +72,10 @@
       "model": "Room",
       "namespace": "public"
     },
+    "RoomAllotment": {
+      "model": "RoomAllotment",
+      "namespace": "public"
+    },
     "RoomAssignment": {
       "model": "RoomAssignment",
       "namespace": "public"
@@ -2100,6 +2104,21 @@
                   "namespace": "public"
                 }
               },
+              "roomAllotments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "hotelStayId"
+                  ]
+                },
+                "to": {
+                  "model": "RoomAllotment",
+                  "namespace": "public"
+                }
+              },
               "roomAssignments": {
                 "cardinality": "1:N",
                 "on": {
@@ -2661,6 +2680,21 @@
               }
             },
             "relations": {
+              "allotments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "roomId"
+                  ]
+                },
+                "to": {
+                  "model": "RoomAllotment",
+                  "namespace": "public"
+                }
+              },
               "assignments": {
                 "cardinality": "1:N",
                 "on": {
@@ -2722,6 +2756,110 @@
               },
               "namespaceId": "public",
               "table": "Room"
+            }
+          },
+          "RoomAllotment": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "hotelStayId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "places": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "roomId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "hotelStay": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "hotelStayId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "HotelStay",
+                  "namespace": "public"
+                }
+              },
+              "room": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "roomId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Room",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "hotelStayId": {
+                  "column": "hotelStayId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "places": {
+                  "column": "places"
+                },
+                "roomId": {
+                  "column": "roomId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "RoomAllotment"
             }
           },
           "RoomAssignment": {
@@ -5543,6 +5681,120 @@
                 }
               ]
             },
+            "RoomAllotment": {
+              "checks": [
+                {
+                  "expression": "places BETWEEN 1 AND 20",
+                  "name": "RoomAllotment_places_range_55d67ee1",
+                  "prefix": "RoomAllotment_places_range"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "hotelStayId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "places": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "roomId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "hotelStayId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "RoomAllotment"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "HotelStay"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "roomId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "RoomAllotment"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Room"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "hotelStayId"
+                  ],
+                  "name": "RoomAllotment_hotelStayId_idx_05988de1",
+                  "prefix": "RoomAllotment_hotelStayId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "roomId"
+                  ],
+                  "name": "RoomAllotment_roomId_idx_fe51d647",
+                  "prefix": "RoomAllotment_roomId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "hotelStayId",
+                    "roomId"
+                  ]
+                }
+              ]
+            },
             "RoomAssignment": {
               "columns": {
                 "createdAt": {
@@ -5651,6 +5903,15 @@
                   ],
                   "name": "RoomAssignment_passengerId_idx_21958ace",
                   "prefix": "RoomAssignment_passengerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "roomId",
+                    "hotelStayId"
+                  ],
+                  "name": "RoomAssignment_roomId_hotelStayId_idx_fd7c6d81",
+                  "prefix": "RoomAssignment_roomId_hotelStayId_idx",
                   "unique": false
                 },
                 {
@@ -6334,10 +6595,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "bec5ab85ea67e7b0d71baeaa4d78cc385d194ddc5a602b7c435b404ee52abc63"
+    "storageHash": "fe60a6c70c033c5a9b8e15f2f57ef5366accdef77962c5d7ba2243f95660c928"
   },
   "execution": {
-    "executionHash": "88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36",
+    "executionHash": "f71f92c61ca849d8eb188773cdf186a4990bcbd40ceaf5e21f3aa18b4592f02d",
     "mutations": {
       "defaults": [
         {
@@ -6516,6 +6777,21 @@
           },
           "ref": {
             "entry": "Room",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "RoomAllotment",
             "field": "updatedAt",
             "namespace": "public"
           }

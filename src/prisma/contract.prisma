@@ -289,6 +289,7 @@ model Room {
   hotel       Hotel                      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
   assignments RoomAssignment[]
+  allotments  RoomAllotment[]
 
   createdAt   TimestamptzString          @default(now())
   updatedAt   temporal.updatedAtString()
@@ -309,6 +310,7 @@ model HotelStay {
   destination     Destination?               @relation(fields: [destinationId], references: [id])
 
   roomAssignments RoomAssignment[]
+  roomAllotments  RoomAllotment[]
 
   createdAt       TimestamptzString          @default(now())
   updatedAt       temporal.updatedAtString()
@@ -428,6 +430,26 @@ model RoomAssignment {
   updatedAt   temporal.updatedAtString()
 
   @@unique([passengerId, hotelStayId])
+  @@index([roomId, hotelStayId])
+}
+
+model RoomAllotment {
+  id          Int      @id @default(autoincrement())
+  hotelStayId Int
+  roomId      Int
+
+  // Shared rooms reserve passenger places. An exclusive room reserves one unit.
+  places      Int
+
+  hotelStay   HotelStay @relation(fields: [hotelStayId], references: [id])
+  room        Room      @relation(fields: [roomId], references: [id])
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@unique([hotelStayId, roomId])
+  @@index([roomId])
+  @@check(expression: "places BETWEEN 1 AND 20", name: "RoomAllotment_places_range")
 }
 
 model Payment {

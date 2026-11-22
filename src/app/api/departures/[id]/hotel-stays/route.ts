@@ -42,6 +42,7 @@ export async function GET(_request: Request, { params }: Props) {
         .include("hotel", (hotel) => hotel.select("name", "location", "phone")
           .include("rooms", (rooms) => rooms.count()))
         .include("roomAssignments", (assignments) => assignments.count())
+        .include("roomAllotments", (allotments) => allotments.count())
         .all(),
       db.orm.public.Itinerary.where({ tourId: departure.tourId }).select("dayNumber")
         .include("destinations", (stops) => stops.select("id", "name")
@@ -75,6 +76,7 @@ export async function GET(_request: Request, { params }: Props) {
         hotelPhone: hotel?.phone ?? null,
         roomCount: hotel?.rooms ?? 0,
         assignmentCount: stay.roomAssignments,
+        allotmentCount: stay.roomAllotments,
       };
     });
 

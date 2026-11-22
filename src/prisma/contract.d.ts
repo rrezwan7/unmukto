@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'bec5ab85ea67e7b0d71baeaa4d78cc385d194ddc5a602b7c435b404ee52abc63'>;
+  StorageHashBase<'fe60a6c70c033c5a9b8e15f2f57ef5366accdef77962c5d7ba2243f95660c928'>;
 export type ExecutionHash =
-  ExecutionHashBase<'88b8d7c76db18e708ea7e9541206002d84c2a63884adecb0a0f7e226fabede36'>;
+  ExecutionHashBase<'f71f92c61ca849d8eb188773cdf186a4990bcbd40ceaf5e21f3aa18b4592f02d'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -440,6 +440,14 @@ export type FieldOutputTypes = {
       readonly roomType: 'SHARED' | 'COUPLE' | 'PRIVATE';
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly RoomAllotment: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly places: CodecTypes['pg/int4@1']['output'];
+      readonly roomId: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly RoomAssignment: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly hotelStayId: CodecTypes['pg/int4@1']['output'];
@@ -697,6 +705,14 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly roomNumber: CodecTypes['pg/text@1']['input'];
       readonly roomType: 'SHARED' | 'COUPLE' | 'PRIVATE';
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly RoomAllotment: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly places: CodecTypes['pg/int4@1']['input'];
+      readonly roomId: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly RoomAssignment: {
@@ -958,6 +974,14 @@ export type StorageColumnTypes = {
       readonly roomType: 'SHARED' | 'COUPLE' | 'PRIVATE';
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly RoomAllotment: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly places: CodecTypes['pg/int4@1']['output'];
+      readonly roomId: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly RoomAssignment: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly hotelStayId: CodecTypes['pg/int4@1']['output'];
@@ -1215,6 +1239,14 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly roomNumber: CodecTypes['pg/text@1']['input'];
       readonly roomType: 'SHARED' | 'COUPLE' | 'PRIVATE';
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly RoomAllotment: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly hotelStayId: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly places: CodecTypes['pg/int4@1']['input'];
+      readonly roomId: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly RoomAssignment: {
@@ -1475,8 +1507,10 @@ export namespace Models {
     departure: public_Departure;
     destination: public_Destination | null;
     hotel: public_Hotel;
+    roomAllotments: public_RoomAllotment[];
     roomAssignments: public_RoomAssignment[];
-    readonly [RelationKeys]?: 'departure' | 'destination' | 'hotel' | 'roomAssignments';
+    readonly [RelationKeys]?:
+      'departure' | 'destination' | 'hotel' | 'roomAllotments' | 'roomAssignments';
   };
   export type public_Itinerary = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1532,9 +1566,21 @@ export namespace Models {
     roomNumber: CodecTypes['pg/text@1']['output'];
     roomType: 'SHARED' | 'COUPLE' | 'PRIVATE';
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    allotments: public_RoomAllotment[];
     assignments: public_RoomAssignment[];
     hotel: public_Hotel;
-    readonly [RelationKeys]?: 'assignments' | 'hotel';
+    readonly [RelationKeys]?: 'allotments' | 'assignments' | 'hotel';
+  };
+  export type public_RoomAllotment = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    hotelStayId: CodecTypes['pg/int4@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    places: CodecTypes['pg/int4@1']['output'];
+    roomId: CodecTypes['pg/int4@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    hotelStay: public_HotelStay;
+    room: public_Room;
+    readonly [RelationKeys]?: 'hotelStay' | 'room';
   };
   export type public_RoomAssignment = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -1648,6 +1694,7 @@ export declare const models: {
     Passenger: Models.public_Passenger;
     Payment: Models.public_Payment;
     Room: Models.public_Room;
+    RoomAllotment: Models.public_RoomAllotment;
     RoomAssignment: Models.public_RoomAssignment;
     Seat: Models.public_Seat;
     SeatAssignment: Models.public_SeatAssignment;
@@ -3168,6 +3215,87 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly RoomAllotment: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly hotelStayId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly places: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly roomId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['hotelStayId', 'roomId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'RoomAllotment_hotelStayId_idx_05988de1';
+                  readonly prefix: 'RoomAllotment_hotelStayId_idx';
+                  readonly columns: readonly ['hotelStayId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'RoomAllotment_roomId_idx_fe51d647';
+                  readonly prefix: 'RoomAllotment_roomId_idx';
+                  readonly columns: readonly ['roomId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'RoomAllotment';
+                    readonly columns: readonly ['hotelStayId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'HotelStay';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'RoomAllotment';
+                    readonly columns: readonly ['roomId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Room';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly RoomAssignment: {
               columns: {
                 readonly createdAt: {
@@ -3219,6 +3347,12 @@ type ContractBase = Omit<
                   readonly name: 'RoomAssignment_passengerId_idx_21958ace';
                   readonly prefix: 'RoomAssignment_passengerId_idx';
                   readonly columns: readonly ['passengerId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'RoomAssignment_roomId_hotelStayId_idx_fd7c6d81';
+                  readonly prefix: 'RoomAssignment_roomId_hotelStayId_idx';
+                  readonly columns: readonly ['roomId', 'hotelStayId'];
                   readonly unique: false;
                 },
                 {
@@ -3797,6 +3931,10 @@ type ContractBase = Omit<
     readonly Passenger: { readonly namespace: 'public' & NamespaceId; readonly model: 'Passenger' };
     readonly Payment: { readonly namespace: 'public' & NamespaceId; readonly model: 'Payment' };
     readonly Room: { readonly namespace: 'public' & NamespaceId; readonly model: 'Room' };
+    readonly RoomAllotment: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'RoomAllotment';
+    };
     readonly RoomAssignment: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'RoomAssignment';
@@ -4989,6 +5127,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly roomAllotments: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RoomAllotment';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['hotelStayId'];
+                };
+              };
               readonly roomAssignments: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5335,6 +5484,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly allotments: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RoomAllotment';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['roomId'];
+                };
+              };
               readonly assignments: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5370,6 +5530,75 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly roomNumber: { readonly column: 'roomNumber' };
                 readonly roomType: { readonly column: 'roomType' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly RoomAllotment: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly hotelStayId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly places: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly roomId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly hotelStay: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'HotelStay';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['hotelStayId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly room: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Room' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['roomId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'RoomAllotment';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly hotelStayId: { readonly column: 'hotelStayId' };
+                readonly id: { readonly column: 'id' };
+                readonly places: { readonly column: 'places' };
+                readonly roomId: { readonly column: 'roomId' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
@@ -6172,6 +6401,15 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Room';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'RoomAllotment';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

@@ -24,18 +24,6 @@ export async function roomNumberExists(tx: BookingTransaction, hotelId: number, 
   return rooms.some((room) => room.id !== roomId && room.roomNumber.trim().toUpperCase() === roomNumber);
 }
 
-export async function roomOverCapacity(tx: BookingTransaction, roomId: number, proposedCapacity: number) {
-  const [stay] = await tx.query(db.raw.sql`
-    SELECT "hotelStayId" FROM "RoomAssignment"
-    WHERE "roomId" = ${roomId}::int
-    GROUP BY "hotelStayId"
-    HAVING count(*) > ${proposedCapacity}::int
-    ORDER BY count(*) DESC, "hotelStayId"
-    LIMIT 1
-  `.returnsRow({ hotelStayId: "pg/int4@1" }).build());
-  return stay;
-}
-
 type StayDates = Parameters<typeof stayOutsideSchedule>[1];
 
 export async function stayDateConflict(
