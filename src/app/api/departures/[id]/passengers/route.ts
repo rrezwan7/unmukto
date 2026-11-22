@@ -1,5 +1,5 @@
 import { checkAdminApi } from "@/lib/admin-auth";
-import { canAssignPassenger, holdIsActive } from "@/lib/reservation-inventory";
+import { canAssignPassenger, holdIsActive, passengerNeedsSeat } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -57,13 +57,8 @@ export async function GET(_request: Request, { params }: Props) {
         return passengers.map((passenger) => {
           const assignment = assignmentByPassenger.get(passenger.id);
 
-          const eligibleForSeat = canAssignPassenger(booking) && (
-            passenger.passengerType === "ADULT" ||
-            (
-              passenger.passengerType === "CHILD" &&
-              booking.childFeeEnabledAtBooking
-            )
-          );
+          const eligibleForSeat = canAssignPassenger(booking) &&
+            passengerNeedsSeat(passenger.passengerType, booking.childFeeEnabledAtBooking);
 
           return {
             id: passenger.id,

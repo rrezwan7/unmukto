@@ -1,6 +1,6 @@
 import { checkAdminApi } from "@/lib/admin-auth";
 import { isDatabaseId } from "@/lib/tour-editor";
-import { canAssignPassenger, lockDeparture } from "@/lib/reservation-inventory";
+import { canAssignPassenger, lockDeparture, passengerNeedsSeat } from "@/lib/reservation-inventory";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -64,14 +64,7 @@ export async function POST(request: Request, { params }: Props) {
         return fail("This booking cannot receive a seat assignment.", 409);
       }
 
-      const eligible =
-        passenger.passengerType === "ADULT" ||
-        (
-          passenger.passengerType === "CHILD" &&
-          booking.childFeeEnabledAtBooking
-        );
-
-      if (!eligible) {
+      if (!passengerNeedsSeat(passenger.passengerType, booking.childFeeEnabledAtBooking)) {
         return fail("This passenger is not eligible for a transport seat.");
       }
 

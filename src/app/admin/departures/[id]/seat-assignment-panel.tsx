@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import DepartureSeatMap from "./departure-seat-map";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export default function SeatAssignmentPanel({
   vehicleId: number;
   bookingId?: number;
 }) {
+  const router = useRouter();
   const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [seats, setSeats] = useState<Seat[]>([]);
   const [passengerId, setPassengerId] = useState("");
@@ -148,6 +150,7 @@ export default function SeatAssignmentPanel({
 
       setMessage("Seat assigned successfully.");
       refreshOptions();
+      router.refresh();
     } catch (error) {
       setError(
         error instanceof Error

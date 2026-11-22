@@ -17,9 +17,11 @@ been applied and verified on the shared database. The owner tested booking
 confirmation, bus seat assignment, and hotel room assignment successfully on
 localhost. Vehicle and seat editing and guarded departure vehicle removal have
 passed browser checks on a disposable database. Hotel, room, and scheduled
-stay editing passed the same verification. The tour, itinerary, and departure
-editors are ready for the owner's walkthrough. Admin editing uses the existing
-database schema. Vercel deployment can be handled separately.
+stay editing passed the same verification. Confirmed guest reservations now show
+bus seat and hotel room assignment progress. The tour, itinerary, and departure
+editors are ready for the owner's walkthrough. Admin editing and assignment
+progress use the existing database schema. Vercel deployment can be handled
+separately.
 
 ## Implemented
 
@@ -192,6 +194,11 @@ departure allocation/availability and passenger seat assignment before this sess
   pending bookings that have no expiry. A new pending guest hold is ineligible
   for both kinds of assignment until it is confirmed. Links on a confirmed
   booking open the assignment tools filtered to that booking's passengers.
+  Confirmed reservations show assigned and required bus seats based on their
+  pricing snapshot, plus completed hotel stays for bookings that requested a
+  room. Opening a reservation shows how many passengers have a room at each
+  scheduled stay. Assigning seats or rooms, removing room assignments, or
+  changing the stay list refreshes the summary.
   Room assignment edits and stay removal now lock the stay before
   checking occupancy or existing assignments.
 - The booking records one requested room option. Staff coordinate its
@@ -279,6 +286,11 @@ instructions.
   Bangladesh date boundaries, itinerary stop ownership, and concurrent
   edits and assignments. Headless Chrome verified saving all three edit
   forms and showed that room assignments lock a stay's hotel and dates.
+- Headless Chrome verified that confirmed reservation summaries use the
+  booking's child seat eligibility and count room assignments separately for
+  each hotel stay. It also verified booking-specific links, pending and empty
+  states, and live count changes after assigning a bus seat, assigning a room,
+  and removing a room assignment on disposable PostgreSQL.
 
 `npm test` includes auth policy/HTTP access tests and embedded PostgreSQL migration
 checks. The HTTP suite covers vehicle and seat layout edits, departure vehicle
@@ -312,7 +324,8 @@ configure only an isolated localhost test server to run those checks.
 
 - **Assign bus seats** and **Assign hotel rooms** now link from confirmed
   bookings to the existing departure tools with that booking selected.
-  A per-booking assignment progress summary is still pending.
+  Guest Reservations shows seat counts and room assignment progress by stay
+  for each confirmed booking.
 - Reuse the seat and room assignment APIs. Filter buses to the departure's
   allocated vehicles and seats to its enabled layout entries. Respect seat
   eligibility from the booking snapshot. Keep each room assignment scoped to

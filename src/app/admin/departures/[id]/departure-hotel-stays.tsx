@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import StayRoomAssignmentPanel from "./stay-room-assignment-panel";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export default function DepartureHotelStays({
   departureId: number;
   bookingId?: number;
 }) {
+  const router = useRouter();
   const [hotels, setHotels] = useState<StayHotel[]>([]);
   const [stays, setStays] = useState<Stay[]>([]);
   const [stops, setStops] = useState<StayStop[]>([]);
@@ -89,10 +91,15 @@ export default function DepartureHotelStays({
     setStayMessage("");
   }
 
+  function refreshStays() {
+    setRevision((revision) => revision + 1);
+    router.refresh();
+  }
+
   function staySaved(message: string) {
     setStayError("");
     setStayMessage(message);
-    setRevision((revision) => revision + 1);
+    refreshStays();
   }
 
   async function handleDeleteStay(stayId: number) {
@@ -254,7 +261,7 @@ export default function DepartureHotelStays({
                         stayId={stay.id}
                         hotelId={stay.hotelId}
                         bookingId={bookingId}
-                        onAssignmentChange={() => setRevision((r) => r + 1)}
+                        onAssignmentChange={refreshStays}
                       />
                     )}
                   </div>

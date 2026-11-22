@@ -46,6 +46,10 @@ export function canAssignPassenger(
     (booking.status === "PENDING" && booking.holdExpiresAt === null);
 }
 
+export function passengerNeedsSeat(passengerType: string, childFeeEnabledAtBooking: boolean) {
+  return passengerType === "ADULT" || (passengerType === "CHILD" && childFeeEnabledAtBooking);
+}
+
 export async function committedSeatCounts(departureId: number | null = null, tx?: BookingTransaction) {
   // A passenger already assigned a seat still consumes only one place.
   const filter = departureId ?? 0;

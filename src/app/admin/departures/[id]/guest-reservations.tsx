@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Temporal } from "temporal-polyfill";
 import { db } from "@/prisma/db";
+import { localDepartureDay } from "@/lib/departure-schedule";
+import { passengerNeedsSeat } from "@/lib/reservation-inventory";
 import { confirmGuestBooking } from "./confirm-guest-booking";
 import ManualConfirmationForm from "./manual-confirmation-form";
 
@@ -44,23 +46,121 @@ async function loadReservations(departureId: number, filter: string, page: numbe
 
   const bookings = await query
     .select("id", "bookingNumber", "status", "guestContactName", "guestContactPhone",
-      "guestContactEmail", "totalAmount", "paidAmount", "holdExpiresAt", "confirmedAt", "confirmedByGithubId")
+      "guestContactEmail", "totalAmount", "paidAmount", "holdExpiresAt", "confirmedAt", "confirmedByGithubId",
+      "childFeeEnabledAtBooking", "roomOptionId")
     .include("roomOption", (room) => room.select("roomType"))
     .include("passengers", (passengers) => passengers.select("id", "name", "passengerType")
+      .include("seatAssignment", (assignment) => assignment.select("departureId"))
+      .include("roomAssignments", (assignments) => assignments.select("hotelStayId"))
       .orderBy((passenger) => passenger.id.asc()))
     .orderBy((booking) => booking.id.desc())
     .limit(pageSize + 1)
     .offset((page - 1) * pageSize)
     .all();
 
+  const currentPage = bookings.slice(0, pageSize);
+  const scheduledStays = currentPage.some((booking) => booking.status === "CONFIRMED" && booking.roomOptionId !== null)
+    ? await db.orm.public.HotelStay.where({ departureId }).select("id", "checkInDate", "checkOutDate")
+      .include("hotel", (hotel) => hotel.select("name"))
+      .orderBy([(stay) => stay.checkInDate.asc(), (stay) => stay.id.asc()]).all()
+    : [];
+  const stays = scheduledStays.map((stay) => ({
+    id: stay.id,
+    hotel: stay.hotel?.name ?? "Hotel stay",
+    checkIn: localDepartureDay(stay.checkInDate).toString(),
+    checkOut: localDepartureDay(stay.checkOutDate).toString(),
+  }));
+
   return {
     hasNextPage: bookings.length > pageSize,
-    bookings: bookings.slice(0, pageSize).map((booking) => {
+    bookings: currentPage.map((booking) => {
       const expired = booking.status === "PENDING" && booking.holdExpiresAt !== null &&
         Temporal.Instant.compare(booking.holdExpiresAt, now) <= 0;
-      return { ...booking, reviewStatus: expired ? "EXPIRED" : booking.status };
+      return {
+        ...booking,
+        reviewStatus: expired ? "EXPIRED" : booking.status,
+        progress: booking.status === "CONFIRMED" ? assignmentProgress(booking, stays, departureId) : null,
+      };
     }),
   };
+}
+
+type ReservationPassenger = {
+  passengerType: string;
+  seatAssignment: { departureId: number } | null;
+  roomAssignments: { hotelStayId: number }[];
+};
+
+type ReservationStay = {
+  id: number;
+  hotel: string;
+  checkIn: string;
+  checkOut: string;
+};
+
+function assignmentProgress(booking: {
+  childFeeEnabledAtBooking: boolean;
+  roomOptionId: number | null;
+  passengers: ReservationPassenger[];
+}, stays: ReservationStay[], departureId: number) {
+  const seatPassengers = booking.passengers.filter((passenger) =>
+    passengerNeedsSeat(passenger.passengerType, booking.childFeeEnabledAtBooking));
+  const assignedSeats = seatPassengers.filter((passenger) => passenger.seatAssignment?.departureId === departureId).length;
+
+  if (booking.roomOptionId === null) {
+    return { assignedSeats, requiredSeats: seatPassengers.length, roomProgress: null };
+  }
+
+  const roomAssignments = new Map<number, number>();
+  for (const passenger of booking.passengers) {
+    for (const { hotelStayId } of passenger.roomAssignments) {
+      roomAssignments.set(hotelStayId, (roomAssignments.get(hotelStayId) ?? 0) + 1);
+    }
+  }
+
+  return {
+    assignedSeats,
+    requiredSeats: seatPassengers.length,
+    roomProgress: {
+      passengers: booking.passengers.length,
+      stays: stays.map((stay) => ({
+        ...stay,
+        assigned: roomAssignments.get(stay.id) ?? 0,
+      })),
+    },
+  };
+}
+
+type AssignmentProgress = ReturnType<typeof assignmentProgress>;
+
+function AssignmentSummary({ progress }: { progress: AssignmentProgress }) {
+  const { assignedSeats, requiredSeats, roomProgress } = progress;
+  const completed = roomProgress?.stays.filter((stay) => stay.assigned === roomProgress.passengers).length;
+  const rooms = roomProgress ? "No hotel stays scheduled" : "No room requested";
+
+  return (
+    <span className="ml-2 inline-flex flex-wrap gap-x-3 text-xs font-normal text-muted-foreground">
+      <span>{requiredSeats ? `Bus seats ${assignedSeats} of ${requiredSeats}` : "No bus seats required"}</span>
+      <span>{roomProgress?.stays.length ? `Hotel stays ${completed} of ${roomProgress.stays.length} complete` : rooms}</span>
+    </span>
+  );
+}
+
+function RoomAssignmentsByStay({ progress }: { progress: AssignmentProgress["roomProgress"] }) {
+  if (!progress?.stays.length) return null;
+  return (
+    <div>
+      <h3 className="font-medium">Room assignments by stay</h3>
+      <ul className="mt-1 grid gap-1">
+        {progress.stays.map((stay) => (
+          <li key={stay.id}>
+            {stay.hotel} <span className="text-muted-foreground">· {stay.checkIn} to {stay.checkOut}</span>
+            <span> · {stay.assigned} of {progress.passengers} passengers assigned</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default async function GuestReservations({
@@ -79,6 +179,8 @@ export default async function GuestReservations({
   const { bookings, hasNextPage } = await loadReservations(departureId, status, page);
   const href = (filter: typeof status, pageNumber = 1) =>
     `/admin/departures/${departureId}?guestStatus=${filter}&guestPage=${pageNumber}#guest-reservations`;
+  const assignmentHref = (bookingId: number, section: string) =>
+    `/admin/departures/${departureId}?guestStatus=${status}&guestPage=${page}&assignmentBooking=${bookingId}#${section}`;
 
   return (
     <section id="guest-reservations" className="my-6 scroll-mt-4 rounded-lg border p-6" aria-labelledby="guest-reservations-heading">
@@ -107,6 +209,7 @@ export default async function GuestReservations({
               <details>
                 <summary className="cursor-pointer rounded-sm font-medium focus-visible:outline-ring">
                   {booking.bookingNumber} <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{booking.reviewStatus}</span>
+                  {booking.progress && <AssignmentSummary progress={booking.progress} />}
                 </summary>
                 <div className="mt-3 grid gap-4 sm:grid-cols-2">
                   <dl className="grid gap-2">
@@ -156,10 +259,13 @@ export default async function GuestReservations({
                     hasRoomRequest={booking.roomOption !== null}
                   />
                 )}
-                {booking.reviewStatus === "CONFIRMED" && (
-                  <div className="mt-4 flex flex-wrap gap-4">
-                    <Link className="underline" href={`/admin/departures/${departureId}?assignmentBooking=${booking.id}#departure-vehicles`}>Assign bus seats</Link>
-                    <Link className="underline" href={`/admin/departures/${departureId}?assignmentBooking=${booking.id}#departure-hotel-stays`}>Assign hotel rooms</Link>
+                {booking.progress && (
+                  <div className="mt-4 space-y-3">
+                    <RoomAssignmentsByStay progress={booking.progress.roomProgress} />
+                    <div className="flex flex-wrap gap-4">
+                      <Link className="underline" href={assignmentHref(booking.id, "departure-vehicles")}>Assign bus seats</Link>
+                      <Link className="underline" href={assignmentHref(booking.id, "departure-hotel-stays")}>Assign hotel rooms</Link>
+                    </div>
                   </div>
                 )}
               </details>
